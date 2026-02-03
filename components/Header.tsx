@@ -32,13 +32,13 @@ const Header: React.FC = () => {
           {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
 
-        {/* Center: Reimagined Logo "SÈ [Clock] DÉ" */}
+        {/* Center: Reimagined Logo "SÈ [Clock] DÉ" in pure green */}
         <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 md:gap-4 group">
-          <span className="text-lg md:text-2xl font-black brand-font tracking-tighter text-white">SÈ</span>
-          <div className="w-8 h-8 md:w-10 md:h-10 text-mint drop-shadow-lg transition-transform duration-500 group-hover:scale-110">
+          <span className="text-lg md:text-2xl font-black brand-font tracking-tighter text-mint">SÈ</span>
+          <div className="w-8 h-8 md:w-10 md:h-10 text-mint drop-shadow-[0_0_8px_rgba(0,223,129,0.3)] transition-transform duration-500 group-hover:scale-110">
             {LOGO_SVG}
           </div>
-          <span className="text-lg md:text-2xl font-black brand-font tracking-tighter text-white">DÉ</span>
+          <span className="text-lg md:text-2xl font-black brand-font tracking-tighter text-mint">DÉ</span>
         </Link>
 
         {/* Right: Utilities */}
