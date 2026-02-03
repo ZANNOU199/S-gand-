@@ -1,31 +1,38 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useCMS } from '../App';
 import ProductCard from '../components/ProductCard';
-import { ChevronRight, Filter } from 'lucide-react';
+import { ChevronRight, Filter, LayoutGrid, List } from 'lucide-react';
 
 const Category: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [activeFilter, setActiveFilter] = useState('All');
   const { products: allProducts, sectors } = useCMS();
 
-  // Find current sector info
+  // Reset filter when slug changes
+  useEffect(() => {
+    setActiveFilter('All');
+  }, [slug]);
+
+  // Find current sector info from constants
   const currentSector = sectors.find(s => s.slug === slug);
   const isAll = slug === 'all';
 
+  // Filter products by sector slug
   const filteredBySector = useMemo(() => {
     if (isAll) return allProducts;
-    return allProducts.filter(p => p.sector.toLowerCase() === slug?.toLowerCase());
+    return allProducts.filter(p => p.sector === slug);
   }, [slug, allProducts, isAll]);
 
-  // Extract dynamic sub-categories from products in this sector
+  // Extract dynamic sub-categories (e.g., Accessories, Sculpture) based on current products
   const dynamicSubCategories = useMemo(() => {
     const categories = new Set<string>();
     filteredBySector.forEach(p => categories.add(p.category));
-    return ['All', ...Array.from(categories)];
+    return ['All', ...Array.from(categories)].sort();
   }, [filteredBySector]);
 
+  // Final filtered product list
   const finalProducts = useMemo(() => {
     if (activeFilter === 'All') return filteredBySector;
     return filteredBySector.filter(p => p.category === activeFilter);
@@ -35,98 +42,98 @@ const Category: React.FC = () => {
 
   return (
     <div className="bg-background-dark min-h-screen">
-      {/* Header Banner */}
-      <section className="relative h-[40vh] w-full flex items-center justify-center overflow-hidden">
+      {/* Dynamic Header Banner */}
+      <section className="relative h-[45vh] w-full flex items-center justify-center overflow-hidden">
         <div 
-          className="absolute inset-0 bg-cover bg-center opacity-30 transition-transform duration-1000" 
+          className="absolute inset-0 bg-cover bg-center opacity-40 transition-transform duration-1000 scale-105" 
           style={{ backgroundImage: `url('${currentSector?.image || "https://images.unsplash.com/photo-1549490349-8643362247b5"}')` }}
         ></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-background-dark/20 to-background-dark"></div>
-        <div className="relative z-10 text-center px-4 max-w-4xl">
-          <nav className="flex items-center justify-center gap-2 text-[9px] uppercase font-black tracking-[0.3em] text-primary/80 mb-6">
+        <div className="absolute inset-0 bg-gradient-to-b from-background-dark/30 via-background-dark/60 to-background-dark"></div>
+        
+        <div className="relative z-10 text-center px-8 max-w-4xl animate-in fade-in slide-in-from-bottom-8 duration-700">
+          <nav className="flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-8">
             <Link to="/" className="hover:text-white transition-colors">Home</Link>
-            <ChevronRight size={10} />
+            <ChevronRight size={10} className="text-white/20" />
             <span className="text-white/40">Universe</span>
-            <ChevronRight size={10} />
+            <ChevronRight size={10} className="text-white/20" />
             <span className="text-white">{categoryTitle}</span>
           </nav>
-          <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter text-white mb-4 leading-[0.8]">{categoryTitle}</h1>
-          <p className="text-sand/40 text-[11px] font-bold uppercase tracking-widest max-w-xl mx-auto leading-relaxed">
-            A curated selection of the finest African craftsmanship, where heritage meets contemporary luxury.
+          <h1 className="text-6xl md:text-8xl font-black uppercase tracking-tighter text-white mb-6 leading-[0.85]">{categoryTitle}</h1>
+          <p className="text-sand/50 text-xs md:text-sm font-bold uppercase tracking-[0.15em] max-w-2xl mx-auto leading-relaxed">
+            Exploring the fusion of ancestral soul and modern luxury. Each piece tells a story of heritage.
           </p>
         </div>
       </section>
 
-      <div className="max-w-[1440px] mx-auto px-8 pb-32">
-        <div className="flex flex-col lg:flex-row gap-20">
+      <div className="max-w-[1440px] mx-auto px-8 pb-40">
+        <div className="flex flex-col lg:flex-row gap-24">
           
-          {/* Sidebar - Alignment focused */}
-          <aside className="w-full lg:w-56 shrink-0 space-y-12">
-            <div className="pt-2">
-              <div className="flex items-center gap-2 text-primary mb-8">
+          {/* Sidebar Filters - Perfectly Aligned */}
+          <aside className="w-full lg:w-64 shrink-0 space-y-16">
+            <div className="space-y-8">
+              <div className="flex items-center gap-3 text-primary border-b border-white/10 pb-4">
                 <Filter size={14} />
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em]">Curation</h3>
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em]">Categories</h3>
               </div>
-              <div className="space-y-4">
+              <div className="flex flex-col gap-5">
                 {dynamicSubCategories.map(cat => (
                   <button 
                     key={cat}
                     onClick={() => setActiveFilter(cat)}
-                    className={`group flex items-center gap-3 w-full text-left transition-all ${activeFilter === cat ? 'text-primary' : 'text-sand/30 hover:text-white'}`}
+                    className={`group flex items-center gap-4 w-full text-left transition-all ${activeFilter === cat ? 'text-primary translate-x-1' : 'text-sand/30 hover:text-white'}`}
                   >
-                    <div className={`size-1 rounded-full transition-all ${activeFilter === cat ? 'bg-primary scale-150' : 'bg-transparent group-hover:bg-white/20'}`}></div>
-                    <span className="text-[11px] font-black uppercase tracking-widest">{cat}</span>
+                    <div className={`h-[2px] transition-all duration-300 ${activeFilter === cat ? 'w-4 bg-primary' : 'w-0 bg-white/20 group-hover:w-2'}`}></div>
+                    <span className="text-[11px] font-black uppercase tracking-[0.2em]">{cat}</span>
                   </button>
                 ))}
               </div>
             </div>
             
-            <div className="border-t border-white/5 pt-12">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-sand/40 mb-8">Price Scale</h3>
+            <div className="space-y-8">
+              <div className="flex items-center gap-3 text-white border-b border-white/10 pb-4">
+                <LayoutGrid size={14} />
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em]">Filters</h3>
+              </div>
               <div className="space-y-6">
-                 <div className="relative h-1 w-full bg-white/5 rounded-full">
-                    <div className="absolute top-0 left-0 h-full w-2/3 bg-primary rounded-full"></div>
-                 </div>
-                 <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-sand/20">
-                   <span>€100</span>
-                   <span>€4500</span>
+                 <div className="space-y-3">
+                   <p className="text-[9px] font-black uppercase tracking-widest text-sand/40">Price range</p>
+                   <input type="range" className="w-full accent-primary bg-white/5 h-1 rounded-full appearance-none cursor-pointer" />
+                   <div className="flex justify-between text-[9px] font-black text-sand/20">
+                     <span>€100</span>
+                     <span>€5000</span>
+                   </div>
                  </div>
               </div>
             </div>
 
-            {/* Newsletter Shortcut in Sidebar */}
-            <div className="bg-charcoal/50 p-6 rounded-2xl border border-white/5 space-y-4">
-              <p className="text-[9px] font-black uppercase tracking-widest text-primary">Insider</p>
-              <p className="text-[10px] text-sand/40 font-bold uppercase leading-relaxed">Join our world for early collection access.</p>
-              <button className="text-[9px] font-black uppercase tracking-widest border-b border-primary/40 pb-1 hover:text-primary transition-colors">Subscribe</button>
+            {/* Quality Commitment Box */}
+            <div className="p-8 rounded-2xl bg-charcoal/40 border border-white/5 space-y-4">
+              <p className="text-[10px] font-black uppercase tracking-widest text-primary">Artisanal Guarantee</p>
+              <p className="text-[10px] text-sand/40 font-bold leading-relaxed uppercase">Each piece is verified for authenticity and ethical sourcing.</p>
             </div>
           </aside>
 
-          {/* Grid - Perfectly Aligned */}
+          {/* Product Grid - Premium Alignment */}
           <div className="flex-1">
-            <div className="flex items-center justify-between mb-12 pb-6 border-b border-white/5">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-sand/40">
-                Found <span className="text-white">{finalProducts.length}</span> masterworks
+            <div className="flex items-center justify-between mb-12 py-4 border-b border-white/5">
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-sand/40">
+                <span className="text-white">{finalProducts.length}</span> Masterpieces found
               </p>
-              <select className="bg-transparent border-none text-[10px] font-black uppercase tracking-widest text-sand/40 focus:ring-0 cursor-pointer hover:text-white transition-colors">
-                <option>Sort: Relevant</option>
-                <option>Sort: Price Asc</option>
-                <option>Sort: Newest</option>
-              </select>
+              <div className="flex items-center gap-6">
+                <button className="text-white/20 hover:text-white transition-colors"><List size={18} /></button>
+                <button className="text-primary"><LayoutGrid size={18} /></button>
+              </div>
             </div>
 
             {finalProducts.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-16">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-10 gap-y-20">
                 {finalProducts.map(p => (
                   <ProductCard key={p.id} product={p as any} />
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-32 border border-dashed border-white/5 rounded-3xl">
-                <div className="size-16 rounded-full bg-white/5 flex items-center justify-center text-sand/20 mb-6">
-                  <Filter size={24} />
-                </div>
-                <p className="text-sand/30 uppercase tracking-[0.3em] font-black text-xs">No pieces found in this universe</p>
+              <div className="flex flex-col items-center justify-center py-40 bg-charcoal/20 rounded-3xl border border-dashed border-white/10">
+                <p className="text-sand/20 uppercase tracking-[0.4em] font-black text-xs">Awaiting new creations</p>
               </div>
             )}
           </div>
