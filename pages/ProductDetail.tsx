@@ -1,14 +1,14 @@
 
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { FEATURED_PRODUCTS } from '../constants';
-import { useCart } from '../App';
+import { useCMS, useCart } from '../App';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Star, Minus, Plus, ChevronDown, CheckCircle } from 'lucide-react';
 
 const ProductDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const product = FEATURED_PRODUCTS.find(p => p.slug === slug);
+  const { products } = useCMS();
+  const product = products.find(p => p.slug === slug);
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const [selectedVariant, setSelectedVariant] = useState(product?.variants[0].id || '');

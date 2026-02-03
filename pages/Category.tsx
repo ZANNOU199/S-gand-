@@ -1,16 +1,17 @@
 
 import React, { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FEATURED_PRODUCTS } from '../constants';
+import { useCMS } from '../App';
 import ProductCard from '../components/ProductCard';
 import { ChevronRight } from 'lucide-react';
 
 const Category: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [activeFilter, setActiveFilter] = useState('All');
+  const { products: allProducts } = useCMS();
 
-  const products = useMemo(() => {
-    return FEATURED_PRODUCTS.filter(p => {
+  const filteredProducts = useMemo(() => {
+    return allProducts.filter(p => {
       const matchesSlug = slug === 'all' || 
         p.sector.toLowerCase().includes(slug || '') || 
         p.category.toLowerCase().includes(slug || '') ||
@@ -20,7 +21,7 @@ const Category: React.FC = () => {
       
       return matchesSlug && matchesFilter;
     });
-  }, [slug, activeFilter]);
+  }, [slug, activeFilter, allProducts]);
 
   const categoryTitle = slug === 'all' ? 'The Whole World' : 
                        slug === 'mode' ? 'La Mode' : 
@@ -75,9 +76,9 @@ const Category: React.FC = () => {
 
           {/* Grid */}
           <div className="flex-1">
-            {products.length > 0 ? (
+            {filteredProducts.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
-                {products.map(p => (
+                {filteredProducts.map(p => (
                   <ProductCard key={p.id} product={p as any} />
                 ))}
               </div>

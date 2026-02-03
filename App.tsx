@@ -17,8 +17,32 @@ import Wishlist from './pages/Wishlist';
 import StyleQuiz from './pages/StyleQuiz';
 import AdminDashboard from './pages/AdminDashboard';
 import LiveSupport from './components/LiveSupport';
+import { SECTORS, FEATURED_PRODUCTS } from './constants';
 
-// --- State Management ---
+// --- CMS Context ---
+interface CMSContextType {
+  siteConfig: {
+    heroTitle: string;
+    heroSubtitle: string;
+    heroImage: string;
+    announcement: string;
+  };
+  sectors: typeof SECTORS;
+  products: Product[];
+  updateSiteConfig: (config: any) => void;
+  updateSectors: (sectors: any[]) => void;
+  updateProducts: (products: Product[]) => void;
+}
+
+const CMSContext = createContext<CMSContextType | undefined>(undefined);
+
+export const useCMS = () => {
+  const context = useContext(CMSContext);
+  if (!context) throw new Error('useCMS must be used within CMSProvider');
+  return context;
+};
+
+// --- Cart Context ---
 interface CartContextType {
   cart: CartItem[];
   wishlist: string[];
@@ -37,7 +61,8 @@ export const useCart = () => {
   return context;
 };
 
-const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Cart State
   const [cart, setCart] = useState<CartItem[]>(() => {
     const saved = localStorage.getItem('segande_cart');
     return saved ? JSON.parse(saved) : [];
@@ -47,10 +72,34 @@ const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     return saved ? JSON.parse(saved) : [];
   });
 
+  // CMS State
+  const [siteConfig, setSiteConfig] = useState(() => {
+    const saved = localStorage.getItem('segande_site_config');
+    return saved ? JSON.parse(saved) : {
+      heroTitle: "THE MODERN SOUL OF AFRICA",
+      heroSubtitle: "Authentic craftsmanship meets contemporary luxury. Discover the soul of artisanal heritage through the Sahel Collection.",
+      heroImage: "https://lh3.googleusercontent.com/aida-public/AB6AXuDBYQmVC8vZfGs0ngaCbdT5xtxUTngbs-h4NHeitJaxHnviefXNQBZTjJcLAP82o9MS5sLQaSnc8bcg5sGmGFbIdDvht7ukSV8GdFMC-JQw3x7sN3ychXmMLhPuSq1KhZdR-98ElfhTrvFPTas00RrYfakji60hzlLK-BN6-qto-oZmQlVQJ_4As3FN5FR0lb5mgcNUlqUapkOeHqhNIRdRNqq44HrZMH41WoMfCjpUfEDmVYmqsyVwvtI7KmjfETuSbUZ2vKg1rKDu",
+      announcement: "LIVRAISON MONDE OFFERTE | COLLECTION SAHEL DISPONIBLE"
+    };
+  });
+
+  const [sectors, setSectors] = useState(() => {
+    const saved = localStorage.getItem('segande_sectors');
+    return saved ? JSON.parse(saved) : SECTORS;
+  });
+
+  const [products, setProducts] = useState<Product[]>(() => {
+    const saved = localStorage.getItem('segande_products');
+    return saved ? JSON.parse(saved) : FEATURED_PRODUCTS;
+  });
+
   useEffect(() => {
     localStorage.setItem('segande_cart', JSON.stringify(cart));
     localStorage.setItem('segande_wishlist', JSON.stringify(wishlist));
-  }, [cart, wishlist]);
+    localStorage.setItem('segande_site_config', JSON.stringify(siteConfig));
+    localStorage.setItem('segande_sectors', JSON.stringify(sectors));
+    localStorage.setItem('segande_products', JSON.stringify(products));
+  }, [cart, wishlist, siteConfig, sectors, products]);
 
   const addToCart = (product: Product, variantId: string, quantity: number) => {
     setCart(prev => {
@@ -81,9 +130,16 @@ const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ cart, wishlist, addToCart, removeFromCart, updateQuantity, toggleWishlist, total }}>
-      {children}
-    </CartContext.Provider>
+    <CMSContext.Provider value={{ 
+      siteConfig, sectors, products, 
+      updateSiteConfig: (c) => setSiteConfig(prev => ({...prev, ...c})),
+      updateSectors: setSectors,
+      updateProducts: setProducts
+    }}>
+      <CartContext.Provider value={{ cart, wishlist, addToCart, removeFromCart, updateQuantity, toggleWishlist, total }}>
+        {children}
+      </CartContext.Provider>
+    </CMSContext.Provider>
   );
 };
 
@@ -112,7 +168,7 @@ const PageWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 const App: React.FC = () => {
   return (
-    <CartProvider>
+    <AppProvider>
       <HashRouter>
         <ScrollToTop />
         <div className="flex flex-col min-h-screen bg-background-dark selection:bg-primary selection:text-white">
@@ -138,7 +194,7 @@ const App: React.FC = () => {
           <LiveSupport />
         </div>
       </HashRouter>
-    </CartProvider>
+    </AppProvider>
   );
 };
 

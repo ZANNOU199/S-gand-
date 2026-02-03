@@ -2,27 +2,31 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
-import { SECTORS, FEATURED_PRODUCTS } from '../constants';
+import { useCMS } from '../App';
 import ProductCard from '../components/ProductCard';
 import { ArrowRight, Quote } from 'lucide-react';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const { siteConfig, sectors, products } = useCMS();
 
   return (
     <div className="bg-background-dark text-white">
       {/* Hero Section */}
       <section className="relative h-[90vh] w-full overflow-hidden">
-        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXuDBYQmVC8vZfGs0ngaCbdT5xtxUTngbs-h4NHeitJaxHnviefXNQBZTjJcLAP82o9MS5sLQaSnc8bcg5sGmGFbIdDvht7ukSV8GdFMC-JQw3x7sN3ychXmMLhPuSq1KhZdR-98ElfhTrvFPTas00RrYfakji60hzlLK-BN6-qto-oZmQlVQJ_4As3FN5FR0lb5mgcNUlqUapkOeHqhNIRdRNqq44HrZMH41WoMfCjpUfEDmVYmqsyVwvtI7KmjfETuSbUZ2vKg1rKDu')` }}></div>
+        <div 
+          className="absolute inset-0 bg-cover bg-center transition-all duration-1000" 
+          style={{ backgroundImage: `url('${siteConfig.heroImage}')` }}
+        ></div>
         <div className="absolute inset-0 luxury-gradient"></div>
         <div className="relative h-full flex flex-col items-center justify-end pb-24 text-center px-4 max-w-4xl mx-auto">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-white text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-[0.9] uppercase tracking-tight"
+            className="text-white text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-[0.9] uppercase tracking-tight whitespace-pre-line"
           >
-            THE MODERN <br/> SOUL OF AFRICA
+            {siteConfig.heroTitle}
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -30,7 +34,7 @@ const Home: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-sand/80 text-sm md:text-base max-w-2xl mb-10 font-medium tracking-wide uppercase leading-relaxed"
           >
-            Authentic craftsmanship meets contemporary luxury. Discover the soul <br/> of artisanal heritage through the Sahel Collection.
+            {siteConfig.heroSubtitle}
           </motion.p>
           <div className="flex flex-col sm:flex-row gap-4">
             <button 
@@ -59,7 +63,7 @@ const Home: React.FC = () => {
           <Link to="/category/all" className="text-[11px] font-black uppercase tracking-widest border-b-2 border-primary/20 hover:border-primary transition-all pb-1">Explore All</Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {SECTORS.map((sector) => (
+          {sectors.map((sector) => (
             <motion.div 
               key={sector.slug}
               whileHover={{ scale: 0.98 }}
@@ -84,7 +88,7 @@ const Home: React.FC = () => {
             <p className="text-sand/40 text-sm max-w-xl mx-auto uppercase font-bold tracking-widest">Limited-edition pieces crafted in collaboration with the master artisans <br/> of the Niger River.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
-            {FEATURED_PRODUCTS.map(product => (
+            {products.slice(0, 4).map(product => (
               <ProductCard key={product.id} product={product as any} />
             ))}
           </div>
