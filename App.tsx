@@ -90,7 +90,16 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const [products, setProducts] = useState<Product[]>(() => {
     const saved = localStorage.getItem('segande_products');
-    return saved ? JSON.parse(saved) : FEATURED_PRODUCTS;
+    // Forcer le rechargement si FEATURED_PRODUCTS a été mis à jour par le développeur
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Si le catalogue en mémoire est plus petit que celui par défaut, on fusionne ou on remplace
+      if (parsed.length < FEATURED_PRODUCTS.length) {
+        return FEATURED_PRODUCTS;
+      }
+      return parsed;
+    }
+    return FEATURED_PRODUCTS;
   });
 
   useEffect(() => {
