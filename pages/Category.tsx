@@ -3,88 +3,130 @@ import React, { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useCMS } from '../App';
 import ProductCard from '../components/ProductCard';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Filter } from 'lucide-react';
 
 const Category: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [activeFilter, setActiveFilter] = useState('All');
-  const { products: allProducts } = useCMS();
+  const { products: allProducts, sectors } = useCMS();
 
-  const filteredProducts = useMemo(() => {
-    return allProducts.filter(p => {
-      const matchesSlug = slug === 'all' || 
-        p.sector.toLowerCase().includes(slug || '') || 
-        p.category.toLowerCase().includes(slug || '') ||
-        (slug === 'mode' && p.sector.toLowerCase() === 'fashion');
-      
-      const matchesFilter = activeFilter === 'All' || p.category === activeFilter;
-      
-      return matchesSlug && matchesFilter;
-    });
-  }, [slug, activeFilter, allProducts]);
+  // Find current sector info
+  const currentSector = sectors.find(s => s.slug === slug);
+  const isAll = slug === 'all';
 
-  const categoryTitle = slug === 'all' ? 'The Whole World' : 
-                       slug === 'mode' ? 'La Mode' : 
-                       slug?.replace('-', ' ');
+  const filteredBySector = useMemo(() => {
+    if (isAll) return allProducts;
+    return allProducts.filter(p => p.sector.toLowerCase() === slug?.toLowerCase());
+  }, [slug, allProducts, isAll]);
+
+  // Extract dynamic sub-categories from products in this sector
+  const dynamicSubCategories = useMemo(() => {
+    const categories = new Set<string>();
+    filteredBySector.forEach(p => categories.add(p.category));
+    return ['All', ...Array.from(categories)];
+  }, [filteredBySector]);
+
+  const finalProducts = useMemo(() => {
+    if (activeFilter === 'All') return filteredBySector;
+    return filteredBySector.filter(p => p.category === activeFilter);
+  }, [filteredBySector, activeFilter]);
+
+  const categoryTitle = isAll ? 'The Whole World' : currentSector?.name || slug?.replace('-', ' ');
 
   return (
-    <div className="bg-background-dark min-h-screen py-16 px-8">
-      <div className="max-w-[1440px] mx-auto">
-        <header className="mb-16">
-          <nav className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-sand/50 mb-8">
-            <Link to="/" className="hover:text-primary transition-colors">Home</Link>
+    <div className="bg-background-dark min-h-screen">
+      {/* Header Banner */}
+      <section className="relative h-[40vh] w-full flex items-center justify-center overflow-hidden">
+        <div 
+          className="absolute inset-0 bg-cover bg-center opacity-30 transition-transform duration-1000" 
+          style={{ backgroundImage: `url('${currentSector?.image || "https://images.unsplash.com/photo-1549490349-8643362247b5"}')` }}
+        ></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-background-dark/20 to-background-dark"></div>
+        <div className="relative z-10 text-center px-4 max-w-4xl">
+          <nav className="flex items-center justify-center gap-2 text-[9px] uppercase font-black tracking-[0.3em] text-primary/80 mb-6">
+            <Link to="/" className="hover:text-white transition-colors">Home</Link>
             <ChevronRight size={10} />
-            <span className="text-white">Universe</span>
+            <span className="text-white/40">Universe</span>
             <ChevronRight size={10} />
-            <span className="text-primary font-bold">{categoryTitle}</span>
+            <span className="text-white">{categoryTitle}</span>
           </nav>
-          <h1 className="text-6xl font-black uppercase tracking-tight mb-4 leading-none">{categoryTitle}</h1>
-          <p className="text-sand/50 text-lg max-w-2xl leading-relaxed">
-            Discover a unique blend of heritage and contemporary luxury. Each piece is curated to represent the pinnacle of artisanal mastery.
+          <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter text-white mb-4 leading-[0.8]">{categoryTitle}</h1>
+          <p className="text-sand/40 text-[11px] font-bold uppercase tracking-widest max-w-xl mx-auto leading-relaxed">
+            A curated selection of the finest African craftsmanship, where heritage meets contemporary luxury.
           </p>
-        </header>
+        </div>
+      </section>
 
-        <div className="flex flex-col lg:flex-row gap-12">
-          {/* Sidebar */}
-          <aside className="w-full lg:w-64 shrink-0 space-y-10">
-            <div>
-              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-primary mb-6">Sub-Categories</h3>
+      <div className="max-w-[1440px] mx-auto px-8 pb-32">
+        <div className="flex flex-col lg:flex-row gap-20">
+          
+          {/* Sidebar - Alignment focused */}
+          <aside className="w-full lg:w-56 shrink-0 space-y-12">
+            <div className="pt-2">
+              <div className="flex items-center gap-2 text-primary mb-8">
+                <Filter size={14} />
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em]">Curation</h3>
+              </div>
               <div className="space-y-4">
-                {['All', 'Accessories', 'Apparel', 'Home Decor', 'Jewelry'].map(f => (
+                {dynamicSubCategories.map(cat => (
                   <button 
-                    key={f}
-                    onClick={() => setActiveFilter(f)}
-                    className={`block w-full text-left text-sm font-bold uppercase tracking-wider transition-colors ${activeFilter === f ? 'text-white translate-x-2' : 'text-sand/30 hover:text-white'}`}
+                    key={cat}
+                    onClick={() => setActiveFilter(cat)}
+                    className={`group flex items-center gap-3 w-full text-left transition-all ${activeFilter === cat ? 'text-primary' : 'text-sand/30 hover:text-white'}`}
                   >
-                    {f}
+                    <div className={`size-1 rounded-full transition-all ${activeFilter === cat ? 'bg-primary scale-150' : 'bg-transparent group-hover:bg-white/20'}`}></div>
+                    <span className="text-[11px] font-black uppercase tracking-widest">{cat}</span>
                   </button>
                 ))}
               </div>
             </div>
             
-            <div className="border-t border-white/10 pt-10">
-              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-primary mb-6">Price Range</h3>
-              <div className="space-y-4">
-                 <input type="range" className="w-full accent-primary bg-white/10 h-1.5 rounded-lg appearance-none cursor-pointer" />
-                 <div className="flex justify-between text-[10px] uppercase font-bold text-sand/50">
+            <div className="border-t border-white/5 pt-12">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-sand/40 mb-8">Price Scale</h3>
+              <div className="space-y-6">
+                 <div className="relative h-1 w-full bg-white/5 rounded-full">
+                    <div className="absolute top-0 left-0 h-full w-2/3 bg-primary rounded-full"></div>
+                 </div>
+                 <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-sand/20">
                    <span>€100</span>
-                   <span>€2000</span>
+                   <span>€4500</span>
                  </div>
               </div>
             </div>
+
+            {/* Newsletter Shortcut in Sidebar */}
+            <div className="bg-charcoal/50 p-6 rounded-2xl border border-white/5 space-y-4">
+              <p className="text-[9px] font-black uppercase tracking-widest text-primary">Insider</p>
+              <p className="text-[10px] text-sand/40 font-bold uppercase leading-relaxed">Join our world for early collection access.</p>
+              <button className="text-[9px] font-black uppercase tracking-widest border-b border-primary/40 pb-1 hover:text-primary transition-colors">Subscribe</button>
+            </div>
           </aside>
 
-          {/* Grid */}
+          {/* Grid - Perfectly Aligned */}
           <div className="flex-1">
-            {filteredProducts.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
-                {filteredProducts.map(p => (
+            <div className="flex items-center justify-between mb-12 pb-6 border-b border-white/5">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-sand/40">
+                Found <span className="text-white">{finalProducts.length}</span> masterworks
+              </p>
+              <select className="bg-transparent border-none text-[10px] font-black uppercase tracking-widest text-sand/40 focus:ring-0 cursor-pointer hover:text-white transition-colors">
+                <option>Sort: Relevant</option>
+                <option>Sort: Price Asc</option>
+                <option>Sort: Newest</option>
+              </select>
+            </div>
+
+            {finalProducts.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-16">
+                {finalProducts.map(p => (
                   <ProductCard key={p.id} product={p as any} />
                 ))}
               </div>
             ) : (
-              <div className="text-center py-20 border border-dashed border-white/10 rounded-2xl">
-                <p className="text-sand/30 uppercase tracking-[0.3em] font-bold">No pieces found in this universe</p>
+              <div className="flex flex-col items-center justify-center py-32 border border-dashed border-white/5 rounded-3xl">
+                <div className="size-16 rounded-full bg-white/5 flex items-center justify-center text-sand/20 mb-6">
+                  <Filter size={24} />
+                </div>
+                <p className="text-sand/30 uppercase tracking-[0.3em] font-black text-xs">No pieces found in this universe</p>
               </div>
             )}
           </div>

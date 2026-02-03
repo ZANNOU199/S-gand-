@@ -20,7 +20,7 @@ export const SECTORS = [
 ];
 
 export const FEATURED_PRODUCTS = [
-  // --- FASHION ---
+  // --- FASHION (mode) ---
   {
     id: "prod_001",
     name: "Woven Nomad Tote",
@@ -29,7 +29,7 @@ export const FEATURED_PRODUCTS = [
     price: 320,
     images: ["https://lh3.googleusercontent.com/aida-public/AB6AXuBI351qMo_18DILq3g5K1jNtyD9PVNXQfq_Mz0MIxBLgQ2EGkFasvfVuoTxCnPGj9hG7Ld5uCHnrshRzNNxiTEzw9nQvui89WpEQtDbSbBEGMFbW7R_OVjI7XxGw9LmAiUngxI7ruximmgLAiZbqPbt7uC06O1T1MIlrBmEfhg0NbvE26TkFfIkl156Fuj99v_B0gOhEAE9L17XNT5hmEP1VeSSTh32_bOuDKkEAaick-9sdaaqTWC3aCSkC95SVdYkPfURIKajzut8"],
     category: "Accessories",
-    sector: "Fashion",
+    sector: "mode",
     rating: 4.8,
     reviewsCount: 12,
     badges: ["Best Seller"],
@@ -43,7 +43,7 @@ export const FEATURED_PRODUCTS = [
     price: 450,
     images: ["https://lh3.googleusercontent.com/aida-public/AB6AXuCjWTrLnHa1bRfioSH_Ud324ej9f_WGuojDiJPXiZhz_9eyypbFyddr_KRpg217E1YprEjAiIWN4gTgW7c1JacJguWmT_lLNvJZlGqZFPi9J8Mp2c9V58Vrg5QSRX21AfvxvN8SrfWLyKTnmaLKEnLSJ8MPxiUlDFe1fGNtsArfQZ9SvHp5WFNZGqK7XsHoO2JUgioZgO8YE4LZwi6lqT6gV3kAyZ6QDhYj-5h_6lDNpPDl2RTIB8l3P6keUG2xbZ-qbznHSZ6zyp1Q"],
     category: "Apparel",
-    sector: "Fashion",
+    sector: "mode",
     rating: 5.0,
     reviewsCount: 24,
     badges: ["Édition Limitée"],
@@ -57,14 +57,14 @@ export const FEATURED_PRODUCTS = [
     price: 210,
     images: ["https://lh3.googleusercontent.com/aida-public/AB6AXuCES4-SYp_kG4oRZFyp9vMRN4cnKkGa_C7AkEoBEv05epdyQTHCIVlvwHihiCkBj219Q7sSxjN0PWBvXdN8WuczeMGsfgn1SC4pW7a2RUBPQsuXDfnU9-mv_NA_g6VAtxjpjw_Y-uVEOZTQb5HwML_ZsZ6kh3doYMIFV5JESKPEvRaXtVbZ3p5Yr0qJvmbPV5CB2KtTYGCHs7R-sTzRFo-nEqWXhNl5j5OKIUJVMePSKrCQ7POxsrs5EWL__8IIcbMV_k3egRX7ohk5"],
     category: "Jewelry",
-    sector: "Fashion",
+    sector: "mode",
     rating: 4.7,
     reviewsCount: 15,
     badges: [],
     variants: [{ id: "v4", color: "Gold", size: "OS", stock: 7, sku: "JEW-SUN-01" }]
   },
 
-  // --- LIVING ---
+  // --- LIVING (art-de-vivre) ---
   {
     id: "prod_002",
     name: "Ochre Earth Vase",
@@ -73,7 +73,7 @@ export const FEATURED_PRODUCTS = [
     price: 185,
     images: ["https://lh3.googleusercontent.com/aida-public/AB6AXuDbqRE-SdeillU7VtjhWINQ67vBXlFwlB595kbU_k-0YxwNUwaDepWnsrGxNPU2wKF2odLhLCCYFgZOIBTcypLcE4PgAfSqcBy2aifoLonGwlOY0XG0wULCXxQxfa7_L8m4_zT3328jMEumQFLaMnJZWejSx9Jgeyjfv5Mvd54--tF_h0JVaU10c0hIC3s__Bh0Mt4RN7xc5WoU6v9de4sSpMxEjipKL4Z8-fAZBArFdBLjWN_G49lVxeQwzj3ObL6_ke6vGln5iQAA"],
     category: "Home Decor",
-    sector: "Living",
+    sector: "art-de-vivre",
     rating: 4.9,
     reviewsCount: 8,
     badges: ["Artisanal"],
@@ -87,28 +87,14 @@ export const FEATURED_PRODUCTS = [
     price: 1250,
     images: ["https://images.unsplash.com/photo-1594026112284-02bb6f3352fe?q=80&w=1000&auto=format&fit=crop"],
     category: "Furniture",
-    sector: "Living",
+    sector: "art-de-vivre",
     rating: 5.0,
     reviewsCount: 3,
     badges: ["Collector"],
     variants: [{ id: "v5", color: "Ebony Black", size: "Large", stock: 2, sku: "FUR-SEN-01" }]
   },
-  {
-    id: "prod_006",
-    name: "Bogolan Heritage Throw",
-    slug: "bogolan-heritage-throw",
-    description: "TEXTILE MUDCLOTH PEINT À LA MAIN",
-    price: 245,
-    images: ["https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?q=80&w=1000&auto=format&fit=crop"],
-    category: "Home Decor",
-    sector: "Living",
-    rating: 4.8,
-    reviewsCount: 19,
-    badges: ["Authentic"],
-    variants: [{ id: "v6", color: "Earth/Black", size: "150x200cm", stock: 15, sku: "HOM-BOG-01" }]
-  },
 
-  // --- ART GALLERY ---
+  // --- ART (art) ---
   {
     id: "prod_007",
     name: "Bronze Ife Portrait",
@@ -117,7 +103,7 @@ export const FEATURED_PRODUCTS = [
     price: 3400,
     images: ["https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?q=80&w=1000&auto=format&fit=crop"],
     category: "Sculpture",
-    sector: "Art",
+    sector: "art",
     rating: 5.0,
     reviewsCount: 1,
     badges: ["Certificat d'Authenticité"],
@@ -131,25 +117,11 @@ export const FEATURED_PRODUCTS = [
     price: 890,
     images: ["https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1000&auto=format&fit=crop"],
     category: "Photography",
-    sector: "Art",
+    sector: "art",
     rating: 4.9,
     reviewsCount: 6,
     badges: ["Série Limitée /10"],
     variants: [{ id: "v8", color: "B&W Print", size: "60x90cm", stock: 4, sku: "ART-PHO-04" }]
-  },
-  {
-    id: "prod_009",
-    name: "Dogon Guardian Mask",
-    slug: "dogon-guardian-mask",
-    description: "MASQUE RITUEL ANCESTRAL / BOIS & PIGMENTS",
-    price: 1100,
-    images: ["https://images.unsplash.com/photo-1560155016-bd4879ae8f21?q=80&w=1000&auto=format&fit=crop"],
-    category: "Sculpture",
-    sector: "Art",
-    rating: 4.7,
-    reviewsCount: 4,
-    badges: ["Pièce Unique"],
-    variants: [{ id: "v9", color: "Natural Pigments", size: "H 120cm", stock: 1, sku: "ART-MAS-09" }]
   }
 ];
 
