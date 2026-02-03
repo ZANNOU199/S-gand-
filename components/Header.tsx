@@ -9,45 +9,49 @@ import { AnimatePresence, motion } from 'framer-motion';
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { cart } = useCart();
+  const { sectors } = useCMS();
   const navigate = useNavigate();
   const cartCount = cart.reduce((acc, i) => acc + i.quantity, 0);
 
   const closeMenu = () => setIsMenuOpen(false);
 
-  // Pillar links aligned with constants.tsx slugs
-  const navLinks = [
-    { name: 'Universes', path: '/category/all' },
-    { name: 'Fashion', path: '/category/mode' },
-    { name: 'Living', path: '/category/art-de-vivre' },
-    { name: 'Art', path: '/category/art' },
-    { name: 'Craftsmanship', path: '/journal' },
-  ];
-
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-background-dark/95 backdrop-blur-md">
       <div className="max-w-[1440px] mx-auto flex items-center justify-between px-8 py-5">
         
-        {/* Left: Dynamic Navigation */}
+        {/* Left: Dynamic Menu from Sectors */}
         <nav className="hidden lg:flex items-center gap-8">
-          {navLinks.map(link => (
+          <Link 
+            to="/category/all" 
+            className="text-[10px] font-black tracking-[0.25em] uppercase transition-all text-white/60 hover:text-primary"
+          >
+            Universes
+          </Link>
+          {sectors.map(sector => (
             <Link 
-              key={link.path}
-              to={link.path} 
+              key={sector.slug}
+              to={`/category/${sector.slug}`} 
               className="text-[10px] font-black tracking-[0.25em] uppercase transition-all text-white/60 hover:text-primary"
             >
-              {link.name}
+              {sector.name}
             </Link>
           ))}
+          <Link 
+            to="/journal" 
+            className="text-[10px] font-black tracking-[0.25em] uppercase transition-all text-white/60 hover:text-primary"
+          >
+            Savoir-faire
+          </Link>
         </nav>
 
-        {/* Mobile Menu Toggle */}
+        {/* Mobile Toggle */}
         <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="lg:hidden p-2 text-white" aria-label="Toggle Menu">
           {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
 
         {/* Center: Logo */}
         <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3 group">
-          <div className="w-8 h-8 text-primary group-hover:rotate-12 transition-transform duration-500">
+          <div className="w-8 h-8 text-primary group-hover:scale-110 transition-transform duration-500">
             {LOGO_SVG}
           </div>
           <h1 className="text-xl font-black brand-font tracking-tighter text-white">SÈGANDÉ</h1>
@@ -76,21 +80,23 @@ const Header: React.FC = () => {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
             className="lg:hidden absolute top-full left-0 w-full bg-charcoal border-b border-white/10 px-8 py-10 flex flex-col gap-6 z-50 shadow-2xl"
           >
-            {navLinks.map(link => (
+            <Link to="/category/all" className="text-lg font-black uppercase text-white tracking-widest" onClick={closeMenu}>Tout</Link>
+            {sectors.map(sector => (
               <Link 
-                key={link.path} 
-                to={link.path} 
-                className="text-lg font-black uppercase text-white tracking-widest border-b border-white/5 pb-2" 
+                key={sector.slug} 
+                to={`/category/${sector.slug}`} 
+                className="text-lg font-black uppercase text-white/60 tracking-widest hover:text-primary" 
                 onClick={closeMenu}
               >
-                {link.name}
+                {sector.name}
               </Link>
             ))}
+            <Link to="/journal" className="text-lg font-black uppercase text-white/60 tracking-widest" onClick={closeMenu}>Savoir-faire</Link>
           </motion.div>
         )}
       </AnimatePresence>

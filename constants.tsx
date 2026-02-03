@@ -20,7 +20,7 @@ export const SECTORS = [
 ];
 
 export const FEATURED_PRODUCTS = [
-  // --- FASHION (mode) ---
+  // --- FASHION ---
   {
     id: "prod_001",
     name: "Woven Nomad Tote",
@@ -49,22 +49,7 @@ export const FEATURED_PRODUCTS = [
     badges: ["Édition Limitée"],
     variants: [{ id: "v3", color: "Indigo", size: "M", stock: 10, sku: "WRAP-IND-M" }]
   },
-  {
-    id: "prod_004",
-    name: "Sun Spirit Necklace",
-    slug: "sun-spirit-necklace",
-    description: "VERMEIL 24K & ÉBÈNE SCULPTÉ",
-    price: 210,
-    images: ["https://lh3.googleusercontent.com/aida-public/AB6AXuCES4-SYp_kG4oRZFyp9vMRN4cnKkGa_C7AkEoBEv05epdyQTHCIVlvwHihiCkBj219Q7sSxjN0PWBvXdN8WuczeMGsfgn1SC4pW7a2RUBPQsuXDfnU9-mv_NA_g6VAtxjpjw_Y-uVEOZTQb5HwML_ZsZ6kh3doYMIFV5JESKPEvRaXtVbZ3p5Yr0qJvmbPV5CB2KtTYGCHs7R-sTzRFo-nEqWXhNl5j5OKIUJVMePSKrCQ7POxsrs5EWL__8IIcbMV_k3egRX7ohk5"],
-    category: "Jewelry",
-    sector: "mode",
-    rating: 4.7,
-    reviewsCount: 15,
-    badges: [],
-    variants: [{ id: "v4", color: "Gold", size: "OS", stock: 7, sku: "JEW-SUN-01" }]
-  },
-
-  // --- LIVING (art-de-vivre) ---
+  // --- LIVING ---
   {
     id: "prod_002",
     name: "Ochre Earth Vase",
@@ -79,22 +64,7 @@ export const FEATURED_PRODUCTS = [
     badges: ["Artisanal"],
     variants: [{ id: "v2", color: "Terracotta", size: "M", stock: 3, sku: "VASE-OCH-01" }]
   },
-  {
-    id: "prod_005",
-    name: "Senufo Master Chair",
-    slug: "senufo-master-chair",
-    description: "BOIS D'IROKO MONOBLOC SCULPTÉ",
-    price: 1250,
-    images: ["https://images.unsplash.com/photo-1594026112284-02bb6f3352fe?q=80&w=1000&auto=format&fit=crop"],
-    category: "Furniture",
-    sector: "art-de-vivre",
-    rating: 5.0,
-    reviewsCount: 3,
-    badges: ["Collector"],
-    variants: [{ id: "v5", color: "Ebony Black", size: "Large", stock: 2, sku: "FUR-SEN-01" }]
-  },
-
-  // --- ART (art) ---
+  // --- ART ---
   {
     id: "prod_007",
     name: "Bronze Ife Portrait",
@@ -108,20 +78,6 @@ export const FEATURED_PRODUCTS = [
     reviewsCount: 1,
     badges: ["Certificat d'Authenticité"],
     variants: [{ id: "v7", color: "Antique Bronze", size: "H 45cm", stock: 1, sku: "ART-IFE-01" }]
-  },
-  {
-    id: "prod_008",
-    name: "Sahelian Horizon #4",
-    slug: "sahelian-horizon-4",
-    description: "PHOTOGRAPHIE D'ART / TIRAGE ARGENTIQUE SIGNÉ",
-    price: 890,
-    images: ["https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1000&auto=format&fit=crop"],
-    category: "Photography",
-    sector: "art",
-    rating: 4.9,
-    reviewsCount: 6,
-    badges: ["Série Limitée /10"],
-    variants: [{ id: "v8", color: "B&W Print", size: "60x90cm", stock: 4, sku: "ART-PHO-04" }]
   }
 ];
 
