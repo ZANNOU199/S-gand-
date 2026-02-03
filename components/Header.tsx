@@ -17,55 +17,39 @@ const Header: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-background-dark/95 backdrop-blur-md">
-      <div className="max-w-[1440px] mx-auto flex items-center justify-between px-8 py-5">
+      <div className="max-w-[1440px] mx-auto flex items-center justify-between px-6 md:px-8 py-4 md:py-5">
         
-        {/* Left: Dynamic Menu from Sectors */}
-        <nav className="hidden lg:flex items-center gap-8">
-          <Link 
-            to="/category/all" 
-            className="text-[10px] font-black tracking-[0.25em] uppercase transition-all text-white/60 hover:text-primary"
-          >
-            Univers
-          </Link>
+        {/* Left: Dynamic Menu */}
+        <nav className="hidden lg:flex items-center gap-6">
+          <Link to="/category/all" className="text-[9px] font-black tracking-[0.25em] uppercase transition-all text-white/40 hover:text-primary">Univers</Link>
           {sectors.map(sector => (
-            <Link 
-              key={sector.slug}
-              to={`/category/${sector.slug}`} 
-              className="text-[10px] font-black tracking-[0.25em] uppercase transition-all text-white/60 hover:text-primary"
-            >
-              {sector.name}
-            </Link>
+            <Link key={sector.slug} to={`/category/${sector.slug}`} className="text-[9px] font-black tracking-[0.25em] uppercase transition-all text-white/40 hover:text-primary">{sector.name}</Link>
           ))}
-          <Link 
-            to="/journal" 
-            className="text-[10px] font-black tracking-[0.25em] uppercase transition-all text-white/60 hover:text-primary"
-          >
-            Savoir-faire
-          </Link>
         </nav>
 
         {/* Mobile Toggle */}
         <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="lg:hidden p-2 text-white" aria-label="Toggle Menu">
-          {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
+          {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
 
-        {/* Center: Logo */}
-        <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3 group">
-          <div className="w-8 h-8 text-primary group-hover:scale-110 transition-transform duration-500">
+        {/* Center: Reimagined Logo "SÈ [Clock] DÉ" */}
+        <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 md:gap-4 group">
+          <span className="text-lg md:text-2xl font-black brand-font tracking-tighter text-white">SÈ</span>
+          <div className="w-8 h-8 md:w-10 md:h-10 text-mint drop-shadow-lg transition-transform duration-500 group-hover:scale-110">
             {LOGO_SVG}
           </div>
-          <h1 className="text-xl font-black brand-font tracking-tighter text-white">SÈGANDÉ</h1>
+          <span className="text-lg md:text-2xl font-black brand-font tracking-tighter text-white">DÉ</span>
         </Link>
 
         {/* Right: Utilities */}
-        <div className="flex items-center gap-6">
-          <button className="hidden sm:block text-white/60 hover:text-white transition-colors">
+        <div className="flex items-center gap-4 md:gap-6">
+          <button className="hidden sm:block text-white/40 hover:text-white transition-colors">
             <Search size={18} />
           </button>
-          <button onClick={() => navigate('/profile')} className="text-white/60 hover:text-white transition-colors">
+          <button onClick={() => navigate('/profile')} className="text-white/40 hover:text-white transition-colors">
             <User size={19} />
           </button>
-          <Link to="/cart" className="relative flex items-center gap-1 text-white/60 hover:text-primary transition-colors">
+          <Link to="/cart" className="relative flex items-center gap-1 text-white/40 hover:text-primary transition-colors">
             <ShoppingBag size={19} />
             {cartCount > 0 && (
               <span className="absolute -top-2 -right-2 bg-primary text-[9px] text-background-dark font-black size-4 flex items-center justify-center rounded-full">
@@ -87,16 +71,8 @@ const Header: React.FC = () => {
           >
             <Link to="/category/all" className="text-lg font-black uppercase text-white tracking-widest" onClick={closeMenu}>Tout</Link>
             {sectors.map(sector => (
-              <Link 
-                key={sector.slug} 
-                to={`/category/${sector.slug}`} 
-                className="text-lg font-black uppercase text-white/60 tracking-widest hover:text-primary" 
-                onClick={closeMenu}
-              >
-                {sector.name}
-              </Link>
+              <Link key={sector.slug} to={`/category/${sector.slug}`} className="text-lg font-black uppercase text-white/60 tracking-widest hover:text-primary" onClick={closeMenu}>{sector.name}</Link>
             ))}
-            <Link to="/journal" className="text-lg font-black uppercase text-white/60 tracking-widest" onClick={closeMenu}>Savoir-faire</Link>
           </motion.div>
         )}
       </AnimatePresence>

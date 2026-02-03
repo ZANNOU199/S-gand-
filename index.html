@@ -17,6 +17,7 @@
               primary: '#ec9213',
               terracotta: '#8e4a2d',
               sand: '#d9c5b2',
+              mint: '#88c4a6',
               'background-light': '#f8f7f6',
               'background-dark': '#121212',
               charcoal: '#1a1a1a',
@@ -62,6 +63,14 @@
       .custom-scrollbar::-webkit-scrollbar-thumb {
         background: #ec9213;
         border-radius: 10px;
+      }
+      @keyframes clock-spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      .animate-clock-hand {
+        transform-origin: center;
+        animation: clock-spin 10s linear infinite;
       }
     </style>
     <script type="importmap">
