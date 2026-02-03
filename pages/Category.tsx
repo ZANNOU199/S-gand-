@@ -25,7 +25,7 @@ const Category: React.FC = () => {
     return allProducts.filter(p => p.sector === slug);
   }, [slug, allProducts, isAll]);
 
-  // 2. Extract dynamic sub-categories (Vêtements, Accessoires, etc.)
+  // 2. Extract dynamic sub-categories from products (Accessories, Sculpture, etc.)
   const dynamicSubCategories = useMemo(() => {
     const categories = new Set<string>();
     filteredBySector.forEach(p => categories.add(p.category));

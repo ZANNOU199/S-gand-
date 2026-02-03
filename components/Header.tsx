@@ -25,7 +25,7 @@ const Header: React.FC = () => {
             to="/category/all" 
             className="text-[10px] font-black tracking-[0.25em] uppercase transition-all text-white/60 hover:text-primary"
           >
-            Universes
+            Univers
           </Link>
           {sectors.map(sector => (
             <Link 
@@ -83,7 +83,7 @@ const Header: React.FC = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden absolute top-full left-0 w-full bg-charcoal border-b border-white/10 px-8 py-10 flex flex-col gap-6 z-50 shadow-2xl"
+            className="lg:hidden absolute top-full left-0 w-full bg-charcoal border-b border-white/10 px-8 py-10 flex flex-col gap-6 z-50 shadow-2xl overflow-hidden"
           >
             <Link to="/category/all" className="text-lg font-black uppercase text-white tracking-widest" onClick={closeMenu}>Tout</Link>
             {sectors.map(sector => (
