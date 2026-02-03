@@ -8,6 +8,7 @@ import { ChevronRight, Filter, LayoutGrid } from 'lucide-react';
 const Category: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [activeFilter, setActiveFilter] = useState('All');
+  const [priceLimit, setPriceLimit] = useState(5000);
   const { products: allProducts, sectors } = useCMS();
 
   // Reset filter when universe changes
@@ -25,20 +26,26 @@ const Category: React.FC = () => {
     return allProducts.filter(p => p.sector === slug);
   }, [slug, allProducts, isAll]);
 
-  // 2. Extract dynamic sub-categories from products (Accessories, Sculpture, etc.)
+  // 2. Extract dynamic sub-categories from products (Accessoires, Sculpture, etc.)
   const dynamicSubCategories = useMemo(() => {
     const categories = new Set<string>();
     filteredBySector.forEach(p => categories.add(p.category));
     return ['All', ...Array.from(categories)].sort();
   }, [filteredBySector]);
 
-  // 3. Final display filter
+  // 3. Final display filter including price
   const finalProducts = useMemo(() => {
-    if (activeFilter === 'All') return filteredBySector;
-    return filteredBySector.filter(p => p.category === activeFilter);
-  }, [filteredBySector, activeFilter]);
+    let filtered = filteredBySector;
+    if (activeFilter !== 'All') {
+      filtered = filtered.filter(p => p.category === activeFilter);
+    }
+    return filtered.filter(p => p.price <= priceLimit);
+  }, [filteredBySector, activeFilter, priceLimit]);
 
   const categoryTitle = isAll ? 'Le Monde Entier' : currentSector?.name || slug?.replace('-', ' ');
+
+  // Calculate percentage for price tooltip position
+  const pricePercentage = ((priceLimit - 100) / (5000 - 100)) * 100;
 
   return (
     <div className="bg-background-dark min-h-screen">
@@ -88,13 +95,30 @@ const Category: React.FC = () => {
               </div>
             </div>
             
-            <div className="space-y-6">
+            <div className="space-y-10">
               <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-sand/40 border-b border-white/10 pb-4">Échelle de prix</h3>
-              <div className="px-2">
-                <input type="range" className="w-full accent-primary bg-white/5 h-1 appearance-none cursor-pointer rounded-full" />
-                <div className="flex justify-between mt-4 text-[9px] font-black text-sand/20 uppercase tracking-widest">
+              <div className="relative px-2 pt-6 pb-2">
+                {/* Dynamic Price Tooltip */}
+                <div 
+                  className="absolute -top-4 bg-primary text-background-dark text-[10px] font-black px-2 py-1 rounded pointer-events-none whitespace-nowrap -translate-x-1/2 transition-all duration-75"
+                  style={{ left: `${pricePercentage}%` }}
+                >
+                  {priceLimit} €
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-x-[4px] border-x-transparent border-t-[4px] border-t-primary"></div>
+                </div>
+
+                <input 
+                  type="range" 
+                  min="100" 
+                  max="5000" 
+                  step="50"
+                  value={priceLimit}
+                  onChange={(e) => setPriceLimit(Number(e.target.value))}
+                  className="w-full accent-primary bg-white/5 h-1 appearance-none cursor-pointer rounded-full relative z-10" 
+                />
+                <div className="flex justify-between mt-6 text-[9px] font-black text-sand/20 uppercase tracking-widest">
                   <span>100 €</span>
-                  <span>4500 €</span>
+                  <span>5000 €</span>
                 </div>
               </div>
             </div>
@@ -126,7 +150,7 @@ const Category: React.FC = () => {
               </div>
             ) : (
               <div className="py-40 text-center border border-dashed border-white/10 rounded-3xl">
-                <p className="text-sand/20 uppercase tracking-widest font-black text-xs">Aucune pièce trouvée dans cet univers</p>
+                <p className="text-sand/20 uppercase tracking-widest font-black text-xs">Aucune pièce trouvée correspondant à vos critères</p>
               </div>
             )}
           </div>
