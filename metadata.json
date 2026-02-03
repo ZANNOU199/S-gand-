@@ -1,0 +1,8 @@
+{
+  "name": "SÈGANDÉ Luxury E-commerce",
+  "description": "A high-end, pixel-perfect e-commerce platform showcasing contemporary African luxury through artisanal craftsmanship and modern design.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
