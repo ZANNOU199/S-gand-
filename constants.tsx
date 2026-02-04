@@ -5,17 +5,17 @@ export const SECTORS = [
   { 
     name: 'Nid du Bien-Être', 
     slug: 'bien-etre', 
-    image: 'https://images.unsplash.com/photo-1600334129128-685c5582fd35?q=80&w=1400&auto=format&fit=crop' // Spa minimaliste aux tons terreux
+    image: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=1400&auto=format&fit=crop' // Famille souriante, éclat de santé et bien-être
   },
   { 
     name: "Accessoires de Mode", 
     slug: 'accessoires-mode', 
-    image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=1400&auto=format&fit=crop' // Maroquinerie et textures de luxe
+    image: 'https://images.unsplash.com/photo-1576053139778-7e32f2ae3cfd?q=80&w=1400&auto=format&fit=crop' // Perles précieuses et univers beauté
   },
   { 
     name: "Art Culinaire", 
     slug: 'art-culinaire', 
-    image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=1400&auto=format&fit=crop' // Épices et art de la table raffiné
+    image: 'https://images.unsplash.com/photo-1506368083636-6defb67639a7?q=80&w=1400&auto=format&fit=crop' // Mélange artistique de multiples épices (plus de 15 variétés)
   },
 ];
 
@@ -23,91 +23,91 @@ export const FEATURED_PRODUCTS = [
   // --- NID DU BIEN-ÊTRE ---
   {
     id: "prod_be_01",
-    name: "Brume de Sérénité 'Ouidah'",
-    slug: "brume-ouidah",
-    description: "ESSENCES D'ORCHIDÉE SAUVAGE ET RACINES DE VÉTIVER",
-    price: 110,
-    images: ["https://images.unsplash.com/photo-1616984748472-74cc29f6487e?q=80&w=1000&auto=format&fit=crop"],
-    category: "Soin Corps",
+    name: "Éclat Familial 'Aura'",
+    slug: "eclat-familial-aura",
+    description: "SUPPLÉMENTS VÉGÉTAUX POUR UNE VITALITÉ RADIEUSE",
+    price: 135,
+    images: ["https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=1000&auto=format&fit=crop"],
+    category: "Soin & Vitalité",
     sector: "bien-etre",
     rating: 5.0,
-    reviewsCount: 24,
-    badges: ["Signature"],
-    variants: [{ id: "v_be1", color: "Verre Ambré", size: "100ml", stock: 15, sku: "BE-BR-100" }]
+    reviewsCount: 42,
+    badges: ["Best Seller"],
+    variants: [{ id: "v_be1", color: "Or Pur", size: "Cure 30j", stock: 25, sku: "BE-AUR-30" }]
   },
   {
     id: "prod_be_02",
-    name: "Coffret Rituel Hammam",
-    slug: "coffret-rituel-hammam",
-    description: "SAVON NOIR À L'EUCALYPTUS ET GANT DE FIBRE NATURELLE",
-    price: 185,
-    images: ["https://images.unsplash.com/photo-1556229162-5c63ed9c4ffb?q=80&w=1000&auto=format&fit=crop"],
-    category: "Rituel",
+    name: "Huile de Vie Sègandé",
+    slug: "huile-de-vie",
+    description: "ÉLIXIR MULTIVITAMINÉ AUX EXTRAITS DE BAOBAB ET MORINGA",
+    price: 95,
+    images: ["https://images.unsplash.com/photo-1612817288484-6f916006741a?q=80&w=1000&auto=format&fit=crop"],
+    category: "Bien-être",
     sector: "bien-etre",
     rating: 4.9,
-    reviewsCount: 12,
-    badges: ["Artisanal"],
-    variants: [{ id: "v_be2", color: "Coffret Bois", size: "Set Complet", stock: 8, sku: "BE-SET-RH" }]
+    reviewsCount: 18,
+    badges: ["Naturel"],
+    variants: [{ id: "v_be2", color: "Ambre", size: "200ml", stock: 15, sku: "BE-OIL-LIFE" }]
   },
 
   // --- ACCESSOIRES DE MODE ---
   {
     id: "prod_acc_01",
-    name: "Le Sac 'Sèdé' Mini",
-    slug: "sac-sede-mini",
-    description: "CUIR DE VEAU PLEINE FLEUR ET DÉTAILS EN BRONZE CIRE PERDUE",
-    price: 1250,
-    images: ["https://images.unsplash.com/photo-1594093876628-59b50143016b?q=80&w=1000&auto=format&fit=crop"],
-    category: "Maroquinerie",
+    name: "Manchette 'Perles Royales'",
+    slug: "manchette-perles",
+    description: "TISSAGE DE PERLES DE VERRE ET FERMOIR DORÉ À L'OR FIN",
+    price: 380,
+    images: ["https://images.unsplash.com/photo-1535105372370-9086f688e7a0?q=80&w=1000&auto=format&fit=crop"],
+    category: "Bijoux en Perles",
     sector: "accessoires-mode",
     rating: 5.0,
-    reviewsCount: 9,
-    badges: ["Édition Numérotée"],
-    variants: [{ id: "v_acc1", color: "Vert Sèdé", size: "Mini", stock: 2, sku: "ACC-BG-MINI" }]
+    reviewsCount: 15,
+    badges: ["Artisanat"],
+    variants: [{ id: "v_acc1", color: "Multicolore", size: "Ajustable", stock: 5, sku: "ACC-PRL-MN" }]
   },
   {
     id: "prod_acc_02",
-    name: "Bracelet 'Infini Africain'",
-    slug: "bracelet-infini",
-    description: "OR JAUNE 18K SCULPTÉ COMME LES DUNES DU SAHARA",
-    price: 2800,
-    images: ["https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=1000&auto=format&fit=crop"],
-    category: "Haute Joaillerie",
+    name: "Palette 'Reine de Saba'",
+    slug: "palette-saba",
+    description: "COFFRET MAQUILLAGE HAUTE PIGMENTATION & MIROIR DE POCHE",
+    price: 145,
+    images: ["https://images.unsplash.com/photo-1583209814683-c023dd293cc6?q=80&w=1000&auto=format&fit=crop"],
+    category: "Beauté",
     sector: "accessoires-mode",
-    rating: 5.0,
-    reviewsCount: 5,
-    badges: ["Prestige"],
-    variants: [{ id: "v_acc2", color: "Or Jaune", size: "M", stock: 3, sku: "ACC-JW-INF" }]
+    rating: 4.8,
+    reviewsCount: 29,
+    badges: ["Luxe"],
+    variants: [{ id: "v_acc2", color: "Tons Terres", size: "Standard", stock: 20, sku: "ACC-MK-SABA" }]
   },
 
   // --- ART CULINAIRE ---
   {
     id: "prod_cul_01",
-    name: "Sel de Gemme de Kiffa",
-    slug: "sel-gemme-kiffa",
-    description: "SEL MILLÉNAIRE EN CRISTAUX PURS PRÉSENTÉ EN GRÈS NOIR",
-    price: 65,
-    images: ["https://images.unsplash.com/photo-1506368083636-6defb67639a7?q=80&w=1000&auto=format&fit=crop"],
-    category: "Épicerie Fine",
+    name: "Grand Mélange de 15 Épices",
+    slug: "melange-15-epices",
+    description: "ALCHIMIE SECRÈTE DE 15 VARIÉTÉS RARES ET PRÉCIEUSES",
+    price: 75,
+    images: ["https://images.unsplash.com/photo-1532336414038-cf19250c5757?q=80&w=1000&auto=format&fit=crop"],
+    category: "Gastronomie",
     sector: "art-culinaire",
-    rating: 4.8,
-    reviewsCount: 56,
-    badges: ["Exception"],
-    variants: [{ id: "v_cul1", color: "Grès Noir", size: "250g", stock: 40, sku: "CUL-SALT-KIF" }]
+    rating: 5.0,
+    reviewsCount: 112,
+    badges: ["Chef's Choice"],
+    variants: [{ id: "v_cul1", color: "Éclat d'Épices", size: "500g", stock: 100, sku: "CUL-SP-15" }]
   },
   {
     id: "prod_cul_02",
-    name: "Service à Café 'Abomey'",
-    slug: "service-abomey",
-    description: "PORCELAINE FINE PEINTE À LA MAIN À L'OR 24K",
-    price: 420,
-    images: ["https://images.unsplash.com/photo-1517133194642-43ae245d625d?q=80&w=1000&auto=format&fit=crop"],
+    name: "Mortier 'Ébène & Bronze'",
+    slug: "mortier-ebene",
+    description: "PIÈCE DE COLLECTION SCULPTÉE POUR LE RITUEL DES SAVEURS",
+    price: 290,
+    images: ["https://images.unsplash.com/photo-1594913785162-e678ac0570da?q=80&w=1000&auto=format&fit=crop"],
     category: "Art de la Table",
     sector: "art-culinaire",
-    rating: 5.0,
-    reviewsCount: 4,
-    badges: ["Héritage"],
-    variants: [{ id: "v_cul2", color: "Blanc & Or", size: "6 Personnes", stock: 5, sku: "CUL-CER-AB" }]
+    rating: 4.9,
+    reviewsCount: 7,
+    badges: ["Exclusivité"],
+    variants: [{ id: "v_cul2", color: "Noir Profond", size: "Grand Modèle", stock: 3, sku: "CUL-MOR-EB" }]
   }
 ];
 
