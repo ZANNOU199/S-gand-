@@ -10,7 +10,7 @@ export const SECTORS = [
   { 
     name: "Accessoires de Mode", 
     slug: 'accessoires-mode', 
-    image: 'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?q=80&w=1400&auto=format&fit=crop' 
+    image: 'https://i.ibb.co/bj2jSxj7/Gemini-Generated-Image-y5etqny5etqny5et.png' 
   },
   { 
     name: "Art Culinaire", 
