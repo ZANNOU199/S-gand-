@@ -14,15 +14,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       whileHover={{ y: -4 }}
       className="group flex flex-col gap-4"
     >
-      <Link to={`/product/${product.slug}`} className="relative overflow-hidden rounded-lg aspect-square bg-charcoal">
+      <Link to={`/product/${product.slug}`} className="relative overflow-hidden rounded-lg aspect-square bg-white flex items-center justify-center">
         <img 
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+          className="w-full h-full object-contain p-4 transition-transform duration-700 group-hover:scale-105" 
+          style={{ imageRendering: 'auto' }}
           src={product.images[0]} 
           alt={product.name}
         />
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
-          <button className="whitespace-nowrap bg-white text-background-dark text-[10px] font-bold uppercase py-3 px-6 rounded shadow-xl hover:bg-primary hover:text-white transition-colors">
-            Quick View
+          <button className="whitespace-nowrap bg-background-dark text-white text-[10px] font-bold uppercase py-3 px-6 rounded shadow-xl hover:bg-primary transition-colors">
+            Aperçu Rapide
           </button>
         </div>
       </Link>

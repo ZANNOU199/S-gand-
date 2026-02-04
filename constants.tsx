@@ -5,17 +5,17 @@ export const SECTORS = [
   { 
     name: 'Nid du Bien-Être', 
     slug: 'bien-etre', 
-    image: 'https://images.unsplash.com/photo-1609220136736-443140cffec6?q=80&w=1400&auto=format&fit=crop' // Famille africaine rayonnante
+    image: 'https://images.unsplash.com/photo-1609220136736-443140cffec6?q=80&w=1400&auto=format&fit=crop' 
   },
   { 
     name: "Accessoires de Mode", 
     slug: 'accessoires-mode', 
-    image: 'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?q=80&w=1400&auto=format&fit=crop' // Détail de Haute Perlerie (Beadwork d'exception)
+    image: 'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?q=80&w=1400&auto=format&fit=crop' 
   },
   { 
     name: "Art Culinaire", 
     slug: 'art-culinaire', 
-    image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=1400&auto=format&fit=crop' // Alchimie des 15 épices africaines
+    image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=1400&auto=format&fit=crop' 
   },
 ];
 
@@ -27,7 +27,8 @@ export const FEATURED_PRODUCTS = [
     slug: "cleanshield",
     description: "LE BOUCLIER DE PURETÉ POUR VOTRE INTÉRIEUR",
     price: 195,
-    images: ["https://i.ibb.co/v74MS8X/clean-shield.png"],
+    // Mise à jour avec le lien direct haute définition fourni par l'utilisateur
+    images: ["https://i.ibb.co/xpqrNQF/Gemini-Generated-Image-2l064s2l064s2l06.png"], 
     category: "Bien-être",
     sector: "bien-etre",
     rating: 5.0,

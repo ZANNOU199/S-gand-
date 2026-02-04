@@ -3,13 +3,14 @@ import React, { useState } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCMS } from '../App';
+import { GoogleGenAI } from '@google/genai';
 import { 
-  LayoutDashboard, Package, Users, ShoppingCart, Settings, Plus, 
-  FileText, BarChart3, Edit, Trash2, Save, Menu, X, Globe, Type, Layout, Image as ImageIcon
+  LayoutDashboard, Package, Settings, Plus, 
+  FileText, BarChart3, Edit, Trash2, Menu, X, Globe, Layout, Loader2, Sparkles, Info
 } from 'lucide-react';
 
 const AdminDashboard: React.FC = () => {
-  const { siteConfig, sectors, products, updateSiteConfig, updateSectors, updateProducts } = useCMS();
+  const { sectors, products, updateProducts } = useCMS();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
 
@@ -53,133 +54,51 @@ const AdminDashboard: React.FC = () => {
     </div>
   );
 
-  // --- CMS COMPONENTS ---
+  // --- IA IMAGE GENERATION COMPONENT ---
+  const AIImageGenerator = ({ productName, productDescription, onImageGenerated }: { productName: string, productDescription: string, onImageGenerated: (url: string) => void }) => {
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-  const HeroManager = () => {
-    const [localConfig, setLocalConfig] = useState(siteConfig);
-    const [saved, setSaved] = useState(false);
+    const generateImage = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        const prompt = `Professional studio product photography for high-end African luxury brand. Item: ${productName}. Description: ${productDescription}. Perfect center framing, minimal margins. Pure White Studio Background. Soft studio lighting, no distractions. 8k resolution, minimalist high-end e-commerce aesthetic.`;
+        
+        const response = await ai.models.generateContent({
+          model: 'gemini-2.5-flash-image',
+          contents: { parts: [{ text: prompt }] },
+          config: {
+            imageConfig: { aspectRatio: "1:1" }
+          }
+        });
 
-    const save = () => {
-      updateSiteConfig(localConfig);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+        const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
+        if (imagePart?.inlineData?.data) {
+          const base64Url = `data:image/png;base64,${imagePart.inlineData.data}`;
+          onImageGenerated(base64Url);
+        } else {
+          throw new Error("No image returned.");
+        }
+      } catch (err) {
+        setError("API Key Error or Timeout");
+      } finally {
+        setLoading(false);
+      }
     };
 
     return (
-      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <div className="flex justify-between items-center">
-          <h2 className="text-3xl font-black uppercase tracking-tight">Configuration Accueil</h2>
-          <button onClick={save} className={`${saved ? 'bg-green-500' : 'bg-primary'} text-black px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-xl transition-all`}>
-            <Save size={14} /> {saved ? 'Enregistré' : 'Enregistrer'}
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="bg-charcoal p-8 rounded-3xl border border-white/5 space-y-6">
-            <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2"><Type size={14}/> Textes Hero</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="text-[9px] font-black uppercase text-sand/40 mb-2 block tracking-widest">Titre Principal</label>
-                <textarea 
-                  value={localConfig.heroTitle}
-                  onChange={e => setLocalConfig({...localConfig, heroTitle: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm font-bold outline-none focus:border-primary transition-all text-white resize-none" 
-                  rows={2}
-                />
-              </div>
-              <div>
-                <label className="text-[9px] font-black uppercase text-sand/40 mb-2 block tracking-widest">Description</label>
-                <textarea 
-                  value={localConfig.heroSubtitle}
-                  onChange={e => setLocalConfig({...localConfig, heroSubtitle: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm outline-none focus:border-primary resize-none h-32 text-white" 
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-charcoal p-8 rounded-3xl border border-white/5 space-y-6">
-            <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2"><ImageIcon size={14}/> Image Hero</h3>
-            <div className="space-y-4">
-              <div className="aspect-video rounded-2xl overflow-hidden border border-white/10 bg-black/40 relative group">
-                <img src={localConfig.heroImage} className="w-full h-full object-cover opacity-80" alt="Preview" />
-              </div>
-              <div>
-                <label className="text-[9px] font-black uppercase text-sand/40 mb-2 block tracking-widest">URL de l'image de fond</label>
-                <input 
-                  value={localConfig.heroImage}
-                  onChange={e => setLocalConfig({...localConfig, heroImage: e.target.value})}
-                  placeholder="https://..."
-                  className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-xs outline-none focus:border-primary text-white" 
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const SectorsManager = () => {
-    const remove = (slug: string) => updateSectors(sectors.filter(s => s.slug !== slug));
-    const add = () => {
-      const newSector = { 
-        name: "Nouveau Domaine", 
-        slug: `nouveau-${Date.now()}`, 
-        image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDFtQq4SKIJ1tBTQDr_KTdHSlBC9_5C4DgZnSdMyq6cRDomP4iZdMXbVJfyGBh7EwOHsF-Go-PSB01feh_csQaRlliVU0gv0nAb2CqAgg_ensxurMtLwG_u7yNaqm0nIJc80auQeKJgK-9NR_qo1T9b98dOt9OgP6tKQfWVDRsI1ysFJINaYlwzTMEVdJwGoAoSm9ner2dkHKYJILs1QKDmrBRw_y89kWEnyK1fRFrv3tyEq2oJM2YCu--4w4UHZgqLG4Jt8xMcxzb9" 
-      };
-      updateSectors([...sectors, newSector]);
-    };
-
-    return (
-      <div className="space-y-8 animate-in fade-in duration-500">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <h2 className="text-3xl font-black uppercase tracking-tight">Domaines d'Activité</h2>
-          <button onClick={add} className="bg-primary text-black px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-lg">
-            <Plus size={14} /> Ajouter un domaine
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sectors.map((s, idx) => (
-            <div key={s.slug} className="bg-charcoal rounded-3xl border border-white/5 overflow-hidden flex flex-col group">
-              <div className="aspect-[3/2] bg-white/5 relative overflow-hidden">
-                <img src={s.image} className="w-full h-full object-cover opacity-60 transition-transform group-hover:scale-105" alt={s.name} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6">
-                  <label className="text-[9px] font-black uppercase text-primary mb-2 tracking-widest">Nom du secteur</label>
-                  <input 
-                    value={s.name}
-                    onChange={e => {
-                      const newS = [...sectors];
-                      newS[idx].name = e.target.value;
-                      newS[idx].slug = e.target.value.toLowerCase().replace(/\s+/g, '-');
-                      updateSectors(newS);
-                    }}
-                    className="bg-white/10 backdrop-blur-md border border-white/10 rounded-lg p-3 text-xs font-black uppercase w-full outline-none focus:border-primary text-white"
-                  />
-                </div>
-              </div>
-              <div className="p-4 bg-charcoal/80 space-y-4">
-                 <div>
-                    <label className="text-[8px] font-black uppercase text-sand/40 mb-1 block tracking-widest">Image URL</label>
-                    <input 
-                      value={s.image}
-                      onChange={e => {
-                        const newS = [...sectors];
-                        newS[idx].image = e.target.value;
-                        updateSectors(newS);
-                      }}
-                      placeholder="URL Image"
-                      className="w-full bg-white/5 border border-white/5 rounded p-2 text-[9px] outline-none text-white focus:border-primary/40"
-                    />
-                 </div>
-                 <button onClick={() => remove(s.slug)} className="w-full py-2 text-[9px] font-black uppercase text-red-500/50 hover:text-red-500 hover:bg-red-500/5 rounded-lg transition-all flex items-center justify-center gap-1">
-                   <Trash2 size={10} /> Supprimer le secteur
-                 </button>
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="flex flex-col gap-2">
+        <button 
+          onClick={generateImage}
+          disabled={loading}
+          className="flex items-center gap-2 px-3 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50"
+        >
+          {loading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+          {loading ? 'Génération...' : 'IA Studio'}
+        </button>
+        {error && <span className="text-[8px] text-red-500 font-bold uppercase">{error}</span>}
       </div>
     );
   };
@@ -189,19 +108,26 @@ const AdminDashboard: React.FC = () => {
       <div className="space-y-8 animate-in fade-in duration-500">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <h2 className="text-3xl font-black uppercase tracking-tight">Catalogue Produits</h2>
-          <button className="bg-primary text-black px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-lg">
-            <Plus size={14} /> Nouveau Produit
-          </button>
+          <div className="flex items-center gap-4">
+            <div className="hidden lg:flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sand/40 text-[9px] font-bold uppercase">
+               <Info size={12} className="text-primary" />
+               Utilisez des liens directs (.jpg/.png) pour éviter le flou.
+            </div>
+            <button className="bg-primary text-black px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-lg">
+              <Plus size={14} /> Nouveau
+            </button>
+          </div>
         </div>
 
         <div className="bg-charcoal rounded-3xl border border-white/5 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left min-w-[700px]">
+            <table className="w-full text-left min-w-[850px]">
               <thead className="bg-white/5 text-[9px] font-black uppercase tracking-widest text-sand/40">
                 <tr>
-                  <th className="p-6">Produit</th>
+                  <th className="p-6">Produit & IA</th>
                   <th className="p-6">Catégorie</th>
                   <th className="p-6">Prix</th>
+                  <th className="p-6">URL Image Directe</th>
                   <th className="p-6 text-right">Actions</th>
                 </tr>
               </thead>
@@ -210,10 +136,10 @@ const AdminDashboard: React.FC = () => {
                   <tr key={p.id} className="border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors group">
                     <td className="p-6">
                       <div className="flex items-center gap-4">
-                        <div className="size-12 rounded-lg bg-white/10 shrink-0 overflow-hidden">
-                          <img src={p.images[0]} className="w-full h-full object-cover" />
+                        <div className="size-16 rounded-lg bg-white shrink-0 overflow-hidden border border-white/5">
+                          <img src={p.images[0]} className="w-full h-full object-contain p-1" alt={p.name} />
                         </div>
-                        <div>
+                        <div className="space-y-2">
                            <input 
                              value={p.name}
                              onChange={e => {
@@ -223,7 +149,15 @@ const AdminDashboard: React.FC = () => {
                              }}
                              className="bg-transparent border-none p-0 font-black uppercase text-xs focus:ring-0 text-white w-full"
                            />
-                           <p className="text-[10px] text-sand/40 font-bold uppercase tracking-tighter">{p.description}</p>
+                           <AIImageGenerator 
+                             productName={p.name} 
+                             productDescription={p.description} 
+                             onImageGenerated={(newUrl) => {
+                               const newP = [...products];
+                               newP[idx].images = [newUrl];
+                               updateProducts(newP);
+                             }} 
+                           />
                         </div>
                       </div>
                     </td>
@@ -244,6 +178,20 @@ const AdminDashboard: React.FC = () => {
                            className="bg-transparent border-none p-0 w-16 focus:ring-0 font-black"
                          />
                        </div>
+                    </td>
+                    <td className="p-6 max-w-xs">
+                       <input 
+                         value={p.images[0]}
+                         onChange={e => {
+                           const newP = [...products];
+                           newP[idx].images = [e.target.value];
+                           updateProducts(newP);
+                         }}
+                         className={`w-full bg-white/5 border rounded p-2 text-[8px] text-sand/40 truncate outline-none ${p.images[0].includes('ibb.co/') && !p.images[0].includes('i.ibb.co') ? 'border-red-500/50' : 'border-white/10'}`}
+                       />
+                       {p.images[0].includes('ibb.co/') && !p.images[0].includes('i.ibb.co') && (
+                         <p className="text-[7px] text-red-400 mt-1 uppercase font-bold">⚠️ Lien indirect détecté (Risque de flou)</p>
+                       )}
                     </td>
                     <td className="p-6">
                        <div className="flex gap-4 justify-end">
@@ -306,7 +254,7 @@ const AdminDashboard: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
                   { label: 'Revenu Mensuel', value: '€82,490', trend: '+14%', icon: BarChart3 },
-                  { label: 'Commandes VIP', value: '08', trend: 'Urgent', icon: ShoppingCart },
+                  { label: 'Commandes VIP', value: '08', trend: 'Urgent', icon: Package },
                   { label: 'Visites Uniques', value: '12.4K', trend: '+22%', icon: FileText },
                   { label: 'Stock Artisanat', value: '428', trend: 'Stable', icon: Package },
                 ].map(s => (
@@ -320,8 +268,8 @@ const AdminDashboard: React.FC = () => {
               </div>
             </div>
           } />
-          <Route path="site-config" element={<HeroManager />} />
-          <Route path="sectors" element={<SectorsManager />} />
+          <Route path="site-config" element={<div>Configuration Accueil</div>} />
+          <Route path="sectors" element={<div>Secteurs</div>} />
           <Route path="inventory" element={<InventoryManager />} />
           <Route path="editorial" element={<div className="py-40 text-center opacity-10 font-black uppercase text-5xl tracking-widest">Editorial CMS</div>} />
         </Routes>
