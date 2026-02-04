@@ -5,17 +5,17 @@ export const SECTORS = [
   { 
     name: 'Nid du Bien-Être', 
     slug: 'bien-etre', 
-    image: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=1400&auto=format&fit=crop' // Famille souriante, éclat de santé et bien-être
+    image: 'https://images.unsplash.com/photo-1609220136736-443140cffec6?q=80&w=1400&auto=format&fit=crop' // Famille africaine rayonnante (Retour au visuel préféré)
   },
   { 
     name: "Accessoires de Mode", 
     slug: 'accessoires-mode', 
-    image: 'https://images.unsplash.com/photo-1576053139778-7e32f2ae3cfd?q=80&w=1400&auto=format&fit=crop' // Perles précieuses et univers beauté
+    image: 'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?q=80&w=1400&auto=format&fit=crop' // Détail de Haute Perlerie (Beadwork d'exception)
   },
   { 
     name: "Art Culinaire", 
     slug: 'art-culinaire', 
-    image: 'https://images.unsplash.com/photo-1506368083636-6defb67639a7?q=80&w=1400&auto=format&fit=crop' // Mélange artistique de multiples épices (plus de 15 variétés)
+    image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=1400&auto=format&fit=crop' // Alchimie des 15 épices africaines
   },
 ];
 
@@ -23,110 +23,103 @@ export const FEATURED_PRODUCTS = [
   // --- NID DU BIEN-ÊTRE ---
   {
     id: "prod_be_01",
-    name: "Éclat Familial 'Aura'",
-    slug: "eclat-familial-aura",
-    description: "SUPPLÉMENTS VÉGÉTAUX POUR UNE VITALITÉ RADIEUSE",
-    price: 135,
-    images: ["https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=1000&auto=format&fit=crop"],
-    category: "Soin & Vitalité",
+    name: "Source de Vie",
+    slug: "source-vie",
+    description: "LE SECRET D'UNE VITALITÉ FAMILIALE ÉCLATANTE",
+    price: 195,
+    images: ["https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=1000&auto=format&fit=crop"],
+    category: "Bien-être",
     sector: "bien-etre",
     rating: 5.0,
-    reviewsCount: 42,
-    badges: ["Best Seller"],
-    variants: [{ id: "v_be1", color: "Or Pur", size: "Cure 30j", stock: 25, sku: "BE-AUR-30" }]
+    reviewsCount: 142,
+    badges: ["Best Seller", "Famille"],
+    variants: [{ id: "v_be1", color: "Pack Royal", size: "Cure 3 Mois", stock: 15, sku: "BE-SRC-VIE" }]
   },
   {
     id: "prod_be_02",
-    name: "Huile de Vie Sègandé",
-    slug: "huile-de-vie",
-    description: "ÉLIXIR MULTIVITAMINÉ AUX EXTRAITS DE BAOBAB ET MORINGA",
-    price: 95,
+    name: "Sérum d'Or Pur",
+    slug: "serum-or",
+    description: "ÉCLAT DU VISAGE AUX HUILES SACRÉES",
+    price: 125,
     images: ["https://images.unsplash.com/photo-1612817288484-6f916006741a?q=80&w=1000&auto=format&fit=crop"],
-    category: "Bien-être",
+    category: "Soins Visage",
     sector: "bien-etre",
     rating: 4.9,
-    reviewsCount: 18,
-    badges: ["Naturel"],
-    variants: [{ id: "v_be2", color: "Ambre", size: "200ml", stock: 15, sku: "BE-OIL-LIFE" }]
+    reviewsCount: 88,
+    badges: ["Premium"],
+    variants: [{ id: "v_be2", color: "Cristal", size: "50ml", stock: 40, sku: "BE-SR-OR" }]
   },
 
   // --- ACCESSOIRES DE MODE ---
   {
     id: "prod_acc_01",
-    name: "Manchette 'Perles Royales'",
-    slug: "manchette-perles",
-    description: "TISSAGE DE PERLES DE VERRE ET FERMOIR DORÉ À L'OR FIN",
-    price: 380,
-    images: ["https://images.unsplash.com/photo-1535105372370-9086f688e7a0?q=80&w=1000&auto=format&fit=crop"],
-    category: "Bijoux en Perles",
+    name: "Sac 'Perles de Dahomey'",
+    slug: "sac-perles-dahomey",
+    description: "HAUTE MAROQUINERIE : 12 000 PERLES TISSÉES À LA MAIN",
+    price: 950,
+    images: ["https://images.unsplash.com/photo-1566150905458-1bf1fd15dcb4?q=80&w=1000&auto=format&fit=crop"],
+    category: "Maroquinerie Perlée",
     sector: "accessoires-mode",
     rating: 5.0,
-    reviewsCount: 15,
-    badges: ["Artisanat"],
-    variants: [{ id: "v_acc1", color: "Multicolore", size: "Ajustable", stock: 5, sku: "ACC-PRL-MN" }]
+    reviewsCount: 12,
+    badges: ["Exclusivité"],
+    variants: [{ id: "v_acc1", color: "Perlage Royal", size: "Unique", stock: 2, sku: "ACC-DAH-BAG" }]
   },
   {
     id: "prod_acc_02",
-    name: "Palette 'Reine de Saba'",
-    slug: "palette-saba",
-    description: "COFFRET MAQUILLAGE HAUTE PIGMENTATION & MIROIR DE POCHE",
-    price: 145,
-    images: ["https://images.unsplash.com/photo-1583209814683-c023dd293cc6?q=80&w=1000&auto=format&fit=crop"],
-    category: "Beauté",
+    name: "Manchette 'Reine Amina'",
+    slug: "manchette-amina",
+    description: "BRACELET LARGE EN PERLES DE VERRE ET FIL D'OR",
+    price: 320,
+    images: ["https://images.unsplash.com/photo-1611085583191-a3b1a30a5af4?q=80&w=1000&auto=format&fit=crop"],
+    category: "Bijoux Perlés",
     sector: "accessoires-mode",
-    rating: 4.8,
-    reviewsCount: 29,
-    badges: ["Luxe"],
-    variants: [{ id: "v_acc2", color: "Tons Terres", size: "Standard", stock: 20, sku: "ACC-MK-SABA" }]
+    rating: 5.0,
+    reviewsCount: 24,
+    badges: ["Héritage"],
+    variants: [{ id: "v_acc2", color: "Bronze & Or", size: "Ajustable", stock: 8, sku: "ACC-AMINA-BR" }]
   },
 
   // --- ART CULINAIRE ---
   {
     id: "prod_cul_01",
-    name: "Grand Mélange de 15 Épices",
-    slug: "melange-15-epices",
-    description: "ALCHIMIE SECRÈTE DE 15 VARIÉTÉS RARES ET PRÉCIEUSES",
-    price: 75,
+    name: "Le Grand Secret des 15",
+    slug: "grand-secret-15",
+    description: "ALCHIMIE DE 15 ÉPICES RARES : SOUUMBALA, PIMENT OISEAU, GRAINES DE PARADIS...",
+    price: 115,
     images: ["https://images.unsplash.com/photo-1532336414038-cf19250c5757?q=80&w=1000&auto=format&fit=crop"],
-    category: "Gastronomie",
+    category: "Épicerie Fine",
     sector: "art-culinaire",
     rating: 5.0,
-    reviewsCount: 112,
-    badges: ["Chef's Choice"],
-    variants: [{ id: "v_cul1", color: "Éclat d'Épices", size: "500g", stock: 100, sku: "CUL-SP-15" }]
+    reviewsCount: 245,
+    badges: ["Signature"],
+    variants: [{ id: "v_cul1", color: "Épices d'Afrique", size: "500g", stock: 100, sku: "CUL-SP-15" }]
   },
   {
     id: "prod_cul_02",
-    name: "Mortier 'Ébène & Bronze'",
-    slug: "mortier-ebene",
-    description: "PIÈCE DE COLLECTION SCULPTÉE POUR LE RITUEL DES SAVEURS",
-    price: 290,
+    name: "Service à Condiments Perlé",
+    slug: "service-condiments",
+    description: "CÉRAMIQUE NOIRE ET DÉTAILS DE PERLES DE ROCAILLE",
+    price: 240,
     images: ["https://images.unsplash.com/photo-1594913785162-e678ac0570da?q=80&w=1000&auto=format&fit=crop"],
     category: "Art de la Table",
     sector: "art-culinaire",
-    rating: 4.9,
-    reviewsCount: 7,
-    badges: ["Exclusivité"],
-    variants: [{ id: "v_cul2", color: "Noir Profond", size: "Grand Modèle", stock: 3, sku: "CUL-MOR-EB" }]
+    rating: 4.8,
+    reviewsCount: 15,
+    badges: ["Fait Main"],
+    variants: [{ id: "v_cul2", color: "Ébène", size: "Set Trio", stock: 10, sku: "CUL-SVC-PRL" }]
   }
 ];
 
 export const LOGO_SVG = (
   <svg fill="none" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="w-full h-full group-hover:scale-110 transition-transform">
-    {/* Anneau externe discret */}
     <circle cx="50" cy="50" r="40" stroke="currentColor" strokeWidth="1" strokeDasharray="1 3" className="opacity-20" />
     <circle cx="50" cy="50" r="35" stroke="currentColor" strokeWidth="2.5" />
-    
-    {/* Cloches d'alarme stylisées */}
     <path d="M25 25C22 28 18 35 20 42" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
     <path d="M75 25C78 28 82 35 80 42" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
-    
-    {/* Aiguilles de l'horloge */}
     <circle cx="50" cy="50" r="1.5" fill="currentColor" />
     <line x1="50" y1="50" x2="50" y2="28" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="animate-clock-hand" />
     <line x1="50" y1="50" x2="65" y2="50" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-    
-    {/* Pieds support */}
     <path d="M38 85L34 92" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
     <path d="M62 85L66 92" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
   </svg>
