@@ -27,7 +27,6 @@ export const FEATURED_PRODUCTS = [
     slug: "cleanshield",
     description: "LE BOUCLIER DE PURETÉ POUR VOTRE INTÉRIEUR",
     price: 195,
-    // Mise à jour avec le lien direct haute définition fourni par l'utilisateur
     images: ["https://i.ibb.co/xpqrNQF/Gemini-Generated-Image-2l064s2l064s2l06.png"], 
     category: "Bien-être",
     sector: "bien-etre",
@@ -35,6 +34,34 @@ export const FEATURED_PRODUCTS = [
     reviewsCount: 142,
     badges: ["Best Seller", "Nouveauté"],
     variants: [{ id: "v_be1", color: "Flacon Luxe", size: "500ml", stock: 15, sku: "BE-CLN-SHLD" }]
+  },
+  {
+    id: "prod_be_03",
+    name: "Hemorozime",
+    slug: "hemorozime",
+    description: "L'ÉLIXIR NATUREL DE CONFORT ET DE VITALITÉ",
+    price: 145,
+    images: ["https://i.ibb.co/HTwqDfQC/Gemini-Generated-Image-3aahk53aahk53aah.png"], 
+    category: "Bien-être",
+    sector: "bien-etre",
+    rating: 5.0,
+    reviewsCount: 56,
+    badges: ["Artisanal", "Haute Performance"],
+    variants: [{ id: "v_be3", color: "Flacon Tradition", size: "300ml", stock: 20, sku: "BE-HEM-ZIM" }]
+  },
+  {
+    id: "prod_be_04",
+    name: "Kombucha SÈGANDÉ",
+    slug: "kombucha",
+    description: "ALCHIMIE FERMENTÉE AUX PLANTES SACRÉES",
+    price: 85,
+    images: ["https://i.ibb.co/ZpQ74yBP/Gemini-Generated-Image-z0hwqpz0hwqpz0hw.png"], 
+    category: "Bien-être",
+    sector: "bien-etre",
+    rating: 4.8,
+    reviewsCount: 112,
+    badges: ["Bio", "Fermentation Naturelle"],
+    variants: [{ id: "v_be4", color: "Édition Limitée", size: "750ml", stock: 35, sku: "BE-KOM-BCH" }]
   },
   {
     id: "prod_be_02",
