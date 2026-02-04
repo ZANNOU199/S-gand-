@@ -12,7 +12,8 @@ const Cart: React.FC = () => {
     return (
       <div className="bg-background-dark min-h-[70vh] flex flex-col items-center justify-center text-center p-6">
         <div className="text-white/10 mb-8">
-          <ShoppingBag size={80} md:size={96} />
+          {/* Fix: Replaced invalid md:size prop with Tailwind responsive classes to handle dynamic sizing for Lucide ShoppingBag icon */}
+          <ShoppingBag className="w-20 h-20 md:w-24 md:h-24" />
         </div>
         <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Your bag is empty</h2>
         <p className="text-sand/50 mb-10 max-w-sm text-sm">Items added to your bag will appear here. Discover our heritage collections to find your perfect match.</p>

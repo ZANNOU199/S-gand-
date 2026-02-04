@@ -134,7 +134,8 @@ const Home: React.FC = () => {
       <section className="py-16 md:py-24 max-w-[1440px] mx-auto px-6 md:px-8">
         <div className="bg-charcoal/30 rounded-2xl md:rounded-3xl p-8 md:p-24 text-center relative overflow-hidden border border-white/5">
           <div className="text-primary opacity-30 flex justify-center mb-6 md:mb-10">
-            <Quote size={32} md:size={48} fill="currentColor" />
+            {/* Fix: Replaced invalid md:size prop with Tailwind responsive classes to handle dynamic sizing for Lucide Quote icon */}
+            <Quote className="w-8 h-8 md:w-12 md:h-12" fill="currentColor" />
           </div>
           <p className="text-xl md:text-3xl lg:text-4xl font-light italic leading-relaxed mb-8 md:mb-12 max-w-4xl mx-auto relative z-10 text-sand/90">
             "The attention to detail and the sheer soul poured into the Sahel Collection is unlike anything I've seen in modern luxury."

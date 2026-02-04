@@ -5,7 +5,7 @@ export const SECTORS = [
   { 
     name: 'Nid du Bien-Être', 
     slug: 'bien-etre', 
-    image: 'https://images.unsplash.com/photo-1609220136736-443140cffec6?q=80&w=1400&auto=format&fit=crop' // Famille africaine rayonnante (Retour au visuel préféré)
+    image: 'https://images.unsplash.com/photo-1609220136736-443140cffec6?q=80&w=1400&auto=format&fit=crop' // Famille africaine rayonnante
   },
   { 
     name: "Accessoires de Mode", 
@@ -23,17 +23,17 @@ export const FEATURED_PRODUCTS = [
   // --- NID DU BIEN-ÊTRE ---
   {
     id: "prod_be_01",
-    name: "Source de Vie",
-    slug: "source-vie",
-    description: "LE SECRET D'UNE VITALITÉ FAMILIALE ÉCLATANTE",
+    name: "CleanShield",
+    slug: "cleanshield",
+    description: "LE BOUCLIER DE PURETÉ POUR VOTRE INTÉRIEUR",
     price: 195,
-    images: ["https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=1000&auto=format&fit=crop"],
+    images: ["https://i.ibb.co/v74MS8X/clean-shield.png"],
     category: "Bien-être",
     sector: "bien-etre",
     rating: 5.0,
     reviewsCount: 142,
-    badges: ["Best Seller", "Famille"],
-    variants: [{ id: "v_be1", color: "Pack Royal", size: "Cure 3 Mois", stock: 15, sku: "BE-SRC-VIE" }]
+    badges: ["Best Seller", "Nouveauté"],
+    variants: [{ id: "v_be1", color: "Flacon Luxe", size: "500ml", stock: 15, sku: "BE-CLN-SHLD" }]
   },
   {
     id: "prod_be_02",

@@ -130,7 +130,8 @@ const UserDashboard: React.FC = () => {
                         >
                           <div className="flex items-center gap-5 md:gap-6">
                             <div className="size-10 md:size-12 bg-white/5 rounded-full flex items-center justify-center text-primary shrink-0">
-                              <Package size={18} md:size={20} />
+                              {/* Fix: Replaced invalid md:size prop with Tailwind responsive classes to handle dynamic sizing for Lucide Package icon */}
+                              <Package className="w-[18px] h-[18px] md:w-5 md:h-5" />
                             </div>
                             <div>
                               <p className="font-black text-xs md:text-sm uppercase">{order.id}</p>
