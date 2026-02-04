@@ -64,6 +64,34 @@ export const FEATURED_PRODUCTS = [
     variants: [{ id: "v_be4", color: "Édition Limitée", size: "750ml", stock: 35, sku: "BE-KOM-BCH" }]
   },
   {
+    id: "prod_be_05",
+    name: "Vin de Dahomey",
+    slug: "vin-dahomey",
+    description: "UN CRU D'EXCEPTION AUX SAVEURS DU TERROIR",
+    price: 160,
+    images: ["https://i.ibb.co/KnKqpG0/Gemini-Generated-Image-e7jz7ke7jz7ke7jz.png"], 
+    category: "Bien-être",
+    sector: "bien-etre",
+    rating: 5.0,
+    reviewsCount: 42,
+    badges: ["Héritage", "Nouveauté"],
+    variants: [{ id: "v_be5", color: "Bouteille Prestige", size: "750ml", stock: 12, sku: "BE-VIN-DAH" }]
+  },
+  {
+    id: "prod_be_06",
+    name: "Liqueur SÈGANDÉ",
+    slug: "liqueur-segande",
+    description: "L'ESSENCE DES PLANTES RARES EN GOUTTES PRÉCIEUSES",
+    price: 210,
+    images: ["https://i.ibb.co/4nWPM2hK/Gemini-Generated-Image-xv8wjixv8wjixv8w.png"], 
+    category: "Bien-être",
+    sector: "bien-etre",
+    rating: 4.9,
+    reviewsCount: 28,
+    badges: ["Signature", "Premium"],
+    variants: [{ id: "v_be6", color: "Flacon Cristal", size: "500ml", stock: 10, sku: "BE-LIQ-SEG" }]
+  },
+  {
     id: "prod_be_02",
     name: "Sérum d'Or Pur",
     slug: "serum-or",
