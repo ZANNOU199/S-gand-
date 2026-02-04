@@ -64,6 +64,20 @@ export const FEATURED_PRODUCTS = [
     variants: [{ id: "v_be4", color: "Édition Limitée", size: "750ml", stock: 35, sku: "BE-KOM-BCH" }]
   },
   {
+    id: "prod_be_07",
+    name: "Eau Alcaline SÈGANDÉ",
+    slug: "eau-alcaline",
+    description: "PURETÉ ET ÉQUILIBRE MINÉRAL POUR UNE HYDRATATION SUPÉRIEURE",
+    price: 55,
+    images: ["https://i.ibb.co/sdYGKnv6/Gemini-Generated-Image-spb3x7spb3x7spb3.png"], 
+    category: "Bien-être",
+    sector: "bien-etre",
+    rating: 5.0,
+    reviewsCount: 210,
+    badges: ["Pureté", "Équilibre"],
+    variants: [{ id: "v_be7", color: "Bouteille Verre", size: "750ml", stock: 100, sku: "BE-H2O-ALC" }]
+  },
+  {
     id: "prod_be_05",
     name: "Vin de Dahomey",
     slug: "vin-dahomey",
