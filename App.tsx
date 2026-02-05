@@ -18,12 +18,19 @@ import AdminDashboard from './pages/AdminDashboard';
 import LiveSupport from './components/LiveSupport';
 import { SECTORS, FEATURED_PRODUCTS } from './constants';
 
-// --- CMS Context ---
+// --- CMS Types ---
 interface EditorialSection {
   title: string;
   quote: string;
   text: string;
   image: string;
+}
+
+interface Sector {
+  name: string;
+  slug: string;
+  image: string;
+  subCategories: string[];
 }
 
 interface CMSContextType {
@@ -40,9 +47,6 @@ interface CMSContextType {
       phone2: string;
       address: string;
     };
-    categoryMeta: {
-      [key: string]: { title: string; description: string };
-    };
     featuredProductIds: string[];
     editorial: {
       heroTitle: string;
@@ -53,12 +57,12 @@ interface CMSContextType {
       aboutText: string;
     };
   };
-  sectors: typeof SECTORS;
+  sectors: Sector[];
   products: Product[];
   isAdminAuthenticated: boolean;
   setAdminAuthenticated: (val: boolean) => void;
   updateSiteConfig: (config: any) => void;
-  updateSectors: (sectors: any[]) => void;
+  updateSectors: (sectors: Sector[]) => void;
   updateProducts: (products: Product[]) => void;
   toggleFeaturedProduct: (productId: string) => void;
 }
@@ -117,12 +121,6 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         phone2: "+229 64 01 70 66",
         address: "Victoria Island, Lagos, Nigeria"
       },
-      categoryMeta: {
-        "all": { title: "Le Monde Entier", description: "Découvrez l'intégralité de nos chefs-d'œuvre artisanaux." },
-        "bien-etre": { title: "Nid du Bien-Être", description: "L'équilibre parfait entre rituels ancestraux et pureté moderne." },
-        "accessoires-mode": { title: "Accessoires de Mode", description: "L'élégance africaine portée au sommet du luxe contemporain." },
-        "art-culinaire": { title: "Art Culinaire", description: "Les saveurs du terroir sublimées par un savoir-faire d'exception." }
-      },
       featuredProductIds: FEATURED_PRODUCTS.slice(0, 4).map(p => p.id),
       editorial: {
         heroTitle: "Savoir-Faire & Héritage",
@@ -142,9 +140,15 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     };
   });
 
-  const [sectors, setSectors] = useState(() => {
+  const [sectors, setSectors] = useState<Sector[]>(() => {
     const saved = localStorage.getItem('segande_sectors');
-    return saved ? JSON.parse(saved) : SECTORS;
+    if (saved) return JSON.parse(saved);
+    // Initial data with subcategories
+    return SECTORS.map(s => ({
+      ...s,
+      subCategories: s.slug === 'bien-etre' ? ['Bien-être', 'Artisanat'] : 
+                     s.slug === 'accessoires-mode' ? ['Maroquinerie', 'Bijoux', 'Textiles'] : ['Art Culinaire']
+    }));
   });
 
   const [products, setProducts] = useState<Product[]>(() => {

@@ -10,7 +10,6 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   const { siteConfig, sectors, products } = useCMS();
 
-  // Filtrer les 4 produits sélectionnés via le CMS pour la Home
   const sahelCollection = products
     .filter(p => siteConfig.featuredProductIds.includes(p.id))
     .slice(0, 4);
@@ -57,12 +56,13 @@ const Home: React.FC = () => {
               key={sector.slug}
               whileHover={{ scale: 0.98 }}
               onClick={() => navigate(`/category/${sector.slug}`)}
-              className="group relative aspect-[4/5] sm:aspect-[3/4] overflow-hidden rounded-xl cursor-pointer"
+              className="group relative aspect-[4/5] sm:aspect-[3/4] overflow-hidden rounded-3xl cursor-pointer bg-charcoal"
             >
-              <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style={{ backgroundImage: `url('${sector.image}')` }}></div>
-              <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors"></div>
-              <div className="absolute bottom-0 left-0 p-6 md:p-8 w-full bg-gradient-to-t from-black/60 to-transparent">
+              <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100" style={{ backgroundImage: `url('${sector.image || "https://images.unsplash.com/photo-1549490349-8643362247b5"}')` }}></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+              <div className="absolute bottom-0 left-0 p-6 md:p-8 w-full">
                 <h3 className="text-2xl md:text-3xl font-black text-white mb-2 uppercase tracking-tighter">{sector.name}</h3>
+                <div className="w-10 h-0.5 bg-primary group-hover:w-full transition-all duration-500"></div>
               </div>
             </motion.div>
           ))}
@@ -73,7 +73,7 @@ const Home: React.FC = () => {
         <div className="max-w-[1440px] mx-auto px-6 md:px-8">
           <div className="flex flex-col md:flex-row justify-between items-end mb-12 md:mb-16 gap-6 text-center md:text-left">
             <div>
-              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight mb-4 leading-none">The Sahel Collection</h2>
+              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight mb-4 leading-none text-white">The Sahel Collection</h2>
               <p className="text-sand/40 text-xs md:text-sm max-w-xl uppercase font-bold tracking-widest leading-relaxed">
                 Selection curated by our designers.
               </p>
@@ -90,13 +90,13 @@ const Home: React.FC = () => {
 
       <section className="relative overflow-hidden bg-terracotta/20 py-16 md:py-24">
         <div className="max-w-[1440px] mx-auto px-6 md:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-24 items-center">
-          <div className="relative aspect-square sm:aspect-video rounded-xl overflow-hidden shadow-2xl border border-white/10 order-2 lg:order-1">
+          <div className="relative aspect-square sm:aspect-video rounded-3xl overflow-hidden shadow-2xl border border-white/10 order-2 lg:order-1 bg-charcoal">
             <img className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfJlmBSowEjlbIFfda3GxFvnQdRa6cYM_Ll4IaA7gSE6BAKNsx657dPZqJK-20U4b-JfvY0q9NN1krfY8oPbxxxCtRpkgE7MgoPtnM9ml-q6wVZQk1TvKe8Vz3cPWosvtHk_wrz6fZz-saNYECI86SaTKxLvWjm6ONSqHaYzv4MAIOm-lqyJ8-c0nJAWx5JPVN6a8upMqKrNSPtB8OqHnd2Eaxl1dFbEuanBMMRzmBaeg1RGOBh-m3e5dCI4RRH-brbb2ZekHqLnCT" alt="Artisan hands" />
           </div>
           <div className="space-y-6 md:space-y-10 order-1 lg:order-2">
             <span className="text-primary uppercase tracking-[0.4em] text-[10px] font-black">OUR ETHOS</span>
-            <h2 className="text-4xl md:text-6xl font-black leading-[1.1] md:leading-[0.9] uppercase tracking-tighter">Ancestral Roots,<br/>Modern Vision</h2>
-            <button onClick={() => navigate('/contact')} className="flex items-center gap-4 text-[10px] md:text-[11px] font-black uppercase tracking-[0.3em] hover:text-primary transition-all group">
+            <h2 className="text-4xl md:text-6xl font-black leading-[1.1] md:leading-[0.9] uppercase tracking-tighter text-white">Ancestral Roots,<br/>Modern Vision</h2>
+            <button onClick={() => navigate('/contact')} className="flex items-center gap-4 text-[10px] md:text-[11px] font-black uppercase tracking-[0.3em] text-white hover:text-primary transition-all group">
               READ THE FULL STORY <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
             </button>
           </div>

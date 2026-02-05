@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useCMS } from '../App';
 import ProductCard from '../components/ProductCard';
-import { ChevronLeft, ChevronRight, Filter, LayoutGrid } from 'lucide-react';
+import { ChevronRight, LayoutGrid } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ITEMS_PER_PAGE = 6;
@@ -11,10 +11,10 @@ const ITEMS_PER_PAGE = 6;
 const Category: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [activeFilter, setActiveFilter] = useState('All');
-  const [priceLimit, setPriceLimit] = useState(500000); 
+  const [priceLimit, setPriceLimit] = useState(1000000); 
   const [currentPage, setCurrentPage] = useState(1);
   const gridRef = useRef<HTMLDivElement>(null);
-  const { products: allProducts, sectors, siteConfig } = useCMS();
+  const { products: allProducts, sectors } = useCMS();
 
   useEffect(() => {
     setActiveFilter('All');
@@ -23,18 +23,19 @@ const Category: React.FC = () => {
 
   const currentSector = sectors.find(s => s.slug === slug);
   const isAll = slug === 'all';
-  const meta = siteConfig.categoryMeta[slug || 'all'] || { title: slug, description: "" };
+  
+  const title = isAll ? "Le Monde Entier" : currentSector?.name || slug;
+  const description = isAll ? "Découvrez l'intégralité de nos chefs-d'œuvre artisanaux." : `Plongez dans l'univers ${currentSector?.name || slug}.`;
 
   const filteredBySector = useMemo(() => {
     if (isAll) return allProducts;
     return allProducts.filter(p => p.sector === slug);
   }, [slug, allProducts, isAll]);
 
-  const dynamicSubCategories = useMemo(() => {
-    const categories = new Set<string>();
-    filteredBySector.forEach(p => categories.add(p.category));
-    return ['All', ...Array.from(categories)].sort();
-  }, [filteredBySector]);
+  const subCategories = useMemo(() => {
+    if (isAll) return ['All'];
+    return ['All', ...(currentSector?.subCategories || [])];
+  }, [currentSector, isAll]);
 
   const finalProducts = useMemo(() => {
     let filtered = filteredBySector;
@@ -59,19 +60,19 @@ const Category: React.FC = () => {
     <div className="bg-background-dark min-h-screen">
       <section className="relative h-[40vh] md:h-[50vh] w-full flex items-center justify-center overflow-hidden border-b border-white/5">
         <div 
-          className="absolute inset-0 bg-cover bg-center opacity-20 scale-105" 
+          className="absolute inset-0 bg-cover bg-center opacity-30 scale-105" 
           style={{ backgroundImage: `url('${currentSector?.image || "https://images.unsplash.com/photo-1549490349-8643362247b5"}')` }}
         ></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-background-dark/20 via-background-dark/60 to-background-dark"></div>
-        <div className="relative z-10 text-center px-6 max-w-4xl">
+        <div className="absolute inset-0 bg-gradient-to-b from-background-dark/20 via-background-dark/80 to-background-dark"></div>
+        <div className="relative z-10 text-center px-6 max-w-4xl animate-in fade-in duration-700">
           <nav className="flex items-center justify-center gap-2 md:gap-3 text-[9px] font-black uppercase tracking-[0.4em] text-primary mb-6">
             <Link to="/" className="hover:text-white transition-colors">Maison</Link>
             <ChevronRight size={10} className="text-white/20" />
-            <span className="text-white">{meta.title}</span>
+            <span className="text-white">{title}</span>
           </nav>
-          <h1 className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-white mb-6 leading-none">{meta.title}</h1>
+          <h1 className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-white mb-6 leading-none">{title}</h1>
           <p className="text-sand/50 text-xs md:text-sm font-bold uppercase tracking-[0.2em] max-w-2xl mx-auto leading-relaxed">
-            {meta.description}
+            {description}
           </p>
         </div>
       </section>
@@ -82,10 +83,10 @@ const Category: React.FC = () => {
             <div>
               <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-6 border-b border-white/10 pb-4">Conservation</h3>
               <div className="flex flex-row lg:flex-col gap-2 overflow-x-auto pb-4 lg:pb-0 scrollbar-hide">
-                {dynamicSubCategories.map(cat => (
+                {subCategories.map(cat => (
                   <button 
                     key={cat} onClick={() => { setActiveFilter(cat); setCurrentPage(1); }}
-                    className={`whitespace-nowrap lg:w-full text-left transition-all px-4 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest ${activeFilter === cat ? 'bg-primary text-black' : 'text-sand/30 hover:bg-white/5'}`}
+                    className={`whitespace-nowrap lg:w-full text-left transition-all px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest ${activeFilter === cat ? 'bg-primary text-black' : 'text-sand/30 hover:bg-white/5'}`}
                   >
                     {cat}
                   </button>
@@ -114,7 +115,7 @@ const Category: React.FC = () => {
 
             <AnimatePresence mode="wait">
               <motion.div 
-                key={`${slug}-${currentPage}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                key={`${slug}-${currentPage}-${activeFilter}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                 className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-16"
               >
                 {paginatedProducts.map(p => <ProductCard key={p.id} product={p as any} />)}
@@ -124,7 +125,7 @@ const Category: React.FC = () => {
             {totalPages > 1 && (
               <div className="mt-20 flex justify-center gap-3">
                 {Array.from({ length: totalPages }).map((_, i) => (
-                  <button key={i} onClick={() => handlePageChange(i + 1)} className={`size-10 rounded-lg text-[10px] font-black ${currentPage === i+1 ? 'bg-primary text-black' : 'bg-white/5'}`}>
+                  <button key={i} onClick={() => handlePageChange(i + 1)} className={`size-10 rounded-xl text-[10px] font-black ${currentPage === i+1 ? 'bg-primary text-black shadow-lg shadow-primary/20' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}>
                     {i+1}
                   </button>
                 ))}
