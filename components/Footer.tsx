@@ -2,35 +2,35 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { LOGO_SVG } from '../constants';
-import { Globe, Share2, ShieldCheck, Truck, Leaf, Phone } from 'lucide-react';
+import { ShieldCheck, Truck, Leaf, Phone } from 'lucide-react';
 import { useCMS } from '../App';
 
 const Footer: React.FC = () => {
-  const { sectors } = useCMS();
+  const { sectors, siteConfig } = useCMS();
+  const { contact, footer } = siteConfig;
 
   return (
-    <footer className="bg-charcoal border-t border-white/5 pt-16 md:pt-20 pb-10 text-white">
+    <footer className="bg-charcoal border-t border-white/5 pt-20 pb-10 text-white">
       <div className="max-w-[1440px] mx-auto px-6 md:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16 md:mb-20">
-          <div className="lg:col-span-1 space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
+          <div className="space-y-6">
             <div className="flex items-center gap-3">
               <div className="size-8 text-mint drop-shadow-[0_0_5px_rgba(0,223,129,0.2)]">
                 {LOGO_SVG}
               </div>
               <h2 className="text-xl font-black brand-font tracking-tighter text-mint">SÈGANDÉ</h2>
             </div>
-            <p className="text-sand/40 text-xs md:text-sm leading-relaxed">
-              Le temps est l'artisan ultime. Nos collections célèbrent l'héritage africain à travers une vision contemporaine et durable.
+            <p className="text-sand/40 text-xs md:text-sm leading-relaxed uppercase font-bold tracking-tight">
+              {footer.aboutText}
             </p>
-            {/* Direct Contact from Image */}
             <div className="space-y-3 pt-2">
               <div className="flex items-center gap-3 text-[11px] font-black tracking-widest text-primary">
                 <Phone size={14} />
-                <a href="tel:+22996113738" className="hover:text-white transition-colors">+229 96 11 37 38</a>
+                <a href={`tel:${contact.phone1.replace(/\s/g,'')}`} className="hover:text-white transition-colors">{contact.phone1}</a>
               </div>
               <div className="flex items-center gap-3 text-[11px] font-black tracking-widest text-primary">
                 <Phone size={14} />
-                <a href="tel:+22964017066" className="hover:text-white transition-colors">+229 64 01 70 66</a>
+                <a href={`tel:${contact.phone2.replace(/\s/g,'')}`} className="hover:text-white transition-colors">{contact.phone2}</a>
               </div>
             </div>
           </div>
@@ -61,11 +61,7 @@ const Footer: React.FC = () => {
             <h4 className="text-white font-bold text-[10px] uppercase tracking-widest mb-6">Initié SÈGANDÉ</h4>
             <p className="text-sand/40 text-[10px] uppercase font-black leading-relaxed">Accédez aux ventes privées et découvrez l'histoire de nos artisans.</p>
             <form className="flex flex-col gap-3" onSubmit={e => e.preventDefault()}>
-              <input 
-                className="bg-white/5 border border-white/10 rounded-lg px-4 py-4 text-[11px] font-black uppercase tracking-widest focus:ring-primary focus:border-primary outline-none transition-all" 
-                placeholder="VOTRE E-MAIL" 
-                type="email" 
-              />
+              <input className="bg-white/5 border border-white/10 rounded-lg px-4 py-4 text-[11px] font-black uppercase tracking-widest focus:ring-primary focus:border-primary outline-none transition-all" placeholder="VOTRE E-MAIL" type="email" />
               <button className="bg-primary text-background-dark font-black text-[10px] uppercase py-4 rounded-lg tracking-widest hover:bg-white transition-all">REJOINDRE</button>
             </form>
           </div>

@@ -1,7 +1,6 @@
 
 import React, { useState, createContext, useContext, useEffect } from 'react';
-import { HashRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { CartItem, Product } from './types';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -33,11 +32,25 @@ interface CMSContextType {
     heroSubtitle: string;
     heroImage: string;
     announcement: string;
+    contact: {
+      title: string;
+      subtitle: string;
+      email: string;
+      phone1: string;
+      phone2: string;
+      address: string;
+    };
+    categoryMeta: {
+      [key: string]: { title: string; description: string };
+    };
     featuredProductIds: string[];
     editorial: {
       heroTitle: string;
       heroImage: string;
       sections: EditorialSection[];
+    };
+    footer: {
+      aboutText: string;
     };
   };
   sectors: typeof SECTORS;
@@ -96,6 +109,20 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       heroSubtitle: "Authentic craftsmanship meets contemporary luxury. Discover the soul of artisanal heritage through the Sahel Collection.",
       heroImage: "https://lh3.googleusercontent.com/aida-public/AB6AXuDBYQmVC8vZfGs0ngaCbdT5xtxUTngbs-h4NHeitJaxHnviefXNQBZTjJcLAP82o9MS5sLQaSnc8bcg5sGmGFbIdDvht7ukSV8GdFMC-JQw3x7sN3ychXmMLhPuSq1KhZdR-98ElfhTrvFPTas00RrYfakji60hzlLK-BN6-qto-oZmQlVQJ_4As3FN5FR0lb5mgcNUlqUapkOeHqhNIRdRNqq44HrZMH41WoMfCjpUfEDmVYmqsyVwvtI7KmjfETuSbUZ2vKg1rKDu",
       announcement: "LIVRAISON MONDE OFFERTE | COLLECTION SAHEL DISPONIBLE",
+      contact: {
+        title: "Personal Concierge",
+        subtitle: "Our specialized team is available to assist you with bespoke requests, international shipping inquiries, or private collection viewings.",
+        email: "concierge@segande.com",
+        phone1: "+229 96 11 37 38",
+        phone2: "+229 64 01 70 66",
+        address: "Victoria Island, Lagos, Nigeria"
+      },
+      categoryMeta: {
+        "all": { title: "Le Monde Entier", description: "Découvrez l'intégralité de nos chefs-d'œuvre artisanaux." },
+        "bien-etre": { title: "Nid du Bien-Être", description: "L'équilibre parfait entre rituels ancestraux et pureté moderne." },
+        "accessoires-mode": { title: "Accessoires de Mode", description: "L'élégance africaine portée au sommet du luxe contemporain." },
+        "art-culinaire": { title: "Art Culinaire", description: "Les saveurs du terroir sublimées par un savoir-faire d'exception." }
+      },
       featuredProductIds: FEATURED_PRODUCTS.slice(0, 4).map(p => p.id),
       editorial: {
         heroTitle: "Savoir-Faire & Héritage",
@@ -108,6 +135,9 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDbqRE-SdeillU7VtjhWINQ67vBXlFwlB595kbU_k-0YxwNUwaDepWnsrGxNPU2wKF2odLhLCCYFgZOIBTcypLcE4PgAfSqcBy2aifoLonGwlOY0XG0wULCXxQxfa7_L8m4_zT3328jMEumQFLaMnJZWejSx9Jgeyjfv5Mvd54--tF_h0JVaU10c0hIC3s__Bh0Mt4RN7xc5WoU6v9de4sSpMxEjipKL4Z8-fAZBArFdBLjWN_G49lVxeQwzj3ObL6_ke6vGln5iQAA"
           }
         ]
+      },
+      footer: {
+        aboutText: "Le temps est l'artisan ultime. Nos collections célèbrent l'héritage africain à travers une vision contemporaine et durable."
       }
     };
   });
