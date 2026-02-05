@@ -16,21 +16,23 @@ const Home: React.FC = () => {
     .filter(p => siteConfig.featuredProductIds.includes(p.id))
     .slice(0, 4);
 
+  // URL WebP forcée pour le Hero
+  const heroWebp = `${siteConfig.heroImage}?auto=format&fm=webp&q=85`;
+
   return (
     <div className="bg-background-dark text-white">
       <section className="relative min-h-[80vh] md:h-[90vh] w-full overflow-hidden flex items-end bg-charcoal">
-        <div 
-          className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${heroLoaded ? 'opacity-100' : 'opacity-0'}`} 
-          style={{ backgroundImage: `url('${siteConfig.heroImage}')` }}
-        >
-          {/* Invisible img for onload detection */}
+        <picture className="absolute inset-0">
+          <source srcSet={heroWebp} type="image/webp" />
+          {/* Fix: fetchPriority attribute must be camelCased in React to satisfy TypeScript and DOM attribute expectations */}
           <img 
-            src={siteConfig.heroImage} 
-            className="hidden" 
-            onLoad={() => setHeroLoaded(true)} 
-            alt="hero probe"
+            src={siteConfig.heroImage}
+            alt="SÈGANDÉ Hero"
+            fetchPriority="high"
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${heroLoaded ? 'opacity-100' : 'opacity-0'}`} 
+            onLoad={() => setHeroLoaded(true)}
           />
-        </div>
+        </picture>
         <div className="absolute inset-0 luxury-gradient"></div>
         <div className="relative w-full flex flex-col items-center justify-end pb-16 md:pb-24 text-center px-6 max-w-4xl mx-auto">
           <motion.h2 
@@ -69,7 +71,7 @@ const Home: React.FC = () => {
               className="group relative aspect-[4/5] sm:aspect-[3/4] overflow-hidden rounded-xl cursor-pointer bg-white/5"
             >
               <img 
-                src={sector.image} 
+                src={`${sector.image}?auto=format&fm=webp&w=800`} 
                 loading="lazy"
                 decoding="async"
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-60 group-hover:opacity-100"
@@ -110,7 +112,7 @@ const Home: React.FC = () => {
               loading="lazy"
               decoding="async"
               className="w-full h-full object-cover" 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfJlmBSowEjlbIFfda3GxFvnQdRa6cYM_Ll4IaA7gSE6BAKNsx657dPZqJK-20U4b-JfvY0q9NN1krfY8oPbxxxCtRpkgE7MgoPtnM9ml-q6wVZQk1TvKe8Vz3cPWosvtHk_wrz6fZz-saNYECI86SaTKxLvWjm6ONSqHaYzv4MAIOm-lqyJ8-c0nJAWx5JPVN6a8upMqKrNSPtB8OqHnd2Eaxl1dFbEuanBMMRzmBaeg1RGOBh-m3e5dCI4RRH-brbb2ZekHqLnCT" 
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfJlmBSowEjlbIFfda3GxFvnQdRa6cYM_Ll4IaA7gSE6BAKNsx657dPZqJK-20U4b-JfvY0q9NN1krfY8oPbxxxCtRpkgE7MgoPtnM9ml-q6wVZQk1TvKe8Vz3cPWosvtHk_wrz6fZz-saNYECI86SaTKxLvWjm6ONSqHaYzv4MAIOm-lqyJ8-c0nJAWx5JPVN6a8upMqKrNSPtB8OqHnd2Eaxl1dFbEuanBMMRzmBaeg1RGOBh-m3e5dCI4RRH-brbb2ZekHqLnCT?auto=format&fm=webp" 
               alt="Artisan hands" 
             />
           </div>
