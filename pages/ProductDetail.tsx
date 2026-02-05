@@ -15,6 +15,7 @@ const ProductDetail: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
   const [showToast, setShowToast] = useState(false);
+  const [mainImageLoaded, setMainImageLoaded] = useState(false);
 
   if (!product) return <div className="p-20 text-center text-white">Product not found.</div>;
 
@@ -26,7 +27,6 @@ const ProductDetail: React.FC = () => {
 
   return (
     <div className="bg-background-dark min-h-screen pt-6 md:pt-12 pb-24">
-      {/* Toast Notification - Mobile Friendly */}
       <AnimatePresence>
         {showToast && (
           <motion.div 
@@ -37,17 +37,16 @@ const ProductDetail: React.FC = () => {
           >
             <CheckCircle className="text-green-600 shrink-0" />
             <div className="flex-1">
-              <p className="font-bold text-sm">Added to Bag</p>
-              <button onClick={() => navigate('/cart')} className="text-xs underline text-primary font-bold uppercase tracking-wider">View Bag</button>
+              <p className="font-bold text-sm">Ajouté au sac</p>
+              <button onClick={() => navigate('/cart')} className="text-xs underline text-primary font-bold uppercase tracking-wider">Voir le panier</button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
       <div className="max-w-[1440px] mx-auto px-6 md:px-8">
-        {/* Breadcrumbs - Hidden or simplified on very small screens */}
         <nav className="hidden sm:flex items-center gap-2 text-[10px] uppercase tracking-widest text-sand/50 mb-8 md:mb-12 overflow-x-auto whitespace-nowrap">
-          <Link to="/" className="hover:text-primary transition-colors">Home</Link>
+          <Link to="/" className="hover:text-primary transition-colors">Accueil</Link>
           <ChevronRight size={10} />
           <Link to={`/category/${product.sector}`} className="hover:text-primary transition-colors">{product.sector}</Link>
           <ChevronRight size={10} />
@@ -55,32 +54,43 @@ const ProductDetail: React.FC = () => {
         </nav>
 
         <div className="flex flex-col lg:flex-row gap-10 md:gap-20">
-          {/* Gallery - Stacked on Mobile */}
           <div className="flex-1 flex flex-col md:flex-row gap-4 md:gap-6">
             <div className="flex flex-row md:flex-col gap-3 order-2 md:order-1 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
               {product.images.map((img, idx) => (
                 <button 
                   key={idx}
-                  onClick={() => setActiveImage(idx)}
-                  className={`w-16 md:w-20 aspect-[3/4] rounded-lg overflow-hidden border-2 transition-all shrink-0 ${activeImage === idx ? 'border-primary' : 'border-transparent opacity-50'}`}
+                  onClick={() => { setActiveImage(idx); setMainImageLoaded(false); }}
+                  className={`w-16 md:w-20 aspect-[3/4] rounded-lg overflow-hidden border-2 transition-all shrink-0 bg-charcoal ${activeImage === idx ? 'border-primary' : 'border-transparent opacity-50'}`}
                 >
-                  <img src={img} alt={`${product.name} view ${idx}`} className="w-full h-full object-cover" />
+                  <img 
+                    src={img} 
+                    loading="lazy"
+                    decoding="async"
+                    alt={`${product.name} view ${idx}`} 
+                    className="w-full h-full object-cover" 
+                  />
                 </button>
               ))}
             </div>
             <div className="flex-1 relative aspect-[3/4] rounded-xl overflow-hidden bg-charcoal order-1 md:order-2">
+              {!mainImageLoaded && (
+                <div className="absolute inset-0 bg-white/5 animate-pulse flex items-center justify-center">
+                   <div className="w-10 h-10 border-2 border-white/5 rounded-full border-t-primary animate-spin" />
+                </div>
+              )}
               <motion.img 
                 key={activeImage}
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                animate={{ opacity: mainImageLoaded ? 1 : 0 }}
                 src={product.images[activeImage]} 
                 alt={product.name} 
-                className="w-full h-full object-cover"
+                decoding="async"
+                onLoad={() => setMainImageLoaded(true)}
+                className="w-full h-full object-contain"
               />
             </div>
           </div>
 
-          {/* Info - Proper spacing and full-width buttons */}
           <div className="w-full lg:w-[450px] space-y-6 md:space-y-8">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -92,19 +102,18 @@ const ProductDetail: React.FC = () => {
                 </div>
               </div>
               <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white leading-tight">{product.name}</h1>
-              <p className="text-xl md:text-2xl font-light text-primary">€{product.price}.00</p>
+              <p className="text-xl md:text-2xl font-black text-primary">{product.price.toLocaleString()} FCFA</p>
             </div>
 
             <p className="text-sm leading-relaxed text-sand/70">{product.description}</p>
 
             <div className="h-px bg-white/10"></div>
 
-            {/* Selection */}
             <div className="space-y-6">
               <div className="space-y-4">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="font-semibold text-white uppercase tracking-widest">Select Variant</span>
-                  <button className="text-primary hover:underline underline-offset-4 font-bold uppercase text-[10px]">Size Guide</button>
+                  <span className="font-semibold text-white uppercase tracking-widest">Variante</span>
+                  <button className="text-primary hover:underline underline-offset-4 font-bold uppercase text-[10px]">Guide des tailles</button>
                 </div>
                 <div className="flex flex-wrap gap-2 md:gap-3">
                   {product.variants.map(v => (
@@ -133,21 +142,20 @@ const ProductDetail: React.FC = () => {
                   onClick={handleAddToCart}
                   className="flex-1 bg-primary text-background-dark font-black py-4 md:py-5 rounded-lg uppercase tracking-widest text-[11px] hover:bg-white transition-all shadow-xl"
                 >
-                  Add to Cart
+                  Ajouter au Panier
                 </button>
               </div>
             </div>
 
-            {/* Accordions */}
             <div className="pt-4 md:pt-8 space-y-4">
-              {['Craftsmanship', 'Shipping & Returns', 'Composition'].map(item => (
+              {['Artisanat', 'Livraison & Retours', 'Composition'].map(item => (
                 <details key={item} className="group border-b border-white/10 pb-4">
                   <summary className="flex items-center justify-between cursor-pointer list-none text-[11px] font-black uppercase tracking-widest text-white group-open:text-primary transition-colors">
                     {item}
                     <ChevronDown size={14} className="transition-transform group-open:rotate-180" />
                   </summary>
                   <p className="mt-4 text-xs text-sand/60 leading-relaxed">
-                    Details about {item.toLowerCase()} are meticulously verified by our boutique curators to ensure absolute quality and authenticity.
+                    Les détails sur l'{item.toLowerCase()} sont méticuleusement vérifiés par nos conservateurs pour garantir une qualité absolue.
                   </p>
                 </details>
               ))}

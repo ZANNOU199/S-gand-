@@ -12,13 +12,12 @@ const Cart: React.FC = () => {
     return (
       <div className="bg-background-dark min-h-[70vh] flex flex-col items-center justify-center text-center p-6">
         <div className="text-white/10 mb-8">
-          {/* Fix: Replaced invalid md:size prop with Tailwind responsive classes to handle dynamic sizing for Lucide ShoppingBag icon */}
           <ShoppingBag className="w-20 h-20 md:w-24 md:h-24" />
         </div>
-        <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Your bag is empty</h2>
-        <p className="text-sand/50 mb-10 max-w-sm text-sm">Items added to your bag will appear here. Discover our heritage collections to find your perfect match.</p>
+        <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Votre sac est vide</h2>
+        <p className="text-sand/50 mb-10 max-w-sm text-sm">Découvrez nos collections pour trouver votre pièce idéale.</p>
         <Link to="/" className="bg-primary text-background-dark px-10 py-4 rounded-lg font-black uppercase tracking-widest text-xs hover:bg-white transition-all w-full sm:w-auto">
-          Explore Collection
+          Explorer les Collections
         </Link>
       </div>
     );
@@ -27,10 +26,9 @@ const Cart: React.FC = () => {
   return (
     <div className="bg-background-dark min-h-screen pt-8 md:pt-12 pb-24 text-white">
       <div className="max-w-[1440px] mx-auto px-6 md:px-8">
-        <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-8 md:mb-12 uppercase">Shopping Bag</h1>
+        <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-8 md:mb-12 uppercase">Sac d'Achat</h1>
         
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
-          {/* List */}
           <div className="flex-1 space-y-4 w-full">
             {cart.map(item => (
               <div key={item.id} className="flex flex-col sm:flex-row gap-4 md:gap-6 bg-charcoal/30 p-4 md:p-6 rounded-xl border border-white/5">
@@ -43,7 +41,7 @@ const Cart: React.FC = () => {
                       <h3 className="text-base md:text-lg font-bold text-white mb-1 leading-tight">{item.name}</h3>
                       <p className="text-[10px] text-sand/50 font-medium uppercase tracking-widest">{item.variantName}</p>
                     </div>
-                    <p className="text-lg md:text-xl font-bold text-primary shrink-0">€{item.price * item.quantity}</p>
+                    <p className="text-lg font-bold text-primary shrink-0">{(item.price * item.quantity).toLocaleString()} FCFA</p>
                   </div>
                   <div className="flex items-center justify-between mt-6">
                     <div className="flex items-center gap-4 bg-white/5 px-3 py-2 rounded-lg border border-white/10">
@@ -60,7 +58,7 @@ const Cart: React.FC = () => {
                       className="text-[10px] font-black text-sand/50 hover:text-red-500 transition-colors uppercase flex items-center gap-1.5 p-2"
                     >
                       <Trash2 size={14} />
-                      Remove
+                      Retirer
                     </button>
                   </div>
                 </div>
@@ -68,31 +66,30 @@ const Cart: React.FC = () => {
             ))}
           </div>
 
-          {/* Summary Sidebar - Mobile Sticky Bottom Style or Standard Stack */}
           <div className="w-full lg:w-96 bg-charcoal p-6 md:p-8 rounded-xl border border-white/10 lg:sticky lg:top-32">
-            <h3 className="text-lg md:text-xl font-bold mb-6 md:mb-8 uppercase tracking-widest">Order Summary</h3>
+            <h3 className="text-lg md:text-xl font-bold mb-6 md:mb-8 uppercase tracking-widest">Sommaire</h3>
             <div className="space-y-4 mb-8">
               <div className="flex justify-between text-sand/60 text-xs md:text-sm">
-                <span>Subtotal</span>
-                <span className="text-white font-medium">€{total}.00</span>
+                <span>Sous-total</span>
+                <span className="text-white font-medium">{total.toLocaleString()} FCFA</span>
               </div>
               <div className="flex justify-between text-sand/60 text-xs md:text-sm">
-                <span>Estimated Shipping</span>
-                <span className="text-white font-medium">Free</span>
+                <span>Livraison</span>
+                <span className="text-white font-medium">Offerte</span>
               </div>
               <div className="pt-4 border-t border-white/10 flex justify-between items-baseline">
                 <span className="text-white font-bold uppercase text-sm">Total</span>
-                <span className="text-primary font-black text-2xl md:text-3xl">€{total}.00</span>
+                <span className="text-primary font-black text-xl md:text-2xl">{total.toLocaleString()} FCFA</span>
               </div>
             </div>
             <button 
               onClick={() => navigate('/checkout')}
               className="w-full bg-primary text-background-dark font-black py-4 md:py-5 rounded-lg uppercase tracking-widest text-[11px] md:text-sm hover:bg-white transition-all shadow-xl mb-4"
             >
-              Checkout Now
+              Commander
             </button>
             <p className="text-[9px] md:text-[10px] text-center text-sand/40 uppercase tracking-widest leading-loose">
-              Taxes and shipping calculated at checkout. <br/> Secure payment guaranteed.
+              Taxes calculées au paiement. <br/> Paiement 100% sécurisé.
             </p>
           </div>
         </div>

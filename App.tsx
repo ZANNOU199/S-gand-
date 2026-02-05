@@ -26,12 +26,14 @@ interface CMSContextType {
     heroSubtitle: string;
     heroImage: string;
     announcement: string;
+    featuredProductIds: string[]; // Nouveauté : IDs des 4 produits en Home
   };
   sectors: typeof SECTORS;
   products: Product[];
   updateSiteConfig: (config: any) => void;
   updateSectors: (sectors: any[]) => void;
   updateProducts: (products: Product[]) => void;
+  toggleFeaturedProduct: (productId: string) => void;
 }
 
 const CMSContext = createContext<CMSContextType | undefined>(undefined);
@@ -79,7 +81,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       heroTitle: "THE MODERN SOUL OF AFRICA",
       heroSubtitle: "Authentic craftsmanship meets contemporary luxury. Discover the soul of artisanal heritage through the Sahel Collection.",
       heroImage: "https://lh3.googleusercontent.com/aida-public/AB6AXuDBYQmVC8vZfGs0ngaCbdT5xtxUTngbs-h4NHeitJaxHnviefXNQBZTjJcLAP82o9MS5sLQaSnc8bcg5sGmGFbIdDvht7ukSV8GdFMC-JQw3x7sN3ychXmMLhPuSq1KhZdR-98ElfhTrvFPTas00RrYfakji60hzlLK-BN6-qto-oZmQlVQJ_4As3FN5FR0lb5mgcNUlqUapkOeHqhNIRdRNqq44HrZMH41WoMfCjpUfEDmVYmqsyVwvtI7KmjfETuSbUZ2vKg1rKDu",
-      announcement: "LIVRAISON MONDE OFFERTE | COLLECTION SAHEL DISPONIBLE"
+      announcement: "LIVRAISON MONDE OFFERTE | COLLECTION SAHEL DISPONIBLE",
+      featuredProductIds: FEATURED_PRODUCTS.slice(0, 4).map(p => p.id)
     };
   });
 
@@ -90,10 +93,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const [products, setProducts] = useState<Product[]>(() => {
     const saved = localStorage.getItem('segande_products');
-    // Forcer le rechargement si FEATURED_PRODUCTS a été mis à jour par le développeur
     if (saved) {
       const parsed = JSON.parse(saved);
-      // Si le catalogue en mémoire est plus petit que celui par défaut, on fusionne ou on remplace
       if (parsed.length < FEATURED_PRODUCTS.length) {
         return FEATURED_PRODUCTS;
       }
@@ -109,6 +110,19 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     localStorage.setItem('segande_sectors', JSON.stringify(sectors));
     localStorage.setItem('segande_products', JSON.stringify(products));
   }, [cart, wishlist, siteConfig, sectors, products]);
+
+  const toggleFeaturedProduct = (id: string) => {
+    setSiteConfig(prev => {
+      const isFeatured = prev.featuredProductIds.includes(id);
+      let newIds = [...prev.featuredProductIds];
+      if (isFeatured) {
+        newIds = newIds.filter(fid => fid !== id);
+      } else {
+        newIds = [...newIds, id].slice(-4); // Garder seulement les 4 derniers sélectionnés
+      }
+      return { ...prev, featuredProductIds: newIds };
+    });
+  };
 
   const addToCart = (product: Product, variantId: string, quantity: number) => {
     setCart(prev => {
@@ -143,7 +157,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       siteConfig, sectors, products, 
       updateSiteConfig: (c) => setSiteConfig(prev => ({...prev, ...c})),
       updateSectors: setSectors,
-      updateProducts: setProducts
+      updateProducts: setProducts,
+      toggleFeaturedProduct
     }}>
       <CartContext.Provider value={{ cart, wishlist, addToCart, removeFromCart, updateQuantity, toggleWishlist, total }}>
         {children}
