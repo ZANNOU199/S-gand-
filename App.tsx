@@ -30,7 +30,6 @@ interface Sector {
   name: string;
   slug: string;
   image: string;
-  subCategories: string[];
 }
 
 interface CMSContextType {
@@ -143,11 +142,10 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [sectors, setSectors] = useState<Sector[]>(() => {
     const saved = localStorage.getItem('segande_sectors');
     if (saved) return JSON.parse(saved);
-    // Initial data with subcategories
     return SECTORS.map(s => ({
-      ...s,
-      subCategories: s.slug === 'bien-etre' ? ['Bien-être', 'Artisanat'] : 
-                     s.slug === 'accessoires-mode' ? ['Maroquinerie', 'Bijoux', 'Textiles'] : ['Art Culinaire']
+      name: s.name,
+      slug: s.slug,
+      image: s.image
     }));
   });
 
