@@ -1,6 +1,20 @@
 
 import React from 'react';
 
+export const LOGO_SVG = (
+  <svg fill="none" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="w-full h-full group-hover:scale-110 transition-transform">
+    <circle cx="50" cy="50" r="40" stroke="currentColor" strokeWidth="1" strokeDasharray="1 3" className="opacity-20" />
+    <circle cx="50" cy="50" r="35" stroke="currentColor" strokeWidth="2.5" />
+    <path d="M25 25C22 28 18 35 20 42" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+    <path d="M75 25C78 28 82 35 80 42" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+    <circle cx="50" cy="50" r="1.5" fill="currentColor" />
+    <line x1="50" y1="50" x2="50" y2="28" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="animate-clock-hand" />
+    <line x1="50" y1="50" x2="65" y2="50" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+    <path d="M38 85L34 92" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+    <path d="M62 85L66 92" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+  </svg>
+);
+
 export const SECTORS = [
   { 
     name: 'Nid du Bien-Être', 
@@ -64,6 +78,20 @@ export const FEATURED_PRODUCTS = [
     variants: [{ id: "v_be4", color: "Édition Limitée", size: "750ml", stock: 35, sku: "BE-KOM-BCH" }]
   },
   {
+    id: "prod_be_08",
+    name: "Nectar de Fleur de Hibiscus",
+    slug: "nectar-hibiscus",
+    description: "INFUSION ROYALE AUX VERTUS ANTIOXYDANTES ET ÉNERGISANTES",
+    price: 65,
+    images: ["https://i.ibb.co/21g1JspC/Gemini-Generated-Image-pabdbspabdbspabd.png"], 
+    category: "Bien-être",
+    sector: "bien-etre",
+    rating: 5.0,
+    reviewsCount: 89,
+    badges: ["Premium", "Éclat"],
+    variants: [{ id: "v_be8", color: "Carafe Cristal", size: "1L", stock: 50, sku: "BE-HIB-NEC" }]
+  },
+  {
     id: "prod_be_07",
     name: "Eau Alcaline SÈGANDÉ",
     slug: "eau-alcaline",
@@ -105,92 +133,90 @@ export const FEATURED_PRODUCTS = [
     badges: ["Signature", "Premium"],
     variants: [{ id: "v_be6", color: "Flacon Cristal", size: "500ml", stock: 10, sku: "BE-LIQ-SEG" }]
   },
-  {
-    id: "prod_be_02",
-    name: "Sérum d'Or Pur",
-    slug: "serum-or",
-    description: "ÉCLAT DU VISAGE AUX HUILES SACRÉES",
-    price: 125,
-    images: ["https://images.unsplash.com/photo-1612817288484-6f916006741a?q=80&w=1000&auto=format&fit=crop"],
-    category: "Soins Visage",
-    sector: "bien-etre",
-    rating: 4.9,
-    reviewsCount: 88,
-    badges: ["Premium"],
-    variants: [{ id: "v_be2", color: "Cristal", size: "50ml", stock: 40, sku: "BE-SR-OR" }]
-  },
 
-  // --- ACCESSOIRES DE MODE ---
+  // --- ACCESSOIRES DE MODE (NEW) ---
   {
-    id: "prod_acc_01",
-    name: "Sac 'Perles de Dahomey'",
-    slug: "sac-perles-dahomey",
-    description: "HAUTE MAROQUINERIE : 12 000 PERLES TISSÉES À LA MAIN",
-    price: 950,
-    images: ["https://images.unsplash.com/photo-1566150905458-1bf1fd15dcb4?q=80&w=1000&auto=format&fit=crop"],
-    category: "Maroquinerie Perlée",
+    id: "prod_acc_01_new",
+    name: "Accessoire 1",
+    slug: "accessoire-1",
+    description: "HAUTE MAROQUINERIE : L'ÉLÉGANCE DU CUIR TANNÉ VÉGÉTAL",
+    price: 450,
+    images: ["https://i.ibb.co/b5X61hLf/Gemini-Generated-Image-fwzhcsfwzhcsfwzh-1.png"],
+    category: "Maroquinerie",
+    sector: "accessoires-mode",
+    rating: 5.0,
+    reviewsCount: 18,
+    badges: ["Exclusivité"],
+    variants: [{ id: "v_acc1n", color: "Ebène Luxe", size: "M", stock: 5, sku: "ACC-01-LUX" }]
+  },
+  {
+    id: "prod_acc_02_new",
+    name: "Accessoire 2",
+    slug: "accessoire-2",
+    description: "ORFÈVRERIE ANCESTRALE : PARURE DE PERLES ET FIL D'OR",
+    price: 320,
+    images: ["https://i.ibb.co/sdK45WsW/Gemini-Generated-Image-xflpzbxflpzbxflp-1.png"],
+    category: "Bijoux",
+    sector: "accessoires-mode",
+    rating: 4.9,
+    reviewsCount: 24,
+    badges: ["Artisanal"],
+    variants: [{ id: "v_acc2n", color: "Or Rose", size: "Unique", stock: 8, sku: "ACC-02-LUX" }]
+  },
+  {
+    id: "prod_acc_03_new",
+    name: "Accessoire 3",
+    slug: "accessoire-3",
+    description: "TISSAGE IMPÉRIAL : L'ÂME DES TEXTILES SACRÉS",
+    price: 280,
+    images: ["https://i.ibb.co/zVtHLCTV/Gemini-Generated-Image-7t6gwp7t6gwp7t6g-1.png"],
+    category: "Textiles",
+    sector: "accessoires-mode",
+    rating: 5.0,
+    reviewsCount: 15,
+    badges: ["Série Limitée"],
+    variants: [{ id: "v_acc3n", color: "Indigo", size: "Standard", stock: 12, sku: "ACC-03-LUX" }]
+  },
+  {
+    id: "prod_acc_04_new",
+    name: "Accessoire 4",
+    slug: "accessoire-4",
+    description: "DESIGN CONTEMPORAIN : SYMBOLE DE PRESTIGE ET DE MODERNITÉ",
+    price: 590,
+    images: ["https://i.ibb.co/s9PWS3p7/Gemini-Generated-Image-rkgc48rkgc48rkgc-1.png"],
+    category: "Maroquinerie",
+    sector: "accessoires-mode",
+    rating: 4.8,
+    reviewsCount: 31,
+    badges: ["Signature"],
+    variants: [{ id: "v_acc4n", color: "Terre de Sienne", size: "L", stock: 3, sku: "ACC-04-LUX" }]
+  },
+  {
+    id: "prod_acc_05_new",
+    name: "Accessoire 5",
+    slug: "accessoire-5",
+    description: "ALCHIMIE DES MATIÈRES : MÉLANGE DE TRADITION ET D'INNOVATION",
+    price: 380,
+    images: ["https://i.ibb.co/3mM5YgLB/Gemini-Generated-Image-ncucyqncucyqncuc-1.png"],
+    category: "Accessoires d'exception",
     sector: "accessoires-mode",
     rating: 5.0,
     reviewsCount: 12,
-    badges: ["Exclusivité"],
-    variants: [{ id: "v_acc1", color: "Perlage Royal", size: "Unique", stock: 2, sku: "ACC-DAH-BAG" }]
+    badges: ["Chef-d'œuvre"],
+    variants: [{ id: "v_acc5n", color: "Ocre", size: "Unique", stock: 6, sku: "ACC-05-LUX" }]
   },
   {
-    id: "prod_acc_02",
-    name: "Manchette 'Reine Amina'",
-    slug: "manchette-amina",
-    description: "BRACELET LARGE EN PERLES DE VERRE ET FIL D'OR",
-    price: 320,
-    images: ["https://images.unsplash.com/photo-1611085583191-a3b1a30a5af4?q=80&w=1000&auto=format&fit=crop"],
-    category: "Bijoux Perlés",
+    id: "prod_acc_06_new",
+    name: "Accessoire 6",
+    slug: "accessoire-6",
+    description: "PIÈCE DE COLLECTION : L'ÉCLAT DU SAVOIR-FAIRE SÈGANDÉ",
+    price: 720,
+    images: ["https://i.ibb.co/twYd90MM/Gemini-Generated-Image-bb7tovbb7tovbb7t.png"],
+    category: "Haute Accessoirie",
     sector: "accessoires-mode",
     rating: 5.0,
-    reviewsCount: 24,
-    badges: ["Héritage"],
-    variants: [{ id: "v_acc2", color: "Bronze & Or", size: "Ajustable", stock: 8, sku: "ACC-AMINA-BR" }]
-  },
-
-  // --- ART CULINAIRE ---
-  {
-    id: "prod_cul_01",
-    name: "Le Grand Secret des 15",
-    slug: "grand-secret-15",
-    description: "ALCHIMIE DE 15 ÉPICES RARES : SOUUMBALA, PIMENT OISEAU, GRAINES DE PARADIS...",
-    price: 115,
-    images: ["https://images.unsplash.com/photo-1532336414038-cf19250c5757?q=80&w=1000&auto=format&fit=crop"],
-    category: "Épicerie Fine",
-    sector: "art-culinaire",
-    rating: 5.0,
-    reviewsCount: 245,
-    badges: ["Signature"],
-    variants: [{ id: "v_cul1", color: "Épices d'Afrique", size: "500g", stock: 100, sku: "CUL-SP-15" }]
-  },
-  {
-    id: "prod_cul_02",
-    name: "Service à Condiments Perlé",
-    slug: "service-condiments",
-    description: "CÉRAMIQUE NOIRE ET DÉTAILS DE PERLES DE ROCAILLE",
-    price: 240,
-    images: ["https://images.unsplash.com/photo-1594913785162-e678ac0570da?q=80&w=1000&auto=format&fit=crop"],
-    category: "Art de la Table",
-    sector: "art-culinaire",
-    rating: 4.8,
-    reviewsCount: 15,
-    badges: ["Fait Main"],
-    variants: [{ id: "v_cul2", color: "Ébène", size: "Set Trio", stock: 10, sku: "CUL-SVC-PRL" }]
+    reviewsCount: 9,
+    badges: ["Unique"],
+    variants: [{ id: "v_acc6n", color: "Multicolore Royal", size: "XL", stock: 2, sku: "ACC-06-LUX" }]
   }
 ];
-
-export const LOGO_SVG = (
-  <svg fill="none" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="w-full h-full group-hover:scale-110 transition-transform">
-    <circle cx="50" cy="50" r="40" stroke="currentColor" strokeWidth="1" strokeDasharray="1 3" className="opacity-20" />
-    <circle cx="50" cy="50" r="35" stroke="currentColor" strokeWidth="2.5" />
-    <path d="M25 25C22 28 18 35 20 42" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
-    <path d="M75 25C78 28 82 35 80 42" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
-    <circle cx="50" cy="50" r="1.5" fill="currentColor" />
-    <line x1="50" y1="50" x2="50" y2="28" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="animate-clock-hand" />
-    <line x1="50" y1="50" x2="65" y2="50" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-    <path d="M38 85L34 92" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-    <path d="M62 85L66 92" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-  </svg>
-);
