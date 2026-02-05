@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useCMS } from '../App';
@@ -9,30 +9,19 @@ import { ArrowRight } from 'lucide-react';
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const { siteConfig, sectors, products } = useCMS();
-  const [heroLoaded, setHeroLoaded] = useState(false);
 
   // Filtrer les 4 produits sélectionnés via le CMS pour la Home
   const sahelCollection = products
     .filter(p => siteConfig.featuredProductIds.includes(p.id))
     .slice(0, 4);
 
-  // URL WebP forcée pour le Hero
-  const heroWebp = `${siteConfig.heroImage}?auto=format&fm=webp&q=85`;
-
   return (
     <div className="bg-background-dark text-white">
-      <section className="relative min-h-[80vh] md:h-[90vh] w-full overflow-hidden flex items-end bg-charcoal">
-        <picture className="absolute inset-0">
-          <source srcSet={heroWebp} type="image/webp" />
-          {/* Fix: fetchPriority attribute must be camelCased in React to satisfy TypeScript and DOM attribute expectations */}
-          <img 
-            src={siteConfig.heroImage}
-            alt="SÈGANDÉ Hero"
-            fetchPriority="high"
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${heroLoaded ? 'opacity-100' : 'opacity-0'}`} 
-            onLoad={() => setHeroLoaded(true)}
-          />
-        </picture>
+      <section className="relative min-h-[80vh] md:h-[90vh] w-full overflow-hidden flex items-end">
+        <div 
+          className="absolute inset-0 bg-cover bg-center transition-all duration-1000" 
+          style={{ backgroundImage: `url('${siteConfig.heroImage}')` }}
+        ></div>
         <div className="absolute inset-0 luxury-gradient"></div>
         <div className="relative w-full flex flex-col items-center justify-end pb-16 md:pb-24 text-center px-6 max-w-4xl mx-auto">
           <motion.h2 
@@ -68,15 +57,9 @@ const Home: React.FC = () => {
               key={sector.slug}
               whileHover={{ scale: 0.98 }}
               onClick={() => navigate(`/category/${sector.slug}`)}
-              className="group relative aspect-[4/5] sm:aspect-[3/4] overflow-hidden rounded-xl cursor-pointer bg-white/5"
+              className="group relative aspect-[4/5] sm:aspect-[3/4] overflow-hidden rounded-xl cursor-pointer"
             >
-              <img 
-                src={`${sector.image}?auto=format&fm=webp&w=800`} 
-                loading="lazy"
-                decoding="async"
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-60 group-hover:opacity-100"
-                alt={sector.name}
-              />
+              <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style={{ backgroundImage: `url('${sector.image}')` }}></div>
               <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors"></div>
               <div className="absolute bottom-0 left-0 p-6 md:p-8 w-full bg-gradient-to-t from-black/60 to-transparent">
                 <h3 className="text-2xl md:text-3xl font-black text-white mb-2 uppercase tracking-tighter">{sector.name}</h3>
@@ -107,14 +90,8 @@ const Home: React.FC = () => {
 
       <section className="relative overflow-hidden bg-terracotta/20 py-16 md:py-24">
         <div className="max-w-[1440px] mx-auto px-6 md:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-24 items-center">
-          <div className="relative aspect-square sm:aspect-video rounded-xl overflow-hidden shadow-2xl border border-white/10 order-2 lg:order-1 bg-charcoal">
-            <img 
-              loading="lazy"
-              decoding="async"
-              className="w-full h-full object-cover" 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfJlmBSowEjlbIFfda3GxFvnQdRa6cYM_Ll4IaA7gSE6BAKNsx657dPZqJK-20U4b-JfvY0q9NN1krfY8oPbxxxCtRpkgE7MgoPtnM9ml-q6wVZQk1TvKe8Vz3cPWosvtHk_wrz6fZz-saNYECI86SaTKxLvWjm6ONSqHaYzv4MAIOm-lqyJ8-c0nJAWx5JPVN6a8upMqKrNSPtB8OqHnd2Eaxl1dFbEuanBMMRzmBaeg1RGOBh-m3e5dCI4RRH-brbb2ZekHqLnCT?auto=format&fm=webp" 
-              alt="Artisan hands" 
-            />
+          <div className="relative aspect-square sm:aspect-video rounded-xl overflow-hidden shadow-2xl border border-white/10 order-2 lg:order-1">
+            <img className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfJlmBSowEjlbIFfda3GxFvnQdRa6cYM_Ll4IaA7gSE6BAKNsx657dPZqJK-20U4b-JfvY0q9NN1krfY8oPbxxxCtRpkgE7MgoPtnM9ml-q6wVZQk1TvKe8Vz3cPWosvtHk_wrz6fZz-saNYECI86SaTKxLvWjm6ONSqHaYzv4MAIOm-lqyJ8-c0nJAWx5JPVN6a8upMqKrNSPtB8OqHnd2Eaxl1dFbEuanBMMRzmBaeg1RGOBh-m3e5dCI4RRH-brbb2ZekHqLnCT" alt="Artisan hands" />
           </div>
           <div className="space-y-6 md:space-y-10 order-1 lg:order-2">
             <span className="text-primary uppercase tracking-[0.4em] text-[10px] font-black">OUR ETHOS</span>

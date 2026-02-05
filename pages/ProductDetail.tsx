@@ -15,7 +15,6 @@ const ProductDetail: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
   const [showToast, setShowToast] = useState(false);
-  const [mainImageLoaded, setMainImageLoaded] = useState(false);
 
   if (!product) return <div className="p-20 text-center text-white">Product not found.</div>;
 
@@ -59,34 +58,21 @@ const ProductDetail: React.FC = () => {
               {product.images.map((img, idx) => (
                 <button 
                   key={idx}
-                  onClick={() => { setActiveImage(idx); setMainImageLoaded(false); }}
-                  className={`w-16 md:w-20 aspect-[3/4] rounded-lg overflow-hidden border-2 transition-all shrink-0 bg-charcoal ${activeImage === idx ? 'border-primary' : 'border-transparent opacity-50'}`}
+                  onClick={() => setActiveImage(idx)}
+                  className={`w-16 md:w-20 aspect-[3/4] rounded-lg overflow-hidden border-2 transition-all shrink-0 ${activeImage === idx ? 'border-primary' : 'border-transparent opacity-50'}`}
                 >
-                  <img 
-                    src={img} 
-                    loading="lazy"
-                    decoding="async"
-                    alt={`${product.name} view ${idx}`} 
-                    className="w-full h-full object-cover" 
-                  />
+                  <img src={img} alt={`${product.name} view ${idx}`} className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
             <div className="flex-1 relative aspect-[3/4] rounded-xl overflow-hidden bg-charcoal order-1 md:order-2">
-              {!mainImageLoaded && (
-                <div className="absolute inset-0 bg-white/5 animate-pulse flex items-center justify-center">
-                   <div className="w-10 h-10 border-2 border-white/5 rounded-full border-t-primary animate-spin" />
-                </div>
-              )}
               <motion.img 
                 key={activeImage}
                 initial={{ opacity: 0 }}
-                animate={{ opacity: mainImageLoaded ? 1 : 0 }}
+                animate={{ opacity: 1 }}
                 src={product.images[activeImage]} 
                 alt={product.name} 
-                decoding="async"
-                onLoad={() => setMainImageLoaded(true)}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
               />
             </div>
           </div>
