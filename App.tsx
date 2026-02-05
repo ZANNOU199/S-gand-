@@ -1,6 +1,6 @@
 
 import React, { useState, createContext, useContext, useEffect } from 'react';
-import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CartItem, Product } from './types';
 import Header from './components/Header';
@@ -20,16 +20,30 @@ import LiveSupport from './components/LiveSupport';
 import { SECTORS, FEATURED_PRODUCTS } from './constants';
 
 // --- CMS Context ---
+interface EditorialSection {
+  title: string;
+  quote: string;
+  text: string;
+  image: string;
+}
+
 interface CMSContextType {
   siteConfig: {
     heroTitle: string;
     heroSubtitle: string;
     heroImage: string;
     announcement: string;
-    featuredProductIds: string[]; // Nouveauté : IDs des 4 produits en Home
+    featuredProductIds: string[];
+    editorial: {
+      heroTitle: string;
+      heroImage: string;
+      sections: EditorialSection[];
+    };
   };
   sectors: typeof SECTORS;
   products: Product[];
+  isAdminAuthenticated: boolean;
+  setAdminAuthenticated: (val: boolean) => void;
   updateSiteConfig: (config: any) => void;
   updateSectors: (sectors: any[]) => void;
   updateProducts: (products: Product[]) => void;
@@ -64,7 +78,8 @@ export const useCart = () => {
 };
 
 const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Cart State
+  const [isAdminAuthenticated, setAdminAuthenticated] = useState(false);
+
   const [cart, setCart] = useState<CartItem[]>(() => {
     const saved = localStorage.getItem('segande_cart');
     return saved ? JSON.parse(saved) : [];
@@ -74,7 +89,6 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return saved ? JSON.parse(saved) : [];
   });
 
-  // CMS State
   const [siteConfig, setSiteConfig] = useState(() => {
     const saved = localStorage.getItem('segande_site_config');
     return saved ? JSON.parse(saved) : {
@@ -82,7 +96,19 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       heroSubtitle: "Authentic craftsmanship meets contemporary luxury. Discover the soul of artisanal heritage through the Sahel Collection.",
       heroImage: "https://lh3.googleusercontent.com/aida-public/AB6AXuDBYQmVC8vZfGs0ngaCbdT5xtxUTngbs-h4NHeitJaxHnviefXNQBZTjJcLAP82o9MS5sLQaSnc8bcg5sGmGFbIdDvht7ukSV8GdFMC-JQw3x7sN3ychXmMLhPuSq1KhZdR-98ElfhTrvFPTas00RrYfakji60hzlLK-BN6-qto-oZmQlVQJ_4As3FN5FR0lb5mgcNUlqUapkOeHqhNIRdRNqq44HrZMH41WoMfCjpUfEDmVYmqsyVwvtI7KmjfETuSbUZ2vKg1rKDu",
       announcement: "LIVRAISON MONDE OFFERTE | COLLECTION SAHEL DISPONIBLE",
-      featuredProductIds: FEATURED_PRODUCTS.slice(0, 4).map(p => p.id)
+      featuredProductIds: FEATURED_PRODUCTS.slice(0, 4).map(p => p.id),
+      editorial: {
+        heroTitle: "Savoir-Faire & Héritage",
+        heroImage: "https://lh3.googleusercontent.com/aida-public/AB6AXuAfJlmBSowEjlbIFfda3GxFvnQdRa6cYM_Ll4IaA7gSE6BAKNsx657dPZqJK-20U4b-JfvY0q9NN1krfY8oPbxxxCtRpkgE7MgoPtnM9ml-q6wVZQk1TvKe8Vz3cPWosvtHk_wrz6fZz-saNYECI86SaTKxLvWjm6ONSqHaYzv4MAIOm-lqyJ8-c0nJAWx5JPVN6a8upMqKrNSPtB8OqHnd2Eaxl1dFbEuanBMMRzmBaeg1RGOBh-m3e5dCI4RRH-brbb2ZekHqLnCT",
+        sections: [
+          {
+            title: "Le Geste Auguste",
+            quote: "Chaque point de couture, chaque coup de ciseau sur le bois, est un dialogue entre le passé et le futur.",
+            text: "Chez SÈGANDÉ, le savoir-faire n'est pas seulement une technique, c'est un héritage vivant. Nous travaillons avec des maîtres artisans au Bénin, au Mali et au Nigeria qui utilisent des méthodes de tannage végétal et de tissage à la main inchangées depuis des siècles.",
+            image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDbqRE-SdeillU7VtjhWINQ67vBXlFwlB595kbU_k-0YxwNUwaDepWnsrGxNPU2wKF2odLhLCCYFgZOIBTcypLcE4PgAfSqcBy2aifoLonGwlOY0XG0wULCXxQxfa7_L8m4_zT3328jMEumQFLaMnJZWejSx9Jgeyjfv5Mvd54--tF_h0JVaU10c0hIC3s__Bh0Mt4RN7xc5WoU6v9de4sSpMxEjipKL4Z8-fAZBArFdBLjWN_G49lVxeQwzj3ObL6_ke6vGln5iQAA"
+          }
+        ]
+      }
     };
   });
 
@@ -93,14 +119,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const [products, setProducts] = useState<Product[]>(() => {
     const saved = localStorage.getItem('segande_products');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed.length < FEATURED_PRODUCTS.length) {
-        return FEATURED_PRODUCTS;
-      }
-      return parsed;
-    }
-    return FEATURED_PRODUCTS;
+    return saved ? JSON.parse(saved) : FEATURED_PRODUCTS;
   });
 
   useEffect(() => {
@@ -118,7 +137,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       if (isFeatured) {
         newIds = newIds.filter(fid => fid !== id);
       } else {
-        newIds = [...newIds, id].slice(-4); // Garder seulement les 4 derniers sélectionnés
+        newIds = [...newIds, id].slice(-4);
       }
       return { ...prev, featuredProductIds: newIds };
     });
@@ -154,7 +173,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <CMSContext.Provider value={{ 
-      siteConfig, sectors, products, 
+      siteConfig, sectors, products, isAdminAuthenticated, setAdminAuthenticated,
       updateSiteConfig: (c) => setSiteConfig(prev => ({...prev, ...c})),
       updateSectors: setSectors,
       updateProducts: setProducts,
@@ -173,23 +192,6 @@ const ScrollToTop = () => {
   return null;
 };
 
-const PageWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const location = useLocation();
-  return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={location.pathname}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -10 }}
-        transition={{ duration: 0.3 }}
-      >
-        {children}
-      </motion.div>
-    </AnimatePresence>
-  );
-};
-
 const App: React.FC = () => {
   return (
     <AppProvider>
@@ -198,21 +200,19 @@ const App: React.FC = () => {
         <div className="flex flex-col min-h-screen bg-background-dark selection:bg-primary selection:text-white">
           <Header />
           <main className="flex-grow">
-            <PageWrapper>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/product/:slug" element={<ProductDetail />} />
-                <Route path="/category/:slug" element={<Category />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/journal" element={<Editorial />} />
-                <Route path="/profile" element={<UserDashboard />} />
-                <Route path="/wishlist" element={<Wishlist />} />
-                <Route path="/quiz" element={<StyleQuiz />} />
-                <Route path="/admin/*" element={<AdminDashboard />} />
-                <Route path="/contact" element={<Contact />} />
-              </Routes>
-            </PageWrapper>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/product/:slug" element={<ProductDetail />} />
+              <Route path="/category/:slug" element={<Category />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/journal" element={<Editorial />} />
+              <Route path="/profile" element={<UserDashboard />} />
+              <Route path="/wishlist" element={<Wishlist />} />
+              <Route path="/quiz" element={<StyleQuiz />} />
+              <Route path="/admin/*" element={<AdminDashboard />} />
+              <Route path="/contact" element={<Contact />} />
+            </Routes>
           </main>
           <Footer />
           <LiveSupport />
