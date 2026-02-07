@@ -210,6 +210,7 @@ const AdminDashboard: React.FC = () => {
               <tr>
                 <th className="p-8">Produit</th>
                 <th className="p-8">Prix</th>
+                <th className="p-8 text-center">Collection Sahel</th>
                 <th className="p-8 text-right">Actions</th>
               </tr>
             </thead>
@@ -221,6 +222,15 @@ const AdminDashboard: React.FC = () => {
                     <span className="font-black uppercase">{p.name}</span>
                   </td>
                   <td className="p-8 font-black text-primary">{p.price.toLocaleString()} FCFA</td>
+                  <td className="p-8 text-center">
+                    <button 
+                      onClick={() => toggleFeaturedProduct(p.id)}
+                      title={p.isFeatured ? "Retirer de la page d'accueil" : "Afficher sur la page d'accueil"}
+                      className={`transition-all hover:scale-125 ${p.isFeatured ? 'text-primary' : 'text-white/10'}`}
+                    >
+                      <Star size={22} fill={p.isFeatured ? "currentColor" : "none"} />
+                    </button>
+                  </td>
                   <td className="p-8 text-right space-x-2">
                     <button onClick={() => setEditingProduct({...p})} className="p-3 bg-white/5 rounded-xl"><Edit size={18}/></button>
                     <button onClick={() => deleteProduct(Number(p.id))} className="p-3 bg-red-500/10 text-red-500 rounded-xl"><Trash2 size={18}/></button>
