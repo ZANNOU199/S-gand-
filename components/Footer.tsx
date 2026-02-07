@@ -65,7 +65,7 @@ const Footer: React.FC = () => {
         </div>
         
         <div className="border-t border-white/5 pt-10 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-sand/30 text-[9px] uppercase tracking-[0.3em] font-black">© 2024 SÈGANDÉ Maison de Luxe.</p>
+          <p className="text-sand/30 text-[9px] uppercase tracking-[0.3em] font-black">© 2024 SÈGANDÉ Shop.</p>
           <div className="flex items-center gap-8 text-sand/20">
              <ShieldCheck size={18} />
              <Truck size={18} />
