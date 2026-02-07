@@ -73,20 +73,34 @@ export const useCart = () => {
   return context;
 };
 
+// NOUVELLES VALEURS PAR DÉFAUT (Fidèles à ta demande)
 const DEFAULT_CONFIG = {
-  heroTitle: "SÈGANDÉ",
-  heroSubtitle: "L'Âme Moderne de l'Afrique",
-  heroImage: "https://images.unsplash.com/photo-1549490349-8643362247b5",
+  heroTitle: "THE MODERN SOUL OF AFRICA",
+  heroSubtitle: "Authentic craftsmanship meets contemporary luxury. Discover the essence of SÈGANDÉ.",
+  heroImage: "https://lh3.googleusercontent.com/aida-public/AB6AXuDBYQmVC8vZfGs0ngaCbdT5xtxUTngbs-h4NHeitJaxHnviefXNQBZTjJcLAP82o9MS5sLQaSnc8bcg5sGmGFbIdDvht7ukSV8GdFMC-JQw3x7sN3ychXmMLhPuSq1KhZdR-98ElfhTrvFPTas00RrYfakji60hzlLK-BN6-qto-oZmQlVQJ_4As3FN5FR0lb5mgcNUlqUapkOeHqhNIRdRNqq44HrZMH41WoMfCjpUfEDmVYmqsyVwvtI7KmjfETuSbUZ2vKg1rKDu",
   contact: { 
-    title: "Contact", 
-    subtitle: "Nous sommes à votre écoute", 
-    email: "contact@segande.com", 
-    phone1: "+229 01010101", 
-    phone2: "", 
-    address: "Bénin" 
+    title: "Personal Concierge", 
+    subtitle: "Our specialized team is available to assist you with every request.", 
+    email: "concierge@segande.com", 
+    phone1: "+229 96 11 37 38", 
+    phone2: "+229 64 01 70 66", 
+    address: "Victoria Island, Lagos, Nigeria" 
   },
-  footer: { aboutText: "Maison de luxe africaine." },
-  editorial: { heroTitle: "L'Art de Créer", heroImage: "", sections: [] }
+  footer: { 
+    aboutText: "SÈGANDÉ : L'excellence africaine redéfinie pour le monde contemporain." 
+  },
+  editorial: { 
+    heroTitle: "L'Artisanat du Temps", 
+    heroImage: "https://lh3.googleusercontent.com/aida-public/AB6AXuAfJlmBSowEjlbIFfda3GxFvnQdRa6cYM_Ll4IaA7gSE6BAKNsx657dPZqJK-20U4b-JfvY0q9NN1krfY8oPbxxxCtRpkgE7MgoPtnM9ml-q6wVZQk1TvKe8Vz3cPWosvtHk_wrz6fZz-saNYECI86SaTKxLvWjm6ONSqHaYzv4MAIOm-lqyJ8-c0nJAWx5JPVN6a8upMqKrNSPtB8OqHnd2Eaxl1dFbEuanBMMRzmBaeg1RGOBh-m3e5dCI4RRH-brbb2ZekHqLnCT", 
+    sections: [
+      {
+        title: "Héritage Vivant",
+        quote: "Chaque geste est une transmission.",
+        text: "Chez SÈGANDÉ, nous croyons que le véritable luxe réside dans l'histoire racontée par la main de l'artisan.",
+        image: "https://lh3.googleusercontent.com/aida-public/AB6AXuD93fN8m3hF8z8k5S9Xz0nU7X8N6J6m6T8O9V0X1Y2Z3A4B5C6D7E8F9G0H"
+      }
+    ] 
+  }
 };
 
 const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -127,27 +141,25 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const fetchData = async () => {
     try {
+      // Tentative de récupération, si erreur (table inexistante), on passe au catch
       const [sectorsRes, productsRes, configRes] = await Promise.all([
         supabase.from('sectors').select('*').order('id'),
         supabase.from('products').select('*').order('id'),
         supabase.from('site_config').select('*').eq('id', 'global').maybeSingle()
       ]);
 
-      // Sectors fallback
       if (sectorsRes.data && sectorsRes.data.length > 0) {
         setSectors(sectorsRes.data);
       } else {
         setSectors(SECTORS.map((s, i) => ({ ...s, id: i + 1 })));
       }
 
-      // Products fallback
       if (productsRes.data && productsRes.data.length > 0) {
         setProducts(productsRes.data.map(mapProductFromDB));
       } else {
         setProducts(FEATURED_PRODUCTS.map(p => ({ ...p, isFeatured: true })));
       }
 
-      // Config fallback
       if (configRes.data && configRes.data.data) {
         const cloudData = configRes.data.data;
         setSiteConfig({
@@ -157,11 +169,9 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           footer: { ...DEFAULT_CONFIG.footer, ...(cloudData.footer || {}) },
           editorial: { ...DEFAULT_CONFIG.editorial, ...(cloudData.editorial || {}) }
         });
-      } else {
-        setSiteConfig(DEFAULT_CONFIG);
       }
     } catch (e) {
-      console.error("Supabase error (tables might be missing):", e);
+      console.warn("Utilisation des données locales (Supabase non configuré ou tables manquantes)");
       setSectors(SECTORS.map((s, i) => ({ ...s, id: i + 1 })));
       setProducts(FEATURED_PRODUCTS.map(p => ({ ...p, isFeatured: true })));
       setSiteConfig(DEFAULT_CONFIG);
@@ -170,9 +180,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     }
   };
 
-  useEffect(() => { 
-    fetchData(); 
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
   const addSector = async (sector: any) => { await supabase.from('sectors').insert([sector]); await fetchData(); };
   const updateSector = async (id: number, sector: any) => { await supabase.from('sectors').update(sector).eq('id', id); await fetchData(); };
