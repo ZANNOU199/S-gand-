@@ -24,7 +24,7 @@ const supabase = createClient(
 );
 
 interface Sector {
-  id: any;
+  id: number;
   name: string;
   slug: string;
   image: string;
@@ -38,11 +38,11 @@ interface CMSContextType {
   isLoading: boolean;
   setAdminAuthenticated: (val: boolean) => void;
   addSector: (sector: any) => Promise<void>;
-  updateSector: (id: any, sector: any) => Promise<void>;
-  deleteSector: (id: any) => Promise<void>;
+  updateSector: (id: number, sector: any) => Promise<void>;
+  deleteSector: (id: number) => Promise<void>;
   addProduct: (product: any) => Promise<void>;
   updateProduct: (product: any) => Promise<void>;
-  deleteProduct: (id: any) => Promise<void>;
+  deleteProduct: (id: number) => Promise<void>;
   toggleFeaturedProduct: (productId: string) => Promise<void>;
   updateSiteConfig: (config: any) => Promise<void>;
   refreshData: () => Promise<void>;
@@ -88,42 +88,34 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return saved ? JSON.parse(saved) : [];
   });
 
-  const mapProductFromDB = (p: any): Product => {
-    let imgs = Array.isArray(p.images) ? p.images.filter((img: any) => img && img.trim() !== "") : [];
-    if (imgs.length === 0) imgs = ["https://via.placeholder.com/600x800?text=SÈGANDÉ+LUXE"];
-
-    return {
-      id: p.id,
-      name: p.name || 'Sans nom',
-      slug: p.slug || `piece-${p.id}`,
-      description: p.description || '',
-      price: Number(p.price) || 0,
-      images: imgs,
-      variants: Array.isArray(p.variants) ? p.variants : [],
-      category: p.category || '',
-      sector: p.sector || '',
-      rating: p.rating || 5,
-      reviewsCount: p.reviews_count || 0,
-      badges: Array.isArray(p.badges) ? p.badges : [],
-      isFeatured: !!p.is_featured
-    };
-  };
+  const mapProductFromDB = (p: any): Product => ({
+    id: String(p.id),
+    name: p.name || 'Sans nom',
+    slug: p.slug || `piece-${p.id}`,
+    description: p.description || '',
+    price: Number(p.price) || 0,
+    images: Array.isArray(p.images) ? p.images : ["https://via.placeholder.com/600x800"],
+    variants: Array.isArray(p.variants) ? p.variants : [],
+    category: p.category || '',
+    sector: p.sector || '',
+    rating: p.rating || 5,
+    reviewsCount: p.reviews_count || 0,
+    badges: Array.isArray(p.badges) ? p.badges : [],
+    isFeatured: !!p.is_featured
+  });
 
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const { data: sData, error: sError } = await supabase.from('sectors').select('*');
-      if (sError) console.error("Fetch Sectors Error:", sError);
+      const { data: sData } = await supabase.from('sectors').select('*').order('id');
       if (sData) setSectors(sData);
 
-      const { data: pData, error: pError } = await supabase.from('products').select('*');
-      if (pError) console.error("Fetch Products Error:", pError);
-      setProducts((pData || []).map(mapProductFromDB));
+      const { data: pData } = await supabase.from('products').select('*').order('id');
+      if (pData) setProducts(pData.map(mapProductFromDB));
 
       const { data: cData } = await supabase.from('site_config').select('*').eq('id', 'global');
       if (cData && cData.length > 0) setSiteConfig(cData[0].data);
-    } catch (e) {
-      console.error("Critical error in fetchData:", e);
+      else setSiteConfig({ heroTitle: "SÈGANDÉ", heroSubtitle: "L'âme moderne", heroImage: "", contact: { title: "Contact", subtitle: "Aide", email: "", phone1: "", phone2: "", address: "" }, footer: { aboutText: "" }, editorial: { heroTitle: "", heroImage: "", sections: [] } });
     } finally {
       setIsLoading(false);
     }
@@ -132,98 +124,50 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   useEffect(() => { fetchData(); }, []);
 
   const addSector = async (sector: any) => {
-    const { error } = await supabase.from('sectors').insert([{ name: sector.name, slug: sector.slug, image: sector.image }]);
-    if (error) {
-      alert("ERREUR SUPABASE (INSERT) : " + error.message + "\nCode: " + error.code);
-    }
+    await supabase.from('sectors').insert([{ name: sector.name, slug: sector.slug, image: sector.image }]);
     await fetchData();
   };
 
-  const updateSector = async (id: any, sector: any) => {
-    // Utilisation du slug comme identifiant si l'id est absent (cas fréquent avec SQL manuel sans serial id)
-    const filterField = id ? 'id' : 'slug';
-    const filterValue = id || sector.slug;
-
-    console.log(`Tentative de mise à jour du secteur via ${filterField}=${filterValue}`);
-    
-    const { error } = await supabase.from('sectors')
-      .update({ name: sector.name, slug: sector.slug, image: sector.image })
-      .eq(filterField, filterValue);
-
-    if (error) {
-      alert(`ERREUR SUPABASE (UPDATE via ${filterField}) : ` + error.message);
-      console.error("Update Error details:", error);
-    } else {
-      console.log("Mise à jour réussie");
-    }
+  const updateSector = async (id: number, sector: any) => {
+    const { error } = await supabase.from('sectors').update({ 
+      name: sector.name, slug: sector.slug, image: sector.image 
+    }).eq('id', id);
+    if (error) alert(error.message);
     await fetchData();
   };
 
-  const deleteSector = async (id: any) => {
-    const target = sectors.find(s => s.id === id);
-    const filterField = id ? 'id' : 'slug';
-    const filterValue = id || target?.slug;
-
-    if (!filterValue) {
-      alert("Impossible de supprimer : aucun identifiant trouvé.");
-      return;
-    }
-
-    const { error } = await supabase.from('sectors').delete().eq(filterField, filterValue);
-    if (error) {
-      alert(`ERREUR SUPABASE (DELETE via ${filterField}) : ` + error.message);
-    }
+  const deleteSector = async (id: number) => {
+    const { error } = await supabase.from('sectors').delete().eq('id', id);
+    if (error) alert(error.message);
     await fetchData();
   };
 
-  const addProduct = async (product: any) => {
-    const dbData = {
-      name: product.name,
-      slug: product.slug,
-      price: Number(product.price),
-      description: product.description,
-      sector: product.sector,
-      category: product.category,
-      images: product.images,
-      is_featured: !!product.isFeatured
-    };
-    const { error } = await supabase.from('products').insert([dbData]);
-    if (error) alert("Erreur ajout produit: " + error.message);
+  const addProduct = async (p: any) => {
+    await supabase.from('products').insert([{
+      name: p.name, slug: p.slug, price: p.price, description: p.description, 
+      sector: p.sector, images: p.images, is_featured: p.isFeatured
+    }]);
     await fetchData();
   };
 
-  const updateProduct = async (product: any) => {
-    const dbData = {
-      name: product.name,
-      slug: product.slug,
-      price: Number(product.price),
-      description: product.description,
-      sector: product.sector,
-      category: product.category,
-      images: product.images,
-      is_featured: !!product.isFeatured
-    };
-    const filterField = product.id ? 'id' : 'slug';
-    const filterValue = product.id || product.slug;
-
-    const { error } = await supabase.from('products').update(dbData).eq(filterField, filterValue);
-    if (error) alert(`Erreur modif produit via ${filterField}: ` + error.message);
+  const updateProduct = async (p: any) => {
+    const { error } = await supabase.from('products').update({
+      name: p.name, slug: p.slug, price: p.price, description: p.description, 
+      sector: p.sector, images: p.images, is_featured: p.isFeatured
+    }).eq('id', Number(p.id));
+    if (error) alert(error.message);
     await fetchData();
   };
 
-  const deleteProduct = async (id: any) => {
-    const target = products.find(p => p.id === id);
-    const filterField = id ? 'id' : 'slug';
-    const filterValue = id || target?.slug;
-    const { error } = await supabase.from('products').delete().eq(filterField, filterValue);
-    if (error) alert(`Erreur suppression produit: ` + error.message);
+  const deleteProduct = async (id: number) => {
+    await supabase.from('products').delete().eq('id', id);
     await fetchData();
   };
 
   const toggleFeaturedProduct = async (id: string) => {
     const p = products.find(prod => prod.id === id);
     if (!p) return;
-    await supabase.from('products').update({ is_featured: !p.isFeatured }).eq('id', id);
+    await supabase.from('products').update({ is_featured: !p.isFeatured }).eq('id', Number(id));
     await fetchData();
   };
 
@@ -266,7 +210,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <div className="min-h-screen bg-background-dark flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-primary font-black uppercase tracking-[0.5em] animate-pulse mb-2">SÈGANDÉ</h2>
-          <p className="text-sand/20 text-[9px] uppercase font-bold tracking-widest">Connexion au Cloud...</p>
+          <p className="text-sand/20 text-[9px] uppercase font-bold tracking-widest">Initialisation de la base de données...</p>
         </div>
       </div>
     );
