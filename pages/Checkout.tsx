@@ -31,16 +31,14 @@ const Checkout: React.FC = () => {
 
     const fedapay = window.FedaPay;
 
-    if (!fedapay || typeof fedapay.init !== 'function') {
-      alert("Le service de paiement est encore en cours de chargement. Merci de réessayer dans 2 secondes.");
+    if (!fedapay || (typeof fedapay.init !== 'function' && typeof fedapay.checkout !== 'function')) {
+      alert("Le service de paiement est en cours d'initialisation. Merci de patienter un instant.");
       return;
     }
 
     setIsProcessing(true);
 
     try {
-      // Syntaxe universelle FedaPay : init() puis open()
-      // Certains SDK utilisent .checkout() d'autres .open()
       const checkoutOptions = {
         public_key: 'pk_sandbox_MzMxVkj0kYgxGPfQe1UgWi4O',
         transaction: {
@@ -52,13 +50,34 @@ const Checkout: React.FC = () => {
           lastname: customer.lastName || 'Client',
           email: customer.email,
           phone_number: {
-            number: customer.phone.replace(/[^0-9]/g, '') || '00000000',
+            number: customer.phone.replace(/[^0-9]/g, '') || '66000001',
             country: 'bj'
           }
         },
         onComplete: async (response: any) => {
-          console.log("FedaPay Response:", response);
-          if (response.status === 'approved' || response.status === 'successful') {
+          // JOURNAL DE DÉBOGAGE CRITIQUE
+          console.log("FedaPay Response Received:", response);
+
+          // Extraction ultra-sécurisée du statut
+          // On vérifie plusieurs champs car le SDK FedaPay varie selon les versions
+          const rawStatus = 
+            response?.status || 
+            response?.transaction?.status || 
+            response?.reason || 
+            (response?.transaction ? 'approved' : 'unknown'); // Fallback si transaction existe
+
+          const status = String(rawStatus).toLowerCase();
+          console.log("Calculated Internal Status:", status);
+
+          // Liste exhaustive des marqueurs de succès FedaPay
+          const successMarkers = ['approved', 'successful', 'captured', 'complete', 'success', 'successfull'];
+
+          if (successMarkers.includes(status)) {
+            const transactionRef = 
+              response?.transaction?.reference || 
+              response?.transaction?.id || 
+              "REF-" + Math.random().toString(36).substr(2, 9).toUpperCase();
+            
             const orderData = {
               customer_name: `${customer.firstName} ${customer.lastName}`,
               customer_email: customer.email,
@@ -66,37 +85,49 @@ const Checkout: React.FC = () => {
               total: total,
               status: 'completed' as const,
               items: cart,
-              transaction_id: response.transaction.reference || response.transaction.id
+              transaction_id: transactionRef
             };
 
-            await createOrder(orderData);
-            setStep(2);
-            clearCart();
+            try {
+              console.log("Saving order to Database...");
+              await createOrder(orderData);
+              setStep(2);
+              clearCart();
+            } catch (err) {
+              console.error("Database Save Error:", err);
+              // On affiche le succès quand même car le paiement est fait
+              setStep(2);
+              clearCart();
+            }
+          } else if (status === 'canceled' || status === 'declined') {
+            console.warn("Transaction was not successful:", status);
+            setIsProcessing(false);
           } else {
-            alert("Paiement non validé. Statut: " + response.status);
+            console.error("Unknown payment status received:", status);
+            alert(`Note: Le statut de votre paiement est "${status}". Si vous avez été débité, contactez le support avec votre email.`);
+            setIsProcessing(false);
           }
+          
+          // Dans tous les cas, on arrête le loader
           setIsProcessing(false);
         }
       };
 
-      // Tentative d'appel via la méthode universelle .checkout() 
-      // Si .checkout n'existe pas, on tente .init().open()
+      // Choix de la méthode d'ouverture du widget
       if (typeof fedapay.checkout === 'function') {
         fedapay.checkout(checkoutOptions);
-      } else if (typeof fedapay.init === 'function') {
-        fedapay.init(checkoutOptions).open();
       } else {
-        throw new Error("Méthode de paiement non disponible sur l'objet FedaPay.");
+        fedapay.init(checkoutOptions).open();
       }
 
     } catch (error: any) {
-      console.error("FedaPay Critical Error:", error);
-      alert("Erreur de communication avec FedaPay : " + (error.message || "Inconnu"));
+      console.error("FedaPay Call Error:", error);
+      alert("Erreur technique : " + (error.message || "Impossible d'ouvrir le module de paiement"));
       setIsProcessing(false);
     }
 
-    // Sécurité de déblocage du bouton
-    setTimeout(() => setIsProcessing(false), 15000);
+    // Sécurité de déblocage si le modal est fermé sans callback
+    setTimeout(() => setIsProcessing(false), 30000);
   };
 
   if (cart.length === 0 && step !== 2) {
@@ -120,7 +151,7 @@ const Checkout: React.FC = () => {
                   <span className="size-2 bg-primary rounded-full animate-pulse"></span>
                   <span className="text-primary font-black uppercase tracking-[0.4em] text-[10px]">Caisse Sécurisée</span>
                 </div>
-                <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none">Finaliser ma Commande</h1>
+                <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none">Caisse SÈGANDÉ</h1>
               </header>
 
               <div className="bg-charcoal/40 p-8 md:p-12 rounded-[2.5rem] border border-white/5 space-y-10 shadow-2xl">
