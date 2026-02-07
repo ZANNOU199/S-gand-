@@ -77,9 +77,16 @@ const DEFAULT_CONFIG = {
   heroTitle: "SÈGANDÉ",
   heroSubtitle: "L'Âme Moderne de l'Afrique",
   heroImage: "https://images.unsplash.com/photo-1549490349-8643362247b5",
-  contact: { title: "Contact", subtitle: "Nous sommes à votre écoute", email: "contact@segande.com", phone1: "+229 01010101", phone2: "+229 02020202", address: "Cotonou, Bénin" },
-  footer: { aboutText: "Maison de luxe africaine dédiée à l'artisanat d'exception." },
-  editorial: { heroTitle: "L'Art de Créer", heroImage: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d", sections: [] }
+  contact: { 
+    title: "Contact", 
+    subtitle: "Nous sommes à votre écoute", 
+    email: "contact@segande.com", 
+    phone1: "+229 01010101", 
+    phone2: "", 
+    address: "Bénin" 
+  },
+  footer: { aboutText: "Maison de luxe africaine." },
+  editorial: { heroTitle: "L'Art de Créer", heroImage: "", sections: [] }
 };
 
 const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -104,8 +111,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const mapProductFromDB = (p: any): Product => ({
     id: String(p.id),
-    name: p.name || 'Sans nom',
-    slug: p.slug || `piece-${p.id}`,
+    name: p.name || 'Pièce SÈGANDÉ',
+    slug: p.slug || `product-${p.id}`,
     description: p.description || '',
     price: Number(p.price) || 0,
     images: Array.isArray(p.images) && p.images.length > 0 ? p.images : ["https://via.placeholder.com/600x800?text=SÈGANDÉ"],
@@ -123,36 +130,41 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       const [sectorsRes, productsRes, configRes] = await Promise.all([
         supabase.from('sectors').select('*').order('id'),
         supabase.from('products').select('*').order('id'),
-        supabase.from('site_config').select('*').eq('id', 'global')
+        supabase.from('site_config').select('*').eq('id', 'global').maybeSingle()
       ]);
 
+      // Sectors fallback
       if (sectorsRes.data && sectorsRes.data.length > 0) {
         setSectors(sectorsRes.data);
       } else {
         setSectors(SECTORS.map((s, i) => ({ ...s, id: i + 1 })));
       }
 
+      // Products fallback
       if (productsRes.data && productsRes.data.length > 0) {
         setProducts(productsRes.data.map(mapProductFromDB));
       } else {
         setProducts(FEATURED_PRODUCTS.map(p => ({ ...p, isFeatured: true })));
       }
 
-      if (configRes.data && configRes.data.length > 0) {
-        const cloudData = configRes.data[0].data || {};
-        setSiteConfig((prev: any) => ({
-          ...prev,
+      // Config fallback
+      if (configRes.data && configRes.data.data) {
+        const cloudData = configRes.data.data;
+        setSiteConfig({
+          ...DEFAULT_CONFIG,
           ...cloudData,
-          contact: { ...prev.contact, ...(cloudData.contact || {}) },
-          footer: { ...prev.footer, ...(cloudData.footer || {}) },
-          editorial: { ...prev.editorial, ...(cloudData.editorial || {}) }
-        }));
+          contact: { ...DEFAULT_CONFIG.contact, ...(cloudData.contact || {}) },
+          footer: { ...DEFAULT_CONFIG.footer, ...(cloudData.footer || {}) },
+          editorial: { ...DEFAULT_CONFIG.editorial, ...(cloudData.editorial || {}) }
+        });
+      } else {
+        setSiteConfig(DEFAULT_CONFIG);
       }
     } catch (e) {
-      console.error("Erreur de synchronisation Cloud:", e);
-      // Fallback local
+      console.error("Supabase error (tables might be missing):", e);
       setSectors(SECTORS.map((s, i) => ({ ...s, id: i + 1 })));
       setProducts(FEATURED_PRODUCTS.map(p => ({ ...p, isFeatured: true })));
+      setSiteConfig(DEFAULT_CONFIG);
     } finally {
       setIsLoading(false);
     }
@@ -162,7 +174,6 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     fetchData(); 
   }, []);
 
-  // CRUD Functions...
   const addSector = async (sector: any) => { await supabase.from('sectors').insert([sector]); await fetchData(); };
   const updateSector = async (id: number, sector: any) => { await supabase.from('sectors').update(sector).eq('id', id); await fetchData(); };
   const deleteSector = async (id: number) => { await supabase.from('sectors').delete().eq('id', id); await fetchData(); };
@@ -207,18 +218,6 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     localStorage.setItem('wishlist', JSON.stringify(wishlist));
   }, [cart, wishlist]);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background-dark flex items-center justify-center">
-        <div className="text-center animate-in fade-in duration-1000">
-          <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-          <h2 className="text-primary font-black uppercase tracking-[0.5em] mb-2">SÈGANDÉ</h2>
-          <p className="text-sand/20 text-[9px] uppercase font-bold tracking-widest">Initialisation Cloud...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <CMSContext.Provider value={{ 
       siteConfig, sectors, products, isAdminAuthenticated, isLoading, setAdminAuthenticated,
@@ -226,7 +225,15 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       refreshData: fetchData
     }}>
       <CartContext.Provider value={{ cart, wishlist, addToCart, removeFromCart, updateQuantity, toggleWishlist, total }}>
-        {children}
+        {isLoading ? (
+          <div className="min-h-screen bg-background-dark flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+              <h2 className="text-primary font-black uppercase tracking-[0.5em] mb-2">SÈGANDÉ</h2>
+              <p className="text-sand/20 text-[9px] uppercase font-bold tracking-widest">Initialisation Cloud...</p>
+            </div>
+          </div>
+        ) : children}
       </CartContext.Provider>
     </CMSContext.Provider>
   );
