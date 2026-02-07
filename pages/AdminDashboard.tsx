@@ -1,11 +1,10 @@
 
 import React, { useState } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useCMS } from '../App';
 import { 
   LayoutDashboard, Package, Plus, 
-  Edit, Trash2, Menu, X, Layout, Lock, Star, Layers, Save, RefreshCw, Cloud, ArrowLeft
+  Edit, Trash2, Layout, Lock, Star, Layers, Save, RefreshCw, Cloud, ArrowLeft
 } from 'lucide-react';
 
 const AdminDashboard: React.FC = () => {
@@ -13,7 +12,7 @@ const AdminDashboard: React.FC = () => {
     sectors, addSector, updateSector, deleteSector,
     products, addProduct, updateProduct, deleteProduct, toggleFeaturedProduct,
     siteConfig, updateSiteConfig, 
-    isAdminAuthenticated, setAdminAuthenticated, isLoading 
+    isAdminAuthenticated, setAdminAuthenticated 
   } = useCMS();
 
   const [pinCode, setPinCode] = useState('');
@@ -36,10 +35,10 @@ const AdminDashboard: React.FC = () => {
 
   if (!isAdminAuthenticated) {
     return (
-      <div className="min-h-screen bg-background-dark flex items-center justify-center p-6">
+      <div className="min-h-screen bg-background-dark flex items-center justify-center p-6 text-white">
         <div className="max-w-md w-full bg-charcoal p-12 rounded-3xl border border-white/5 shadow-2xl text-center">
           <Lock size={48} className="mx-auto text-primary mb-8" />
-          <h1 className="text-3xl font-black uppercase text-white mb-8">ADMIN VAULT</h1>
+          <h1 className="text-3xl font-black uppercase mb-8">ADMIN VAULT</h1>
           <form onSubmit={handleLogin} className="space-y-6">
             <input 
               type="password" maxLength={4} value={pinCode} onChange={e => setPinCode(e.target.value)} placeholder="PIN"
@@ -84,13 +83,20 @@ const AdminDashboard: React.FC = () => {
 
   const SectorsEditor = () => {
     const handleSave = async () => {
-      if (!editingSector.name || !editingSector.slug) return alert("Veuillez remplir le nom et le slug.");
+      if (!editingSector.name || !editingSector.slug) return alert("Nom et Slug requis");
       setIsSaving(true);
       try {
-        if (editingSector.id || sectors.find(s => s.slug === editingSector.slug)) {
+        if (editingSector.id) {
+          // Cas de modification : on a un ID
           await updateSector(editingSector.id, editingSector);
         } else {
-          await addSector(editingSector);
+          // Est-ce que le slug existe déjà dans la liste locale ? Si oui, on tente un update par slug
+          const existing = sectors.find(s => s.slug === editingSector.slug);
+          if (existing) {
+            await updateSector(existing.id, editingSector);
+          } else {
+            await addSector(editingSector);
+          }
         }
         setEditingSector(null);
       } catch (err) {
@@ -112,7 +118,7 @@ const AdminDashboard: React.FC = () => {
                 <input value={editingSector.name} onChange={e => setEditingSector({...editingSector, name: e.target.value})} className="admin-input" placeholder="ex: Nid du Bien-Être" />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-sand/40 tracking-widest">Slug (ID URL)</label>
+                <label className="text-[10px] font-black uppercase text-sand/40 tracking-widest">Slug (Identifiant Unique)</label>
                 <input value={editingSector.slug} onChange={e => setEditingSector({...editingSector, slug: e.target.value})} className="admin-input" placeholder="ex: bien-etre" />
               </div>
               <div className="space-y-2">
@@ -120,7 +126,7 @@ const AdminDashboard: React.FC = () => {
                 <input value={editingSector.image} onChange={e => setEditingSector({...editingSector, image: e.target.value})} className="admin-input" placeholder="URL HTTPS" />
               </div>
             </div>
-            <button onClick={handleSave} disabled={isSaving} className="w-full bg-primary text-black font-black py-5 rounded-2xl flex items-center justify-center gap-3 uppercase tracking-widest hover:bg-white transition-all disabled:opacity-50">
+            <button onClick={handleSave} disabled={isSaving} className="w-full bg-primary text-black font-black py-5 rounded-2xl flex items-center justify-center gap-3 uppercase tracking-widest hover:bg-white transition-all disabled:opacity-50 shadow-lg">
               {isSaving ? <RefreshCw className="animate-spin" /> : <Save size={18}/>} ENREGISTRER L'UNIVERS
             </button>
           </div>
@@ -206,7 +212,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase text-sand/40 tracking-widest">Image (URL)</label>
-                  <input value={editingProduct.images[0] || ""} onChange={e => setEditingProduct({...editingProduct, images: [e.target.value]})} className="admin-input" />
+                  <input value={editingProduct.images?.[0] || ""} onChange={e => setEditingProduct({...editingProduct, images: [e.target.value]})} className="admin-input" />
                 </div>
               </div>
               <div className="space-y-6">
@@ -257,7 +263,7 @@ const AdminDashboard: React.FC = () => {
                       </div>
                       <div className="flex flex-col">
                         <span className="font-black text-lg uppercase">{p.name}</span>
-                        <span className="text-[8px] text-white/20 uppercase tracking-widest">ID: {p.id}</span>
+                        <span className="text-[8px] text-white/20 uppercase tracking-widest">ID: {p.id || p.slug}</span>
                       </div>
                     </td>
                     <td className="p-8">
