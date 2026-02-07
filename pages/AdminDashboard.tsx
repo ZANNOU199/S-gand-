@@ -16,7 +16,6 @@ const AdminDashboard: React.FC = () => {
     isAdminAuthenticated, setAdminAuthenticated, isLoading 
   } = useCMS();
 
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [pinCode, setPinCode] = useState('');
   const [pinError, setPinError] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
@@ -88,7 +87,7 @@ const AdminDashboard: React.FC = () => {
       if (!editingSector.name || !editingSector.slug) return alert("Veuillez remplir le nom et le slug.");
       setIsSaving(true);
       try {
-        if (editingSector.id) {
+        if (editingSector.id || sectors.find(s => s.slug === editingSector.slug)) {
           await updateSector(editingSector.id, editingSector);
         } else {
           await addSector(editingSector);
@@ -139,17 +138,19 @@ const AdminDashboard: React.FC = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {sectors.map(s => (
-            <div key={s.id} className="bg-charcoal rounded-3xl border border-white/5 overflow-hidden shadow-xl group">
+            <div key={s.id || s.slug} className="bg-charcoal rounded-3xl border border-white/5 overflow-hidden shadow-xl group">
               <div className="aspect-video relative bg-black">
                 <img src={s.image || "https://via.placeholder.com/800x600"} className="w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-700" />
                 <div className="absolute inset-0 p-6 flex flex-col justify-end">
                   <p className="font-black text-white uppercase text-xl">{s.name}</p>
-                  <p className="text-[9px] text-primary font-bold tracking-widest uppercase">ID: {s.id.substring(0,8)}...</p>
+                  <p className="text-[9px] text-primary font-bold tracking-widest uppercase">
+                    {s.id ? `ID: ${s.id}` : `SLUG: ${s.slug}`}
+                  </p>
                 </div>
               </div>
               <div className="p-4 flex gap-2 bg-charcoal">
                 <button onClick={() => setEditingSector({...s})} className="flex-1 bg-white/5 py-4 rounded-xl text-[10px] font-black uppercase text-white hover:bg-white/10 transition-all flex items-center justify-center gap-2"><Edit size={14}/> Éditer</button>
-                <button onClick={() => { if(confirm('Supprimer définitivement cet univers ?')) deleteSector(s.id); }} className="p-4 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"><Trash2 size={16}/></button>
+                <button onClick={() => { if(confirm(`Supprimer définitivement l'univers ${s.name} ?`)) deleteSector(s.id); }} className="p-4 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"><Trash2 size={16}/></button>
               </div>
             </div>
           ))}
@@ -249,12 +250,15 @@ const AdminDashboard: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-white/5 text-white">
                 {products.length > 0 ? products.map(p => (
-                  <tr key={p.id} className="hover:bg-white/5 transition-colors group">
+                  <tr key={p.id || p.slug} className="hover:bg-white/5 transition-colors group">
                     <td className="p-8 flex items-center gap-6">
                       <div className="size-16 bg-white/5 rounded-xl flex items-center justify-center overflow-hidden border border-white/5">
                         <img src={p.images[0]} className="w-full h-full object-contain p-2" />
                       </div>
-                      <span className="font-black text-lg uppercase">{p.name}</span>
+                      <div className="flex flex-col">
+                        <span className="font-black text-lg uppercase">{p.name}</span>
+                        <span className="text-[8px] text-white/20 uppercase tracking-widest">ID: {p.id}</span>
+                      </div>
                     </td>
                     <td className="p-8">
                       <span className="text-[10px] font-black uppercase text-sand/60 px-3 py-1 bg-white/5 rounded-full border border-white/10">
@@ -268,7 +272,7 @@ const AdminDashboard: React.FC = () => {
                           <Star size={18} fill={p.isFeatured ? 'currentColor' : 'none'} />
                         </button>
                         <button onClick={() => setEditingProduct({...p})} className="p-3 bg-white/5 text-white/40 hover:text-white rounded-xl border border-white/5 transition-all"><Edit size={18}/></button>
-                        <button onClick={() => { if(confirm('Supprimer définitivement ce produit ?')) deleteProduct(p.id); }} className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"><Trash2 size={18}/></button>
+                        <button onClick={() => { if(confirm(`Supprimer ${p.name} ?`)) deleteProduct(p.id); }} className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"><Trash2 size={18}/></button>
                       </div>
                     </td>
                   </tr>

@@ -24,7 +24,7 @@ const supabase = createClient(
 );
 
 interface Sector {
-  id: string;
+  id: any;
   name: string;
   slug: string;
   image: string;
@@ -38,11 +38,11 @@ interface CMSContextType {
   isLoading: boolean;
   setAdminAuthenticated: (val: boolean) => void;
   addSector: (sector: any) => Promise<void>;
-  updateSector: (id: string, sector: any) => Promise<void>;
-  deleteSector: (id: string) => Promise<void>;
+  updateSector: (id: any, sector: any) => Promise<void>;
+  deleteSector: (id: any) => Promise<void>;
   addProduct: (product: any) => Promise<void>;
   updateProduct: (product: any) => Promise<void>;
-  deleteProduct: (id: string) => Promise<void>;
+  deleteProduct: (id: any) => Promise<void>;
   toggleFeaturedProduct: (productId: string) => Promise<void>;
   updateSiteConfig: (config: any) => Promise<void>;
   refreshData: () => Promise<void>;
@@ -141,23 +141,35 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const addSector = async (sector: any) => {
     const { error } = await supabase.from('sectors').insert([{ name: sector.name, slug: sector.slug, image: sector.image }]);
-    if (error) { alert("Erreur ajout secteur: " + error.message); console.error(error); }
+    if (error) alert("Erreur ajout: " + error.message);
     await fetchData();
   };
 
-  const updateSector = async (id: string, sector: any) => {
+  const updateSector = async (id: any, sector: any) => {
+    // Si l'id est manquant (problème de table SQL), on essaie de matcher par slug
+    const queryField = id ? 'id' : 'slug';
+    const queryValue = id || sector.slug;
+
     const { error } = await supabase.from('sectors').update({ 
       name: sector.name, 
       slug: sector.slug, 
       image: sector.image 
-    }).eq('id', id);
-    if (error) { alert("Erreur modification secteur: " + error.message); console.error(error); }
+    }).eq(queryField, queryValue);
+
+    if (error) alert(`Erreur modification via ${queryField}: ${error.message}`);
     await fetchData();
   };
 
-  const deleteSector = async (id: string) => {
-    const { error } = await supabase.from('sectors').delete().eq('id', id);
-    if (error) { alert("Erreur suppression secteur: " + error.message); console.error(error); }
+  const deleteSector = async (id: any) => {
+    // On cherche d'abord le secteur pour avoir son slug en cas d'id manquant
+    const target = sectors.find(s => s.id === id);
+    const queryField = id ? 'id' : 'slug';
+    const queryValue = id || target?.slug;
+
+    if (!queryValue) return alert("Impossible de trouver l'identifiant pour la suppression.");
+
+    const { error } = await supabase.from('sectors').delete().eq(queryField, queryValue);
+    if (error) alert(`Erreur suppression via ${queryField}: ${error.message}`);
     await fetchData();
   };
 
@@ -170,11 +182,10 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       sector: product.sector,
       category: product.category,
       images: product.images,
-      is_featured: !!product.isFeatured,
-      reviews_count: 0
+      is_featured: !!product.isFeatured
     };
     const { error } = await supabase.from('products').insert([dbProduct]);
-    if (error) { alert("Erreur ajout produit: " + error.message); console.error(error); }
+    if (error) alert("Erreur ajout produit: " + error.message);
     await fetchData();
   };
 
@@ -189,22 +200,29 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       images: product.images,
       is_featured: !!product.isFeatured
     };
-    const { error } = await supabase.from('products').update(dbProduct).eq('id', product.id);
-    if (error) { alert("Erreur modification produit: " + error.message); console.error(error); }
+    // On essaie d'abord l'ID, sinon le slug
+    const queryField = product.id ? 'id' : 'slug';
+    const queryValue = product.id || product.slug;
+
+    const { error } = await supabase.from('products').update(dbProduct).eq(queryField, queryValue);
+    if (error) alert(`Erreur modification produit via ${queryField}: ${error.message}`);
     await fetchData();
   };
 
-  const deleteProduct = async (id: string) => {
-    const { error } = await supabase.from('products').delete().eq('id', id);
-    if (error) { alert("Erreur suppression produit: " + error.message); console.error(error); }
+  const deleteProduct = async (id: any) => {
+    const target = products.find(p => p.id === id);
+    const queryField = id ? 'id' : 'slug';
+    const queryValue = id || target?.slug;
+
+    const { error } = await supabase.from('products').delete().eq(queryField, queryValue);
+    if (error) alert(`Erreur suppression produit via ${queryField}: ${error.message}`);
     await fetchData();
   };
 
   const toggleFeaturedProduct = async (id: string) => {
     const p = products.find(prod => prod.id === id);
     if (!p) return;
-    const { error } = await supabase.from('products').update({ is_featured: !p.isFeatured }).eq('id', id);
-    if (error) console.error(error);
+    await supabase.from('products').update({ is_featured: !p.isFeatured }).eq('id', id);
     await fetchData();
   };
 
@@ -247,7 +265,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <div className="min-h-screen bg-background-dark flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-primary font-black uppercase tracking-[0.5em] animate-pulse mb-2">SÈGANDÉ</h2>
-          <p className="text-sand/20 text-[9px] uppercase font-bold tracking-widest">Connexion Cloud...</p>
+          <p className="text-sand/20 text-[9px] uppercase font-bold tracking-widest">Initialisation Cloud...</p>
         </div>
       </div>
     );
