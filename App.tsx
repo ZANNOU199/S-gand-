@@ -89,11 +89,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   });
 
   const mapProductFromDB = (p: any): Product => {
-    // Nettoyage des images : s'assurer qu'on a un tableau et qu'il n'est pas vide
     let productImages = Array.isArray(p.images) ? p.images.filter(img => img && img.trim() !== "") : [];
-    if (productImages.length === 0) {
-      productImages = ["https://via.placeholder.com/600x800?text=SÈGANDÉ+LUXE"];
-    }
+    if (productImages.length === 0) productImages = ["https://via.placeholder.com/600x800?text=SÈGANDÉ+LUXE"];
 
     return {
       id: p.id,
@@ -115,35 +112,26 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      // 1. Fetch Sectors
-      const { data: sData } = await supabase.from('sectors').select('*');
+      const { data: sData, error: sError } = await supabase.from('sectors').select('*');
+      if (sError) console.error("Error sectors:", sError);
       if (sData) setSectors(sData);
 
-      // 2. Fetch Products (Tri simplifié pour éviter les erreurs de colonnes manquantes)
       const { data: pData, error: pError } = await supabase.from('products').select('*');
-      if (pError) console.error("Erreur Supabase Produits:", pError);
-      
-      // Toujours définir un tableau, même vide, pour éviter le "null"
-      const mappedProducts = (pData || []).map(mapProductFromDB);
-      setProducts(mappedProducts);
+      if (pError) console.error("Error products:", pError);
+      setProducts((pData || []).map(mapProductFromDB));
 
-      // 3. Fetch Site Config
       const { data: cData } = await supabase.from('site_config').select('*').eq('id', 'global');
-      if (cData && cData.length > 0) {
-        setSiteConfig(cData[0].data);
-      } else {
-        // Fallback site config
-        setSiteConfig({
-          heroTitle: "SÈGANDÉ",
-          heroSubtitle: "L'Âme Moderne de l'Afrique",
-          heroImage: "https://images.unsplash.com/photo-1549490349-8643362247b5",
-          contact: { title: "Contact", subtitle: "Nous sommes à votre écoute", email: "contact@segande.com", phone1: "+229 00000000", phone2: "", address: "Cotonou, Bénin" },
-          footer: { aboutText: "Maison de luxe africaine." },
-          editorial: { heroTitle: "Artisanat", heroImage: "", sections: [] }
-        });
-      }
+      if (cData && cData.length > 0) setSiteConfig(cData[0].data);
+      else setSiteConfig({
+        heroTitle: "SÈGANDÉ",
+        heroSubtitle: "L'Âme Moderne de l'Afrique",
+        heroImage: "https://images.unsplash.com/photo-1549490349-8643362247b5",
+        contact: { title: "Contact", subtitle: "Nous sommes à votre écoute", email: "contact@segande.com", phone1: "+229 00000000", phone2: "", address: "Cotonou, Bénin" },
+        footer: { aboutText: "Maison de luxe africaine." },
+        editorial: { heroTitle: "Artisanat", heroImage: "", sections: [] }
+      });
     } catch (e) {
-      console.error("Erreur critique de synchronisation:", e);
+      console.error("Critical error:", e);
     } finally {
       setIsLoading(false);
     }
@@ -152,52 +140,71 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   useEffect(() => { fetchData(); }, []);
 
   const addSector = async (sector: any) => {
-    await supabase.from('sectors').insert([sector]);
+    const { error } = await supabase.from('sectors').insert([{ name: sector.name, slug: sector.slug, image: sector.image }]);
+    if (error) { alert("Erreur ajout secteur: " + error.message); console.error(error); }
     await fetchData();
   };
 
   const updateSector = async (id: string, sector: any) => {
-    const { id: _, ...updateData } = sector;
-    await supabase.from('sectors').update(updateData).eq('id', id);
+    const { error } = await supabase.from('sectors').update({ 
+      name: sector.name, 
+      slug: sector.slug, 
+      image: sector.image 
+    }).eq('id', id);
+    if (error) { alert("Erreur modification secteur: " + error.message); console.error(error); }
     await fetchData();
   };
 
   const deleteSector = async (id: string) => {
-    await supabase.from('sectors').delete().eq('id', id);
+    const { error } = await supabase.from('sectors').delete().eq('id', id);
+    if (error) { alert("Erreur suppression secteur: " + error.message); console.error(error); }
     await fetchData();
   };
 
   const addProduct = async (product: any) => {
-    const { id, isFeatured, reviewsCount, ...rest } = product;
     const dbProduct = {
-      ...rest,
-      is_featured: !!isFeatured,
-      reviews_count: reviewsCount || 0
+      name: product.name,
+      slug: product.slug,
+      price: Number(product.price),
+      description: product.description,
+      sector: product.sector,
+      category: product.category,
+      images: product.images,
+      is_featured: !!product.isFeatured,
+      reviews_count: 0
     };
-    await supabase.from('products').insert([dbProduct]);
+    const { error } = await supabase.from('products').insert([dbProduct]);
+    if (error) { alert("Erreur ajout produit: " + error.message); console.error(error); }
     await fetchData();
   };
 
   const updateProduct = async (product: any) => {
-    const { id, isFeatured, reviewsCount, ...rest } = product;
     const dbProduct = {
-      ...rest,
-      is_featured: !!isFeatured,
-      reviews_count: reviewsCount || 0
+      name: product.name,
+      slug: product.slug,
+      price: Number(product.price),
+      description: product.description,
+      sector: product.sector,
+      category: product.category,
+      images: product.images,
+      is_featured: !!product.isFeatured
     };
-    await supabase.from('products').update(dbProduct).eq('id', id);
+    const { error } = await supabase.from('products').update(dbProduct).eq('id', product.id);
+    if (error) { alert("Erreur modification produit: " + error.message); console.error(error); }
     await fetchData();
   };
 
   const deleteProduct = async (id: string) => {
-    await supabase.from('products').delete().eq('id', id);
+    const { error } = await supabase.from('products').delete().eq('id', id);
+    if (error) { alert("Erreur suppression produit: " + error.message); console.error(error); }
     await fetchData();
   };
 
   const toggleFeaturedProduct = async (id: string) => {
     const p = products.find(prod => prod.id === id);
     if (!p) return;
-    await supabase.from('products').update({ is_featured: !p.isFeatured }).eq('id', id);
+    const { error } = await supabase.from('products').update({ is_featured: !p.isFeatured }).eq('id', id);
+    if (error) console.error(error);
     await fetchData();
   };
 
@@ -210,10 +217,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const addToCart = (product: Product, variantId: string, quantity: number) => {
     setCart(prev => {
       const existing = prev.find(item => item.productId === product.id && item.variantId === variantId);
-      if (existing) {
-        return prev.map(item => item.id === existing.id ? { ...item, quantity: item.quantity + quantity } : item);
-      }
-      const variant = product.variants.find(v => v.id === variantId);
+      if (existing) return prev.map(item => item.id === existing.id ? { ...item, quantity: item.quantity + quantity } : item);
       return [...prev, {
         id: Math.random().toString(36).substr(2, 9),
         productId: product.id,
@@ -222,15 +226,13 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         price: product.price,
         name: product.name,
         image: product.images[0],
-        variantName: `${variant?.color || ''} - ${variant?.size || ''}`
+        variantName: "Standard"
       }];
     });
   };
 
   const removeFromCart = (itemId: string) => setCart(prev => prev.filter(i => i.id !== itemId));
-  const updateQuantity = (itemId: string, quantity: number) => {
-    setCart(prev => prev.map(i => i.id === itemId ? { ...i, quantity: Math.max(1, quantity) } : i));
-  };
+  const updateQuantity = (itemId: string, quantity: number) => setCart(prev => prev.map(i => i.id === itemId ? { ...i, quantity: Math.max(1, quantity) } : i));
   const toggleWishlist = (id: string) => setWishlist(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
   const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
@@ -245,7 +247,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <div className="min-h-screen bg-background-dark flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-primary font-black uppercase tracking-[0.5em] animate-pulse mb-2">SÈGANDÉ</h2>
-          <p className="text-sand/20 text-[9px] uppercase font-bold tracking-widest">Initialisation du Cloud...</p>
+          <p className="text-sand/20 text-[9px] uppercase font-bold tracking-widest">Connexion Cloud...</p>
         </div>
       </div>
     );
