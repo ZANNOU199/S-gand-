@@ -134,7 +134,7 @@ const AdminDashboard: React.FC = () => {
           {sectors.map(s => (
             <div key={s.id} className="bg-charcoal rounded-3xl border border-white/5 overflow-hidden shadow-xl">
               <div className="aspect-video bg-black/40 relative">
-                <img src={s.image} className="w-full h-full object-cover opacity-50" />
+                <img src={s.image || "https://via.placeholder.com/800x600"} className="w-full h-full object-cover opacity-50" />
                 <div className="absolute inset-0 p-6 flex flex-col justify-end">
                   <p className="font-black text-white uppercase text-xl">{s.name}</p>
                 </div>
@@ -191,8 +191,8 @@ const AdminDashboard: React.FC = () => {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-sand/40 tracking-widest">Lien Image</label>
-                  <input value={editingProduct.images[0]} onChange={e => setEditingProduct({...editingProduct, images: [e.target.value]})} className="admin-input" />
+                  <label className="text-[10px] font-black uppercase text-sand/40 tracking-widest">Lien Image Principale</label>
+                  <input value={editingProduct.images[0] || ""} onChange={e => setEditingProduct({...editingProduct, images: [e.target.value]})} className="admin-input" />
                 </div>
               </div>
               <div className="space-y-6">
@@ -201,7 +201,7 @@ const AdminDashboard: React.FC = () => {
                   <textarea value={editingProduct.description} onChange={e => setEditingProduct({...editingProduct, description: e.target.value})} className="admin-input h-[214px] resize-none" />
                 </div>
                 <div className="flex items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/5">
-                  <label className="flex-1 text-[10px] font-black uppercase tracking-widest">Produit mis en avant</label>
+                  <label className="flex-1 text-[10px] font-black uppercase tracking-widest">Mettre en avant sur l'accueil</label>
                   <input type="checkbox" checked={editingProduct.isFeatured} onChange={e => setEditingProduct({...editingProduct, isFeatured: e.target.checked})} className="size-6 accent-primary" />
                 </div>
               </div>
@@ -219,7 +219,7 @@ const AdminDashboard: React.FC = () => {
       <div className="space-y-12">
         <div className="flex justify-between items-center">
           <h2 className="text-4xl font-black uppercase">Inventaire</h2>
-          <button onClick={() => setEditingProduct({ name: '', slug: '', price: 0, sector: sectors[0]?.slug, images: [''], description: '', isFeatured: false, variants: [], badges: [] })} className="bg-primary text-black px-8 py-4 rounded-xl font-black text-[10px] uppercase flex items-center gap-2">
+          <button onClick={() => setEditingProduct({ name: '', slug: '', price: 0, sector: sectors[0]?.slug || '', images: [''], description: '', isFeatured: false, variants: [], badges: [] })} className="bg-primary text-black px-8 py-4 rounded-xl font-black text-[10px] uppercase flex items-center gap-2">
             <Plus size={16} /> Ajouter une pièce
           </button>
         </div>
@@ -235,7 +235,7 @@ const AdminDashboard: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {products.map(p => (
+                {products.length > 0 ? products.map(p => (
                   <tr key={p.id} className="hover:bg-white/5 transition-colors">
                     <td className="p-8 flex items-center gap-6">
                       <div className="size-16 bg-white/5 rounded-xl flex items-center justify-center overflow-hidden">
@@ -249,7 +249,7 @@ const AdminDashboard: React.FC = () => {
                     <td className="p-8 font-black text-primary">{p.price.toLocaleString()} FCFA</td>
                     <td className="p-8">
                       <div className="flex justify-end gap-3">
-                        <button onClick={() => toggleFeaturedProduct(p.id)} className={`p-3 rounded-xl transition-all ${p.isFeatured ? 'bg-primary text-black' : 'bg-white/5 text-white/20'}`}>
+                        <button onClick={() => toggleFeaturedProduct(p.id)} title="Mettre en avant" className={`p-3 rounded-xl transition-all ${p.isFeatured ? 'bg-primary text-black' : 'bg-white/5 text-white/20 hover:text-white/40'}`}>
                           <Star size={18} fill={p.isFeatured ? 'currentColor' : 'none'} />
                         </button>
                         <button onClick={() => setEditingProduct({...p})} className="p-3 bg-white/5 text-white/40 hover:text-white rounded-xl"><Edit size={18}/></button>
@@ -257,7 +257,13 @@ const AdminDashboard: React.FC = () => {
                       </div>
                     </td>
                   </tr>
-                ))}
+                )) : (
+                  <tr>
+                    <td colSpan={4} className="p-20 text-center text-sand/20 uppercase font-black tracking-widest">
+                      L'inventaire est vide.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

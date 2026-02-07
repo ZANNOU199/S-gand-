@@ -88,34 +88,62 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return saved ? JSON.parse(saved) : [];
   });
 
-  const mapProductFromDB = (p: any): Product => ({
-    id: p.id,
-    name: p.name || '',
-    slug: p.slug || '',
-    description: p.description || '',
-    price: Number(p.price) || 0,
-    images: Array.isArray(p.images) ? p.images : [],
-    variants: Array.isArray(p.variants) ? p.variants : [],
-    category: p.category || '',
-    sector: p.sector || '',
-    rating: p.rating || 5,
-    reviewsCount: p.reviews_count || 0,
-    badges: Array.isArray(p.badges) ? p.badges : [],
-    isFeatured: p.is_featured === true
-  });
+  const mapProductFromDB = (p: any): Product => {
+    // Nettoyage des images : s'assurer qu'on a un tableau et qu'il n'est pas vide
+    let productImages = Array.isArray(p.images) ? p.images.filter(img => img && img.trim() !== "") : [];
+    if (productImages.length === 0) {
+      productImages = ["https://via.placeholder.com/600x800?text=SÈGANDÉ+LUXE"];
+    }
+
+    return {
+      id: p.id,
+      name: p.name || 'Sans nom',
+      slug: p.slug || `piece-${p.id}`,
+      description: p.description || '',
+      price: Number(p.price) || 0,
+      images: productImages,
+      variants: Array.isArray(p.variants) ? p.variants : [],
+      category: p.category || '',
+      sector: p.sector || '',
+      rating: p.rating || 5,
+      reviewsCount: p.reviews_count || 0,
+      badges: Array.isArray(p.badges) ? p.badges : [],
+      isFeatured: !!p.is_featured
+    };
+  };
 
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const { data: sData } = await supabase.from('sectors').select('*').order('name');
-      const { data: pData } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-      const { data: cData } = await supabase.from('site_config').select('*').eq('id', 'global');
-      
+      // 1. Fetch Sectors
+      const { data: sData } = await supabase.from('sectors').select('*');
       if (sData) setSectors(sData);
-      if (pData) setProducts(pData.map(mapProductFromDB));
-      if (cData && cData.length > 0) setSiteConfig(cData[0].data);
+
+      // 2. Fetch Products (Tri simplifié pour éviter les erreurs de colonnes manquantes)
+      const { data: pData, error: pError } = await supabase.from('products').select('*');
+      if (pError) console.error("Erreur Supabase Produits:", pError);
+      
+      // Toujours définir un tableau, même vide, pour éviter le "null"
+      const mappedProducts = (pData || []).map(mapProductFromDB);
+      setProducts(mappedProducts);
+
+      // 3. Fetch Site Config
+      const { data: cData } = await supabase.from('site_config').select('*').eq('id', 'global');
+      if (cData && cData.length > 0) {
+        setSiteConfig(cData[0].data);
+      } else {
+        // Fallback site config
+        setSiteConfig({
+          heroTitle: "SÈGANDÉ",
+          heroSubtitle: "L'Âme Moderne de l'Afrique",
+          heroImage: "https://images.unsplash.com/photo-1549490349-8643362247b5",
+          contact: { title: "Contact", subtitle: "Nous sommes à votre écoute", email: "contact@segande.com", phone1: "+229 00000000", phone2: "", address: "Cotonou, Bénin" },
+          footer: { aboutText: "Maison de luxe africaine." },
+          editorial: { heroTitle: "Artisanat", heroImage: "", sections: [] }
+        });
+      }
     } catch (e) {
-      console.error("Fetch Error:", e);
+      console.error("Erreur critique de synchronisation:", e);
     } finally {
       setIsLoading(false);
     }
@@ -129,8 +157,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   const updateSector = async (id: string, sector: any) => {
-    const { error } = await supabase.from('sectors').update(sector).eq('id', id);
-    if (error) console.error("Update Sector Error:", error);
+    const { id: _, ...updateData } = sector;
+    await supabase.from('sectors').update(updateData).eq('id', id);
     await fetchData();
   };
 
@@ -143,8 +171,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { id, isFeatured, reviewsCount, ...rest } = product;
     const dbProduct = {
       ...rest,
-      is_featured: isFeatured,
-      reviews_count: reviewsCount
+      is_featured: !!isFeatured,
+      reviews_count: reviewsCount || 0
     };
     await supabase.from('products').insert([dbProduct]);
     await fetchData();
@@ -154,17 +182,15 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { id, isFeatured, reviewsCount, ...rest } = product;
     const dbProduct = {
       ...rest,
-      is_featured: isFeatured,
-      reviews_count: reviewsCount
+      is_featured: !!isFeatured,
+      reviews_count: reviewsCount || 0
     };
-    const { error } = await supabase.from('products').update(dbProduct).eq('id', id);
-    if (error) console.error("Update Product Error:", error);
+    await supabase.from('products').update(dbProduct).eq('id', id);
     await fetchData();
   };
 
   const deleteProduct = async (id: string) => {
-    const { error } = await supabase.from('products').delete().eq('id', id);
-    if (error) console.error("Delete Product Error:", error);
+    await supabase.from('products').delete().eq('id', id);
     await fetchData();
   };
 
@@ -215,7 +241,14 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }, [cart, wishlist]);
 
   if (isLoading || !siteConfig) {
-    return <div className="min-h-screen bg-background-dark flex items-center justify-center text-primary uppercase font-black">Chargement...</div>;
+    return (
+      <div className="min-h-screen bg-background-dark flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-primary font-black uppercase tracking-[0.5em] animate-pulse mb-2">SÈGANDÉ</h2>
+          <p className="text-sand/20 text-[9px] uppercase font-bold tracking-widest">Initialisation du Cloud...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
