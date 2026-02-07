@@ -3,7 +3,6 @@ import React, { useState, createContext, useContext, useEffect } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
 import { CartItem, Product } from './types';
-import { SECTORS, FEATURED_PRODUCTS } from './constants';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -98,50 +97,48 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return saved ? JSON.parse(saved) : [];
   });
 
-  const mapProductFromDB = (p: any): Product => ({
-    id: String(p.id),
-    name: p.name || 'Sans nom',
-    slug: p.slug || `piece-${p.id}`,
-    description: p.description || '',
-    price: Number(p.price) || 0,
-    images: Array.isArray(p.images) && p.images.length > 0 ? p.images : ["https://via.placeholder.com/600x800?text=SÈGANDÉ"],
-    variants: Array.isArray(p.variants) ? p.variants : [],
-    category: p.category || '',
-    sector: p.sector || '',
-    rating: p.rating || 5,
-    reviewsCount: p.reviews_count || 0,
-    badges: Array.isArray(p.badges) ? p.badges : [],
-    isFeatured: !!p.is_featured
-  });
+  const parseSafe = (data: any) => {
+    if (typeof data === 'string') {
+      try { return JSON.parse(data); } catch (e) { return []; }
+    }
+    return Array.isArray(data) ? data : [];
+  };
+
+  const mapProductFromDB = (p: any): Product => {
+    const images = parseSafe(p.images);
+    return {
+      id: String(p.id),
+      name: p.name || 'Sans nom',
+      slug: p.slug || `piece-${p.id}`,
+      description: p.description || '',
+      price: Number(p.price) || 0,
+      images: images.length > 0 ? images : ["https://via.placeholder.com/600x800?text=SÈGANDÉ"],
+      variants: parseSafe(p.variants),
+      category: p.category || 'Non classé',
+      sector: p.sector || '',
+      rating: p.rating || 5,
+      reviewsCount: p.reviews_count || 0,
+      badges: parseSafe(p.badges),
+      isFeatured: !!p.is_featured
+    };
+  };
 
   const fetchData = async () => {
     try {
-      const { data: sData } = await supabase.from('sectors').select('*').order('id');
-      const { data: pData } = await supabase.from('products').select('*').order('id');
-      const { data: cData } = await supabase.from('site_config').select('*').eq('id', 'global');
+      const { data: sData, error: sErr } = await supabase.from('sectors').select('*').order('id');
+      const { data: pData, error: pErr } = await supabase.from('products').select('*').order('id');
+      const { data: cData, error: cErr } = await supabase.from('site_config').select('*').eq('id', 'global');
 
-      if (sData && sData.length > 0) {
-        setSectors(sData);
-      } else {
-        // Fallback vers les constantes si vide
-        setSectors(SECTORS.map((s, i) => ({ ...s, id: i + 1 })));
-      }
+      if (sErr) console.error("Erreur Sectors:", sErr);
+      if (pErr) console.error("Erreur Products:", pErr);
+      if (cErr) console.error("Erreur Config:", cErr);
 
-      if (pData && pData.length > 0) {
-        setProducts(pData.map(mapProductFromDB));
-      } else {
-        // Fallback vers les constantes si vide
-        setProducts(FEATURED_PRODUCTS.map(p => ({ ...p, isFeatured: true })));
-      }
-
-      if (cData && cData.length > 0) {
-        setSiteConfig(cData[0].data);
-      }
+      if (sData) setSectors(sData);
+      if (pData) setProducts(pData.map(mapProductFromDB));
+      if (cData && cData.length > 0) setSiteConfig(cData[0].data);
+      
     } catch (e) {
-      console.error("Erreur de récupération cloud, utilisation des fallbacks locaux:", e);
-      // En cas d'erreur réseau totale, on s'assure d'avoir les données locales
-      if (sectors.length === 0) setSectors(SECTORS.map((s, i) => ({ ...s, id: i + 1 })));
-      if (products.length === 0) setProducts(FEATURED_PRODUCTS.map(p => ({ ...p, isFeatured: true })));
+      console.error("Erreur fatale Supabase:", e);
     } finally {
       setIsLoading(false);
     }
@@ -149,9 +146,6 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   useEffect(() => { 
     fetchData(); 
-    // Timeout de sécurité : si après 5s on charge encore, on force l'affichage
-    const timer = setTimeout(() => setIsLoading(false), 5000);
-    return () => clearTimeout(timer);
   }, []);
 
   const addSector = async (sector: any) => {
@@ -172,7 +166,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const addProduct = async (p: any) => {
     await supabase.from('products').insert([{
       name: p.name, slug: p.slug, price: p.price, description: p.description, 
-      sector: p.sector, images: p.images, is_featured: p.isFeatured
+      sector: p.sector, images: p.images, is_featured: p.isFeatured,
+      category: p.category, variants: p.variants, badges: p.badges
     }]);
     await fetchData();
   };
@@ -180,7 +175,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const updateProduct = async (p: any) => {
     await supabase.from('products').update({
       name: p.name, slug: p.slug, price: p.price, description: p.description, 
-      sector: p.sector, images: p.images, is_featured: p.isFeatured
+      sector: p.sector, images: p.images, is_featured: p.isFeatured,
+      category: p.category, variants: p.variants, badges: p.badges
     }).eq('id', Number(p.id));
     await fetchData();
   };
@@ -215,7 +211,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         price: product.price,
         name: product.name,
         image: product.images[0],
-        variantName: "Standard"
+        variantName: product.variants.find(v => v.id === variantId)?.color || "Standard"
       }];
     });
   };
@@ -236,7 +232,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <div className="min-h-screen bg-background-dark flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-primary font-black uppercase tracking-[0.5em] animate-pulse mb-2">SÈGANDÉ</h2>
-          <p className="text-sand/20 text-[9px] uppercase font-bold tracking-widest">Synchronisation Cloud...</p>
+          <p className="text-sand/20 text-[9px] uppercase font-bold tracking-widest">Initialisation de la Maison...</p>
         </div>
       </div>
     );
