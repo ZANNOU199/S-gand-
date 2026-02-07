@@ -11,7 +11,7 @@ const Contact: React.FC = () => {
     <div className="bg-background-dark min-h-screen py-16 md:py-24 px-6 md:px-8 text-white">
       <div className="max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 md:gap-24">
         <div className="animate-in fade-in slide-in-from-left duration-700">
-          <span className="text-primary font-black uppercase tracking-widest text-[10px] mb-4 block">Connect with us</span>
+          <span className="text-primary font-black uppercase tracking-widest text-[10px] mb-4 block">Nous Contacter</span>
           <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-8 leading-[0.9] uppercase">{contact.title.split(' ').map((w,i)=><React.Fragment key={i}>{w}<br/></React.Fragment>)}</h1>
           <p className="text-sand/50 text-sm md:text-base leading-relaxed mb-12 max-w-md uppercase font-bold tracking-wide">
             {contact.subtitle}
@@ -23,7 +23,7 @@ const Contact: React.FC = () => {
                 <Mail size={20} />
               </div>
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest mb-1 text-sand/40">Email Concierge</p>
+                <p className="text-[10px] font-black uppercase tracking-widest mb-1 text-sand/40">Email</p>
                 <p className="text-base font-bold text-white">{contact.email}</p>
               </div>
             </div>
@@ -32,7 +32,7 @@ const Contact: React.FC = () => {
                 <Phone size={20} />
               </div>
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest mb-1 text-sand/40">Direct Lines</p>
+                <p className="text-[10px] font-black uppercase tracking-widest mb-1 text-sand/40">Téléphone</p>
                 <p className="text-base font-bold text-white">{contact.phone1}</p>
                 <p className="text-base font-bold text-white/60">{contact.phone2}</p>
               </div>
@@ -42,7 +42,7 @@ const Contact: React.FC = () => {
                 <MapPin size={20} />
               </div>
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest mb-1 text-sand/40">Flagship Studio</p>
+                <p className="text-[10px] font-black uppercase tracking-widest mb-1 text-sand/40">Adresse</p>
                 <p className="text-base font-bold text-white">{contact.address}</p>
               </div>
             </div>
@@ -50,7 +50,7 @@ const Contact: React.FC = () => {
         </div>
 
         <div className="bg-charcoal p-8 md:p-12 rounded-3xl border border-white/5 animate-in fade-in slide-in-from-right duration-700">
-          <h3 className="text-2xl font-black uppercase mb-8 tracking-tight">Send a Message</h3>
+          <h3 className="text-2xl font-black uppercase mb-8 tracking-tight">Envoyer un Message</h3>
           <form className="space-y-6" onSubmit={e => e.preventDefault()}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">

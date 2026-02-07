@@ -43,17 +43,14 @@ const Footer: React.FC = () => {
                   <Link to={`/category/${sector.slug}`} className="hover:text-primary transition-colors">{sector.name}</Link>
                 </li>
               ))}
-              <li><Link to="/category/all" className="hover:text-primary transition-colors">Pièces Uniques</Link></li>
+              <li><Link to="/category/all" className="hover:text-primary transition-colors">Meilleures ventes</Link></li>
             </ul>
           </div>
 
           <div>
             <h4 className="text-white font-bold text-[10px] uppercase tracking-widest mb-6">Conciergerie</h4>
             <ul className="space-y-4 text-sand/40 text-[11px] uppercase font-black">
-              <li><Link to="#" className="hover:text-primary transition-colors">Expédition Monde</Link></li>
-              <li><Link to="#" className="hover:text-primary transition-colors">Paiement Sécurisé</Link></li>
               <li><Link to="/contact" className="hover:text-primary transition-colors">Nous Contacter</Link></li>
-              <li><Link to="/quiz" className="hover:text-primary transition-colors">Quiz de Style AI</Link></li>
             </ul>
           </div>
 
