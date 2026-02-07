@@ -3,7 +3,6 @@ import React, { useState, createContext, useContext, useEffect } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
 import { CartItem, Product } from './types';
-import { SECTORS, FEATURED_PRODUCTS } from './constants';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -37,6 +36,7 @@ interface CMSContextType {
   products: Product[];
   isAdminAuthenticated: boolean;
   isLoading: boolean;
+  error: string | null;
   setAdminAuthenticated: (val: boolean) => void;
   addSector: (sector: any) => Promise<void>;
   updateSector: (id: number, sector: any) => Promise<void>;
@@ -73,42 +73,13 @@ export const useCart = () => {
   return context;
 };
 
-// NOUVELLES VALEURS PAR DÉFAUT (Fidèles à ta demande)
-const DEFAULT_CONFIG = {
-  heroTitle: "THE MODERN SOUL OF AFRICA",
-  heroSubtitle: "Authentic craftsmanship meets contemporary luxury. Discover the essence of SÈGANDÉ.",
-  heroImage: "https://lh3.googleusercontent.com/aida-public/AB6AXuDBYQmVC8vZfGs0ngaCbdT5xtxUTngbs-h4NHeitJaxHnviefXNQBZTjJcLAP82o9MS5sLQaSnc8bcg5sGmGFbIdDvht7ukSV8GdFMC-JQw3x7sN3ychXmMLhPuSq1KhZdR-98ElfhTrvFPTas00RrYfakji60hzlLK-BN6-qto-oZmQlVQJ_4As3FN5FR0lb5mgcNUlqUapkOeHqhNIRdRNqq44HrZMH41WoMfCjpUfEDmVYmqsyVwvtI7KmjfETuSbUZ2vKg1rKDu",
-  contact: { 
-    title: "Personal Concierge", 
-    subtitle: "Our specialized team is available to assist you with every request.", 
-    email: "concierge@segande.com", 
-    phone1: "+229 96 11 37 38", 
-    phone2: "+229 64 01 70 66", 
-    address: "Victoria Island, Lagos, Nigeria" 
-  },
-  footer: { 
-    aboutText: "SÈGANDÉ : L'excellence africaine redéfinie pour le monde contemporain." 
-  },
-  editorial: { 
-    heroTitle: "L'Artisanat du Temps", 
-    heroImage: "https://lh3.googleusercontent.com/aida-public/AB6AXuAfJlmBSowEjlbIFfda3GxFvnQdRa6cYM_Ll4IaA7gSE6BAKNsx657dPZqJK-20U4b-JfvY0q9NN1krfY8oPbxxxCtRpkgE7MgoPtnM9ml-q6wVZQk1TvKe8Vz3cPWosvtHk_wrz6fZz-saNYECI86SaTKxLvWjm6ONSqHaYzv4MAIOm-lqyJ8-c0nJAWx5JPVN6a8upMqKrNSPtB8OqHnd2Eaxl1dFbEuanBMMRzmBaeg1RGOBh-m3e5dCI4RRH-brbb2ZekHqLnCT", 
-    sections: [
-      {
-        title: "Héritage Vivant",
-        quote: "Chaque geste est une transmission.",
-        text: "Chez SÈGANDÉ, nous croyons que le véritable luxe réside dans l'histoire racontée par la main de l'artisan.",
-        image: "https://lh3.googleusercontent.com/aida-public/AB6AXuD93fN8m3hF8z8k5S9Xz0nU7X8N6J6m6T8O9V0X1Y2Z3A4B5C6D7E8F9G0H"
-      }
-    ] 
-  }
-};
-
 const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAdminAuthenticated, setAdminAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [sectors, setSectors] = useState<Sector[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [siteConfig, setSiteConfig] = useState<any>(DEFAULT_CONFIG);
+  const [siteConfig, setSiteConfig] = useState<any>(null);
 
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
@@ -116,6 +87,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       return saved ? JSON.parse(saved) : [];
     } catch { return []; }
   });
+  
   const [wishlist, setWishlist] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('wishlist');
@@ -125,12 +97,12 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const mapProductFromDB = (p: any): Product => ({
     id: String(p.id),
-    name: p.name || 'Pièce SÈGANDÉ',
-    slug: p.slug || `product-${p.id}`,
+    name: p.name || '',
+    slug: p.slug || '',
     description: p.description || '',
     price: Number(p.price) || 0,
-    images: Array.isArray(p.images) && p.images.length > 0 ? p.images : ["https://via.placeholder.com/600x800?text=SÈGANDÉ"],
-    variants: Array.isArray(p.variants) && p.variants.length > 0 ? p.variants : [{ id: "v1", color: "Unique", size: "Standard", stock: 10, sku: "SKU" }],
+    images: Array.isArray(p.images) ? p.images : [],
+    variants: Array.isArray(p.variants) ? p.variants : [],
     category: p.category || '',
     sector: p.sector || '',
     rating: Number(p.rating) || 5,
@@ -140,41 +112,30 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   });
 
   const fetchData = async () => {
+    setIsLoading(true);
+    setError(null);
     try {
-      // Tentative de récupération, si erreur (table inexistante), on passe au catch
       const [sectorsRes, productsRes, configRes] = await Promise.all([
         supabase.from('sectors').select('*').order('id'),
         supabase.from('products').select('*').order('id'),
         supabase.from('site_config').select('*').eq('id', 'global').maybeSingle()
       ]);
 
-      if (sectorsRes.data && sectorsRes.data.length > 0) {
-        setSectors(sectorsRes.data);
-      } else {
-        setSectors(SECTORS.map((s, i) => ({ ...s, id: i + 1 })));
-      }
+      if (sectorsRes.error) throw sectorsRes.error;
+      if (productsRes.error) throw productsRes.error;
 
-      if (productsRes.data && productsRes.data.length > 0) {
-        setProducts(productsRes.data.map(mapProductFromDB));
-      } else {
-        setProducts(FEATURED_PRODUCTS.map(p => ({ ...p, isFeatured: true })));
-      }
-
+      setSectors(sectorsRes.data || []);
+      setProducts((productsRes.data || []).map(mapProductFromDB));
+      
       if (configRes.data && configRes.data.data) {
-        const cloudData = configRes.data.data;
-        setSiteConfig({
-          ...DEFAULT_CONFIG,
-          ...cloudData,
-          contact: { ...DEFAULT_CONFIG.contact, ...(cloudData.contact || {}) },
-          footer: { ...DEFAULT_CONFIG.footer, ...(cloudData.footer || {}) },
-          editorial: { ...DEFAULT_CONFIG.editorial, ...(cloudData.editorial || {}) }
-        });
+        setSiteConfig(configRes.data.data);
+      } else {
+        // Strictement null si rien en DB
+        setSiteConfig(null);
       }
-    } catch (e) {
-      console.warn("Utilisation des données locales (Supabase non configuré ou tables manquantes)");
-      setSectors(SECTORS.map((s, i) => ({ ...s, id: i + 1 })));
-      setProducts(FEATURED_PRODUCTS.map(p => ({ ...p, isFeatured: true })));
-      setSiteConfig(DEFAULT_CONFIG);
+    } catch (e: any) {
+      console.error("DB Fetch Error:", e);
+      setError(e.message || "Impossible d'accéder au Cloud SÈGANDÉ.");
     } finally {
       setIsLoading(false);
     }
@@ -193,9 +154,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (p) { await supabase.from('products').update({ is_featured: !p.isFeatured }).eq('id', Number(id)); await fetchData(); }
   };
   const updateSiteConfig = async (newConfig: any) => {
-    const updated = { ...siteConfig, ...newConfig };
-    await supabase.from('site_config').upsert({ id: 'global', data: updated });
-    setSiteConfig(updated);
+    await supabase.from('site_config').upsert({ id: 'global', data: newConfig });
+    setSiteConfig(newConfig);
   };
 
   const addToCart = (product: Product, variantId: string, quantity: number) => {
@@ -228,7 +188,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <CMSContext.Provider value={{ 
-      siteConfig, sectors, products, isAdminAuthenticated, isLoading, setAdminAuthenticated,
+      siteConfig, sectors, products, isAdminAuthenticated, isLoading, error, setAdminAuthenticated,
       addSector, updateSector, deleteSector, addProduct, updateProduct, deleteProduct, toggleFeaturedProduct, updateSiteConfig,
       refreshData: fetchData
     }}>
@@ -237,8 +197,17 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <div className="min-h-screen bg-background-dark flex items-center justify-center">
             <div className="text-center">
               <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-              <h2 className="text-primary font-black uppercase tracking-[0.5em] mb-2">SÈGANDÉ</h2>
-              <p className="text-sand/20 text-[9px] uppercase font-bold tracking-widest">Initialisation Cloud...</p>
+              <h2 className="text-primary font-black uppercase tracking-[0.5em] mb-2 text-xs">SÈGANDÉ</h2>
+              <p className="text-sand/20 text-[8px] uppercase font-bold tracking-[0.3em]">Lecture Base de Données...</p>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="min-h-screen bg-background-dark flex items-center justify-center p-8">
+            <div className="max-w-md text-center space-y-6">
+              <div className="text-red-500/50 text-6xl font-black">!</div>
+              <h2 className="text-xl font-black uppercase tracking-widest text-white">Connexion DB Échouée</h2>
+              <p className="text-sand/40 text-[10px] uppercase font-bold leading-relaxed">{error}</p>
+              <button onClick={() => fetchData()} className="bg-primary text-black px-8 py-3 rounded-lg font-black text-[10px] uppercase">Réessayer</button>
             </div>
           </div>
         ) : children}
