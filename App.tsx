@@ -3,6 +3,7 @@ import React, { useState, createContext, useContext, useEffect } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
 import { CartItem, Product } from './types';
+import { SECTORS, FEATURED_PRODUCTS } from './constants';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -36,7 +37,6 @@ interface CMSContextType {
   products: Product[];
   isAdminAuthenticated: boolean;
   isLoading: boolean;
-  error: string | null;
   setAdminAuthenticated: (val: boolean) => void;
   addSector: (sector: any) => Promise<void>;
   updateSector: (id: number, sector: any) => Promise<void>;
@@ -73,89 +73,134 @@ export const useCart = () => {
   return context;
 };
 
+const DEFAULT_CONFIG = {
+  heroTitle: "SÈGANDÉ",
+  heroSubtitle: "L'Âme Moderne de l'Afrique",
+  heroImage: "https://images.unsplash.com/photo-1549490349-8643362247b5",
+  contact: { title: "Contact", subtitle: "Nous sommes à votre écoute", email: "contact@segande.com", phone1: "+229 00000000", phone2: "", address: "Cotonou, Bénin" },
+  footer: { aboutText: "Maison de luxe africaine." },
+  editorial: { heroTitle: "Artisanat", heroImage: "", sections: [] }
+};
+
 const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAdminAuthenticated, setAdminAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [sectors, setSectors] = useState<Sector[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [siteConfig, setSiteConfig] = useState<any>(null);
+  const [siteConfig, setSiteConfig] = useState<any>(DEFAULT_CONFIG);
 
   const [cart, setCart] = useState<CartItem[]>(() => {
-    try {
-      const saved = localStorage.getItem('segande_cart');
-      return saved ? JSON.parse(saved) : [];
-    } catch { return []; }
+    const saved = localStorage.getItem('segande_cart');
+    return saved ? JSON.parse(saved) : [];
   });
-  
   const [wishlist, setWishlist] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem('wishlist');
-      return saved ? JSON.parse(saved) : [];
-    } catch { return []; }
+    const saved = localStorage.getItem('wishlist');
+    return saved ? JSON.parse(saved) : [];
   });
 
   const mapProductFromDB = (p: any): Product => ({
     id: String(p.id),
-    name: p.name || '',
-    slug: p.slug || '',
+    name: p.name || 'Sans nom',
+    slug: p.slug || `piece-${p.id}`,
     description: p.description || '',
     price: Number(p.price) || 0,
-    images: Array.isArray(p.images) ? p.images : [],
+    images: Array.isArray(p.images) && p.images.length > 0 ? p.images : ["https://via.placeholder.com/600x800?text=SÈGANDÉ"],
     variants: Array.isArray(p.variants) ? p.variants : [],
     category: p.category || '',
     sector: p.sector || '',
-    rating: Number(p.rating) || 5,
-    reviewsCount: Number(p.reviews_count) || 0,
+    rating: p.rating || 5,
+    reviewsCount: p.reviews_count || 0,
     badges: Array.isArray(p.badges) ? p.badges : [],
     isFeatured: !!p.is_featured
   });
 
   const fetchData = async () => {
-    setIsLoading(true);
-    setError(null);
     try {
-      const [sectorsRes, productsRes, configRes] = await Promise.all([
-        supabase.from('sectors').select('*').order('id'),
-        supabase.from('products').select('*').order('id'),
-        supabase.from('site_config').select('*').eq('id', 'global').maybeSingle()
-      ]);
+      const { data: sData } = await supabase.from('sectors').select('*').order('id');
+      const { data: pData } = await supabase.from('products').select('*').order('id');
+      const { data: cData } = await supabase.from('site_config').select('*').eq('id', 'global');
 
-      if (sectorsRes.error) throw sectorsRes.error;
-      if (productsRes.error) throw productsRes.error;
-
-      setSectors(sectorsRes.data || []);
-      setProducts((productsRes.data || []).map(mapProductFromDB));
-      
-      if (configRes.data && configRes.data.data) {
-        setSiteConfig(configRes.data.data);
+      if (sData && sData.length > 0) {
+        setSectors(sData);
       } else {
-        // Strictement null si rien en DB
-        setSiteConfig(null);
+        // Fallback vers les constantes si vide
+        setSectors(SECTORS.map((s, i) => ({ ...s, id: i + 1 })));
       }
-    } catch (e: any) {
-      console.error("DB Fetch Error:", e);
-      setError(e.message || "Impossible d'accéder au Cloud SÈGANDÉ.");
+
+      if (pData && pData.length > 0) {
+        setProducts(pData.map(mapProductFromDB));
+      } else {
+        // Fallback vers les constantes si vide
+        setProducts(FEATURED_PRODUCTS.map(p => ({ ...p, isFeatured: true })));
+      }
+
+      if (cData && cData.length > 0) {
+        setSiteConfig(cData[0].data);
+      }
+    } catch (e) {
+      console.error("Erreur de récupération cloud, utilisation des fallbacks locaux:", e);
+      // En cas d'erreur réseau totale, on s'assure d'avoir les données locales
+      if (sectors.length === 0) setSectors(SECTORS.map((s, i) => ({ ...s, id: i + 1 })));
+      if (products.length === 0) setProducts(FEATURED_PRODUCTS.map(p => ({ ...p, isFeatured: true })));
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { 
+    fetchData(); 
+    // Timeout de sécurité : si après 5s on charge encore, on force l'affichage
+    const timer = setTimeout(() => setIsLoading(false), 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
-  const addSector = async (sector: any) => { await supabase.from('sectors').insert([sector]); await fetchData(); };
-  const updateSector = async (id: number, sector: any) => { await supabase.from('sectors').update(sector).eq('id', id); await fetchData(); };
-  const deleteSector = async (id: number) => { await supabase.from('sectors').delete().eq('id', id); await fetchData(); };
-  const addProduct = async (p: any) => { await supabase.from('products').insert([p]); await fetchData(); };
-  const updateProduct = async (p: any) => { await supabase.from('products').update(p).eq('id', Number(p.id)); await fetchData(); };
-  const deleteProduct = async (id: number) => { await supabase.from('products').delete().eq('id', id); await fetchData(); };
-  const toggleFeaturedProduct = async (id: string) => { 
-    const p = products.find(prod => prod.id === id);
-    if (p) { await supabase.from('products').update({ is_featured: !p.isFeatured }).eq('id', Number(id)); await fetchData(); }
+  const addSector = async (sector: any) => {
+    await supabase.from('sectors').insert([{ name: sector.name, slug: sector.slug, image: sector.image }]);
+    await fetchData();
   };
+
+  const updateSector = async (id: number, sector: any) => {
+    await supabase.from('sectors').update({ name: sector.name, slug: sector.slug, image: sector.image }).eq('id', id);
+    await fetchData();
+  };
+
+  const deleteSector = async (id: number) => {
+    await supabase.from('sectors').delete().eq('id', id);
+    await fetchData();
+  };
+
+  const addProduct = async (p: any) => {
+    await supabase.from('products').insert([{
+      name: p.name, slug: p.slug, price: p.price, description: p.description, 
+      sector: p.sector, images: p.images, is_featured: p.isFeatured
+    }]);
+    await fetchData();
+  };
+
+  const updateProduct = async (p: any) => {
+    await supabase.from('products').update({
+      name: p.name, slug: p.slug, price: p.price, description: p.description, 
+      sector: p.sector, images: p.images, is_featured: p.isFeatured
+    }).eq('id', Number(p.id));
+    await fetchData();
+  };
+
+  const deleteProduct = async (id: number) => {
+    await supabase.from('products').delete().eq('id', id);
+    await fetchData();
+  };
+
+  const toggleFeaturedProduct = async (id: string) => {
+    const p = products.find(prod => prod.id === id);
+    if (!p) return;
+    await supabase.from('products').update({ is_featured: !p.isFeatured }).eq('id', Number(id));
+    await fetchData();
+  };
+
   const updateSiteConfig = async (newConfig: any) => {
-    await supabase.from('site_config').upsert({ id: 'global', data: newConfig });
-    setSiteConfig(newConfig);
+    const updated = { ...siteConfig, ...newConfig };
+    await supabase.from('site_config').upsert({ id: 'global', data: updated });
+    setSiteConfig(updated);
   };
 
   const addToCart = (product: Product, variantId: string, quantity: number) => {
@@ -170,7 +215,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         price: product.price,
         name: product.name,
         image: product.images[0],
-        variantName: product.variants.find(v => v.id === variantId)?.color || "Standard"
+        variantName: "Standard"
       }];
     });
   };
@@ -186,31 +231,25 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     localStorage.setItem('wishlist', JSON.stringify(wishlist));
   }, [cart, wishlist]);
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background-dark flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-primary font-black uppercase tracking-[0.5em] animate-pulse mb-2">SÈGANDÉ</h2>
+          <p className="text-sand/20 text-[9px] uppercase font-bold tracking-widest">Synchronisation Cloud...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <CMSContext.Provider value={{ 
-      siteConfig, sectors, products, isAdminAuthenticated, isLoading, error, setAdminAuthenticated,
+      siteConfig, sectors, products, isAdminAuthenticated, isLoading, setAdminAuthenticated,
       addSector, updateSector, deleteSector, addProduct, updateProduct, deleteProduct, toggleFeaturedProduct, updateSiteConfig,
       refreshData: fetchData
     }}>
       <CartContext.Provider value={{ cart, wishlist, addToCart, removeFromCart, updateQuantity, toggleWishlist, total }}>
-        {isLoading ? (
-          <div className="min-h-screen bg-background-dark flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-              <h2 className="text-primary font-black uppercase tracking-[0.5em] mb-2 text-xs">SÈGANDÉ</h2>
-              <p className="text-sand/20 text-[8px] uppercase font-bold tracking-[0.3em]">Lecture Base de Données...</p>
-            </div>
-          </div>
-        ) : error ? (
-          <div className="min-h-screen bg-background-dark flex items-center justify-center p-8">
-            <div className="max-w-md text-center space-y-6">
-              <div className="text-red-500/50 text-6xl font-black">!</div>
-              <h2 className="text-xl font-black uppercase tracking-widest text-white">Connexion DB Échouée</h2>
-              <p className="text-sand/40 text-[10px] uppercase font-bold leading-relaxed">{error}</p>
-              <button onClick={() => fetchData()} className="bg-primary text-black px-8 py-3 rounded-lg font-black text-[10px] uppercase">Réessayer</button>
-            </div>
-          </div>
-        ) : children}
+        {children}
       </CartContext.Provider>
     </CMSContext.Provider>
   );

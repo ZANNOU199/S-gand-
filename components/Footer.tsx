@@ -7,10 +7,7 @@ import { useCMS } from '../App';
 
 const Footer: React.FC = () => {
   const { sectors, siteConfig } = useCMS();
-  
-  // Utilisation de l'optional chaining (?.) pour éviter les crashs si siteConfig est incomplet
-  const contact = siteConfig?.contact || {};
-  const footer = siteConfig?.footer || {};
+  const { contact, footer } = siteConfig;
 
   return (
     <footer className="bg-charcoal border-t border-white/5 pt-20 pb-10 text-white">
@@ -24,21 +21,17 @@ const Footer: React.FC = () => {
               <h2 className="text-xl font-black brand-font tracking-tighter text-mint">SÈGANDÉ</h2>
             </div>
             <p className="text-sand/40 text-xs md:text-sm leading-relaxed uppercase font-bold tracking-tight">
-              {footer?.aboutText || "Maison de luxe africaine."}
+              {footer.aboutText}
             </p>
             <div className="space-y-3 pt-2">
-              {contact?.phone1 && (
-                <div className="flex items-center gap-3 text-[11px] font-black tracking-widest text-primary">
-                  <Phone size={14} />
-                  <a href={`tel:${contact.phone1.replace(/\s/g,'')}`} className="hover:text-white transition-colors">{contact.phone1}</a>
-                </div>
-              )}
-              {contact?.phone2 && (
-                <div className="flex items-center gap-3 text-[11px] font-black tracking-widest text-primary">
-                  <Phone size={14} />
-                  <a href={`tel:${contact.phone2.replace(/\s/g,'')}`} className="hover:text-white transition-colors">{contact.phone2}</a>
-                </div>
-              )}
+              <div className="flex items-center gap-3 text-[11px] font-black tracking-widest text-primary">
+                <Phone size={14} />
+                <a href={`tel:${contact.phone1.replace(/\s/g,'')}`} className="hover:text-white transition-colors">{contact.phone1}</a>
+              </div>
+              <div className="flex items-center gap-3 text-[11px] font-black tracking-widest text-primary">
+                <Phone size={14} />
+                <a href={`tel:${contact.phone2.replace(/\s/g,'')}`} className="hover:text-white transition-colors">{contact.phone2}</a>
+              </div>
             </div>
           </div>
           

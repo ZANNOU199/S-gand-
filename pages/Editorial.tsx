@@ -6,15 +6,13 @@ import { useCMS } from '../App';
 
 const Editorial: React.FC = () => {
   const { siteConfig } = useCMS();
-  const content = siteConfig?.editorial || { heroTitle: "L'Art de Créer", heroImage: "", sections: [] };
+  const content = siteConfig.editorial;
 
   return (
     <div className="bg-background-dark min-h-screen text-white">
       {/* Hero Section */}
       <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
-        {content.heroImage && (
-          <div className="absolute inset-0 bg-cover bg-fixed opacity-30" style={{ backgroundImage: `url('${content.heroImage}')` }} />
-        )}
+        <div className="absolute inset-0 bg-cover bg-fixed opacity-30" style={{ backgroundImage: `url('${content.heroImage}')` }} />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background-dark"></div>
         <div className="relative text-center space-y-6 px-8 max-w-4xl">
           <motion.span 
@@ -35,15 +33,13 @@ const Editorial: React.FC = () => {
       </section>
 
       <section className="max-w-5xl mx-auto py-32 px-8">
-        {content.sections && content.sections.length > 0 ? content.sections.map((section: any, idx: number) => (
+        {content.sections.map((section, idx) => (
           <div key={idx} className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center mb-40 last:mb-0">
             <div className="space-y-8 order-2 lg:order-1">
               <h2 className="text-4xl font-bold tracking-tight uppercase">{section.title}</h2>
-              {section.quote && (
-                <p className="text-sand/70 text-lg leading-loose font-light italic">
-                  "{section.quote}"
-                </p>
-              )}
+              <p className="text-sand/70 text-lg leading-loose font-light italic">
+                "{section.quote}"
+              </p>
               <p className="text-sand/60 text-sm leading-relaxed">
                 {section.text}
               </p>
@@ -58,15 +54,11 @@ const Editorial: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl border border-white/5 order-1 lg:order-2 bg-charcoal">
+            <div className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl border border-white/5 order-1 lg:order-2">
               <img src={section.image} className="w-full h-full object-cover" alt={section.title} />
             </div>
           </div>
-        )) : (
-          <div className="text-center py-20 text-sand/20 font-black uppercase tracking-widest">
-            Le journal est en cours de rédaction...
-          </div>
-        )}
+        ))}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 border-t border-white/5 pt-24 mt-20">
           <div className="space-y-4">
