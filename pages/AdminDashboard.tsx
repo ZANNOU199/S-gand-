@@ -4,14 +4,15 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { useCMS } from '../App';
 import { 
   LayoutDashboard, Package, Plus, 
-  Edit, Trash2, Layout, Lock, Star, Layers, Save, RefreshCw, Cloud, ArrowLeft
+  Edit, Trash2, Layout, Lock, Star, Layers, Save, RefreshCw, Cloud, ArrowLeft,
+  TrendingUp, Users, ShoppingCart, DollarSign
 } from 'lucide-react';
 
 const AdminDashboard: React.FC = () => {
   const { 
     sectors, addSector, updateSector, deleteSector,
     products, addProduct, updateProduct, deleteProduct, toggleFeaturedProduct,
-    siteConfig, updateSiteConfig, 
+    orders, siteConfig, updateSiteConfig, 
     isAdminAuthenticated, setAdminAuthenticated 
   } = useCMS();
 
@@ -56,18 +57,19 @@ const AdminDashboard: React.FC = () => {
     <div className="flex flex-col h-full bg-charcoal w-full">
       <div className="p-8 flex items-center gap-3 border-b border-white/5">
         <Cloud className="text-primary" />
-        <span className="font-black text-xl uppercase text-white">SÈGANDÉ CLOUD</span>
+        <span className="font-black text-xl uppercase text-white tracking-tighter">SÈGANDÉ CLOUD</span>
       </div>
-      <nav className="flex-1 p-6 space-y-4">
+      <nav className="flex-1 p-6 space-y-2">
         {[
-          { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
+          { icon: LayoutDashboard, label: 'Vue Globale', path: '/admin' },
+          { icon: ShoppingCart, label: 'Ventes', path: '/admin/sales' },
           { icon: Layers, label: 'Univers', path: '/admin/sectors' },
           { icon: Package, label: 'Inventaire', path: '/admin/inventory' },
           { icon: Layout, label: 'Vitrine', path: '/admin/site-config' },
         ].map(item => (
           <Link 
             key={item.label} to={item.path} 
-            className={`flex items-center gap-4 px-6 py-5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${
+            className={`flex items-center gap-4 px-6 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
               location.pathname === item.path ? 'bg-primary text-black shadow-xl shadow-primary/20' : 'text-sand/50 hover:bg-white/5'
             }`}
           >
@@ -76,7 +78,129 @@ const AdminDashboard: React.FC = () => {
         ))}
       </nav>
       <div className="p-6">
-        <button onClick={() => setAdminAuthenticated(false)} className="w-full text-[10px] font-black uppercase text-red-500/60 p-4 border border-red-500/10 rounded-xl">Quitter</button>
+        <button onClick={() => setAdminAuthenticated(false)} className="w-full text-[10px] font-black uppercase text-red-500/60 p-4 border border-red-500/10 rounded-xl hover:bg-red-500 hover:text-white transition-all">Déconnexion</button>
+      </div>
+    </div>
+  );
+
+  const DashboardOverview = () => {
+    const totalRevenue = orders.reduce((acc, o) => acc + o.total, 0);
+    const totalClients = new Set(orders.map(o => o.customer_email)).size;
+
+    return (
+      <div className="space-y-12 animate-in fade-in duration-700">
+        <h2 className="text-4xl font-black uppercase text-white tracking-tighter">Tableau de Bord</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="bg-charcoal p-8 rounded-3xl border border-white/5 space-y-4">
+            <div className="size-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary"><DollarSign /></div>
+            <div>
+              <p className="text-[10px] font-black uppercase text-sand/40 tracking-widest">Revenu Total</p>
+              <p className="text-2xl font-black text-white">{totalRevenue.toLocaleString()} <span className="text-xs">FCFA</span></p>
+            </div>
+          </div>
+          <div className="bg-charcoal p-8 rounded-3xl border border-white/5 space-y-4">
+            <div className="size-12 bg-mint/10 rounded-2xl flex items-center justify-center text-mint"><ShoppingCart /></div>
+            <div>
+              <p className="text-[10px] font-black uppercase text-sand/40 tracking-widest">Ventes</p>
+              <p className="text-2xl font-black text-white">{orders.length}</p>
+            </div>
+          </div>
+          <div className="bg-charcoal p-8 rounded-3xl border border-white/5 space-y-4">
+            <div className="size-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500"><Users /></div>
+            <div>
+              <p className="text-[10px] font-black uppercase text-sand/40 tracking-widest">Clients</p>
+              <p className="text-2xl font-black text-white">{totalClients}</p>
+            </div>
+          </div>
+          <div className="bg-charcoal p-8 rounded-3xl border border-white/5 space-y-4">
+            <div className="size-12 bg-orange-500/10 rounded-2xl flex items-center justify-center text-orange-500"><TrendingUp /></div>
+            <div>
+              <p className="text-[10px] font-black uppercase text-sand/40 tracking-widest">Panier Moyen</p>
+              <p className="text-2xl font-black text-white">{orders.length > 0 ? Math.round(totalRevenue / orders.length).toLocaleString() : 0} <span className="text-xs">FCFA</span></p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-charcoal rounded-3xl border border-white/5 overflow-hidden">
+          <div className="p-8 border-b border-white/5 flex justify-between items-center">
+            <h3 className="font-black uppercase text-xs tracking-widest">Ventes Récentes</h3>
+            <Link to="/admin/sales" className="text-[10px] font-black uppercase text-primary hover:underline">Voir Tout</Link>
+          </div>
+          <div className="divide-y divide-white/5">
+            {orders.slice(0, 5).map(o => (
+              <div key={o.id} className="p-8 flex items-center justify-between hover:bg-white/5 transition-colors">
+                <div className="flex items-center gap-6">
+                  <div className="size-12 rounded-full bg-white/5 flex items-center justify-center font-black text-primary text-xs">
+                    {o.customer_name.charAt(0)}
+                  </div>
+                  <div>
+                    <p className="font-black uppercase text-sm text-white">{o.customer_name}</p>
+                    <p className="text-[10px] text-sand/40 font-bold uppercase tracking-widest">{new Date(o.created_at).toLocaleDateString()}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="font-black text-primary">{o.total.toLocaleString()} FCFA</p>
+                  <span className="text-[9px] font-black uppercase tracking-widest bg-mint/10 text-mint px-3 py-1 rounded-full">Payé</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const SalesManager = () => (
+    <div className="space-y-12 animate-in fade-in duration-700">
+      <div className="flex justify-between items-center">
+        <h2 className="text-4xl font-black uppercase text-white tracking-tighter">Journal des Ventes</h2>
+        <div className="bg-charcoal px-6 py-3 rounded-xl border border-white/5 text-[10px] font-black uppercase text-sand/40 tracking-widest">
+          Total: <span className="text-primary">{orders.length} commandes</span>
+        </div>
+      </div>
+      
+      <div className="bg-charcoal rounded-3xl border border-white/5 overflow-hidden shadow-2xl">
+        <table className="w-full text-left">
+          <thead className="bg-white/5 text-[10px] font-black uppercase text-sand/40 tracking-widest">
+            <tr>
+              <th className="p-8">Client</th>
+              <th className="p-8">Contact</th>
+              <th className="p-8">Articles</th>
+              <th className="p-8">Montant</th>
+              <th className="p-8">Date</th>
+              <th className="p-8 text-right">Statut</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-white/5 text-white">
+            {orders.map(o => (
+              <tr key={o.id} className="hover:bg-white/5 transition-colors group">
+                <td className="p-8">
+                  <span className="font-black uppercase text-white group-hover:text-primary transition-colors">{o.customer_name}</span>
+                </td>
+                <td className="p-8">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black text-sand/40 lowercase">{o.customer_email}</p>
+                    <p className="text-[10px] font-black text-sand/60">{o.customer_phone}</p>
+                  </div>
+                </td>
+                <td className="p-8">
+                  <span className="bg-white/5 px-3 py-1 rounded-lg text-[10px] font-black">{o.items.length} pcs</span>
+                </td>
+                <td className="p-8 font-black text-primary">{o.total.toLocaleString()} FCFA</td>
+                <td className="p-8 text-[10px] font-bold text-sand/40 uppercase tracking-widest">
+                  {new Date(o.created_at).toLocaleDateString()}
+                </td>
+                <td className="p-8 text-right">
+                  <span className="text-[9px] font-black uppercase tracking-widest bg-mint/10 text-mint px-4 py-1.5 rounded-full border border-mint/20">Terminé</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {orders.length === 0 && (
+          <div className="p-32 text-center text-sand/10 uppercase font-black tracking-[0.5em]">Aucune vente enregistrée</div>
+        )}
       </div>
     </div>
   );
@@ -128,7 +252,7 @@ const AdminDashboard: React.FC = () => {
     return (
       <div className="space-y-12">
         <div className="flex justify-between items-center">
-          <h2 className="text-4xl font-black uppercase text-white">Univers</h2>
+          <h2 className="text-4xl font-black uppercase text-white tracking-tighter">Univers</h2>
           <button onClick={() => setEditingSector({ name: '', slug: '', image: '' })} className="bg-primary text-black px-8 py-4 rounded-xl font-black text-[10px] uppercase flex items-center gap-2">
             <Plus size={16} /> Créer
           </button>
@@ -199,14 +323,14 @@ const AdminDashboard: React.FC = () => {
     return (
       <div className="space-y-12">
         <div className="flex justify-between items-center">
-          <h2 className="text-4xl font-black uppercase text-white">Inventaire</h2>
+          <h2 className="text-4xl font-black uppercase text-white tracking-tighter">Inventaire</h2>
           <button onClick={() => setEditingProduct({ name: '', slug: '', price: 0, sector: sectors[0]?.slug || '', images: [''], description: '', isFeatured: false })} className="bg-primary text-black px-8 py-4 rounded-xl font-black text-[10px] uppercase flex items-center gap-2">
             <Plus size={16} /> Ajouter
           </button>
         </div>
-        <div className="bg-charcoal rounded-3xl border border-white/5 overflow-hidden">
+        <div className="bg-charcoal rounded-3xl border border-white/5 overflow-hidden shadow-2xl">
           <table className="w-full text-left">
-            <thead className="bg-white/5 text-[10px] font-black uppercase text-sand/40">
+            <thead className="bg-white/5 text-[10px] font-black uppercase text-sand/40 tracking-widest">
               <tr>
                 <th className="p-8">Produit</th>
                 <th className="p-8">Prix</th>
@@ -233,7 +357,7 @@ const AdminDashboard: React.FC = () => {
                   </td>
                   <td className="p-8 text-right space-x-2">
                     <button onClick={() => setEditingProduct({...p})} className="p-3 bg-white/5 rounded-xl"><Edit size={18}/></button>
-                    <button onClick={() => deleteProduct(Number(p.id))} className="p-3 bg-red-500/10 text-red-500 rounded-xl"><Trash2 size={18}/></button>
+                    <button onClick={() => { if(confirm('Supprimer ?')) deleteProduct(Number(p.id)); }} className="p-3 bg-red-500/10 text-red-500 rounded-xl"><Trash2 size={18}/></button>
                   </td>
                 </tr>
               ))}
@@ -251,14 +375,18 @@ const AdminDashboard: React.FC = () => {
       </aside>
       <main className="flex-1 p-8 md:p-16 overflow-y-auto h-screen custom-scrollbar">
         <Routes>
-          <Route index element={<div className="text-4xl font-black uppercase">Sélectionnez une section</div>} />
+          <Route index element={<DashboardOverview />} />
+          <Route path="sales" element={<SalesManager />} />
           <Route path="sectors" element={<SectorsEditor />} />
           <Route path="inventory" element={<InventoryManager />} />
           <Route path="site-config" element={
-            <div className="bg-charcoal p-10 rounded-3xl space-y-8">
-              <h2 className="text-3xl font-black uppercase">Site Config</h2>
-              <input value={siteConfig.heroTitle} onChange={e => updateSiteConfig({heroTitle: e.target.value})} className="admin-input" placeholder="Hero Title" />
-              <button onClick={() => alert('OK')} className="w-full bg-primary text-black py-4 rounded-xl font-black">SAUVEGARDER</button>
+            <div className="bg-charcoal p-10 rounded-3xl space-y-8 animate-in fade-in duration-700 shadow-2xl">
+              <h2 className="text-3xl font-black uppercase tracking-tighter">Site Config</h2>
+              <div className="space-y-4">
+                <label className="text-[10px] font-black uppercase tracking-widest text-sand/40">Titre Principal Hero</label>
+                <input value={siteConfig.heroTitle} onChange={e => updateSiteConfig({heroTitle: e.target.value})} className="admin-input" placeholder="Hero Title" />
+              </div>
+              <button onClick={() => alert('Configuration enregistrée !')} className="w-full bg-primary text-black py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl">SAUVEGARDER</button>
             </div>
           } />
         </Routes>
@@ -269,13 +397,14 @@ const AdminDashboard: React.FC = () => {
           width: 100%;
           background: rgba(255,255,255,0.02);
           border: 1px solid rgba(255,255,255,0.08);
-          padding: 16px 20px;
-          border-radius: 12px;
+          padding: 20px 24px;
+          border-radius: 16px;
           color: white;
           font-weight: 700;
           outline: none;
+          transition: all 0.3s;
         }
-        .admin-input:focus { border-color: #ec9213; }
+        .admin-input:focus { border-color: #ec9213; background: rgba(255,255,255,0.04); }
       `}</style>
     </div>
   );

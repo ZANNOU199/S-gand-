@@ -2,7 +2,7 @@
 import React, { useState, createContext, useContext, useEffect } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
-import { CartItem, Product } from './types';
+import { CartItem, Product, Order } from './types';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -34,6 +34,7 @@ interface CMSContextType {
   siteConfig: any;
   sectors: Sector[];
   products: Product[];
+  orders: Order[];
   isAdminAuthenticated: boolean;
   isLoading: boolean;
   setAdminAuthenticated: (val: boolean) => void;
@@ -45,6 +46,7 @@ interface CMSContextType {
   deleteProduct: (id: number) => Promise<void>;
   toggleFeaturedProduct: (productId: string) => Promise<void>;
   updateSiteConfig: (config: any) => Promise<void>;
+  createOrder: (order: Partial<Order>) => Promise<any>;
   refreshData: () => Promise<void>;
 }
 
@@ -61,6 +63,7 @@ interface CartContextType {
   addToCart: (product: Product, variantId: string, quantity: number) => void;
   removeFromCart: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
+  clearCart: () => void;
   toggleWishlist: (productId: string) => void;
   total: number;
 }
@@ -86,6 +89,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [sectors, setSectors] = useState<Sector[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [siteConfig, setSiteConfig] = useState<any>(DEFAULT_CONFIG);
 
   const [cart, setCart] = useState<CartItem[]>(() => {
@@ -125,28 +129,24 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const fetchData = async () => {
     try {
-      const { data: sData, error: sErr } = await supabase.from('sectors').select('*').order('id');
-      const { data: pData, error: pErr } = await supabase.from('products').select('*').order('id');
-      const { data: cData, error: cErr } = await supabase.from('site_config').select('*').eq('id', 'global');
-
-      if (sErr) console.error("Erreur Sectors:", sErr);
-      if (pErr) console.error("Erreur Products:", pErr);
-      if (cErr) console.error("Erreur Config:", cErr);
+      const { data: sData } = await supabase.from('sectors').select('*').order('id');
+      const { data: pData } = await supabase.from('products').select('*').order('id');
+      const { data: cData } = await supabase.from('site_config').select('*').eq('id', 'global');
+      const { data: oData } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
 
       if (sData) setSectors(sData);
       if (pData) setProducts(pData.map(mapProductFromDB));
       if (cData && cData.length > 0) setSiteConfig(cData[0].data);
+      if (oData) setOrders(oData);
       
     } catch (e) {
-      console.error("Erreur fatale Supabase:", e);
+      console.error("Erreur fetchData:", e);
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => { 
-    fetchData(); 
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
   const addSector = async (sector: any) => {
     await supabase.from('sectors').insert([{ name: sector.name, slug: sector.slug, image: sector.image }]);
@@ -199,6 +199,12 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     setSiteConfig(updated);
   };
 
+  const createOrder = async (orderData: Partial<Order>) => {
+    const { data, error } = await supabase.from('orders').insert([orderData]).select();
+    await fetchData();
+    return { data, error };
+  };
+
   const addToCart = (product: Product, variantId: string, quantity: number) => {
     setCart(prev => {
       const existing = prev.find(item => item.productId === product.id && item.variantId === variantId);
@@ -218,6 +224,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const removeFromCart = (itemId: string) => setCart(prev => prev.filter(i => i.id !== itemId));
   const updateQuantity = (itemId: string, quantity: number) => setCart(prev => prev.map(i => i.id === itemId ? { ...i, quantity: Math.max(1, quantity) } : i));
+  const clearCart = () => setCart([]);
   const toggleWishlist = (id: string) => setWishlist(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
   const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
@@ -240,11 +247,11 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <CMSContext.Provider value={{ 
-      siteConfig, sectors, products, isAdminAuthenticated, isLoading, setAdminAuthenticated,
+      siteConfig, sectors, products, orders, isAdminAuthenticated, isLoading, setAdminAuthenticated,
       addSector, updateSector, deleteSector, addProduct, updateProduct, deleteProduct, toggleFeaturedProduct, updateSiteConfig,
-      refreshData: fetchData
+      createOrder, refreshData: fetchData
     }}>
-      <CartContext.Provider value={{ cart, wishlist, addToCart, removeFromCart, updateQuantity, toggleWishlist, total }}>
+      <CartContext.Provider value={{ cart, wishlist, addToCart, removeFromCart, updateQuantity, clearCart, toggleWishlist, total }}>
         {children}
       </CartContext.Provider>
     </CMSContext.Provider>

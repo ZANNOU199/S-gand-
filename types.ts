@@ -34,3 +34,15 @@ export interface CartItem {
   image: string;
   variantName: string;
 }
+
+export interface Order {
+  id: string;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
+  total: number;
+  status: 'pending' | 'completed' | 'failed';
+  items: any[];
+  created_at: string;
+  transaction_id?: string;
+}
