@@ -24,8 +24,8 @@ const Checkout: React.FC = () => {
   });
 
   const handlePayment = () => {
-    if (!customer.email || !customer.firstName) {
-      alert("Veuillez remplir votre Prénom et votre Email.");
+    if (!customer.email || !customer.firstName || !customer.address) {
+      alert("Veuillez remplir votre Prénom, Email et Adresse de livraison.");
       return;
     }
 
@@ -55,21 +55,15 @@ const Checkout: React.FC = () => {
           }
         },
         onComplete: async (response: any) => {
-          // JOURNAL DE DÉBOGAGE CRITIQUE
           console.log("FedaPay Response Received:", response);
 
-          // Extraction ultra-sécurisée du statut
-          // On vérifie plusieurs champs car le SDK FedaPay varie selon les versions
           const rawStatus = 
             response?.status || 
             response?.transaction?.status || 
             response?.reason || 
-            (response?.transaction ? 'approved' : 'unknown'); // Fallback si transaction existe
+            (response?.transaction ? 'approved' : 'unknown');
 
           const status = String(rawStatus).toLowerCase();
-          console.log("Calculated Internal Status:", status);
-
-          // Liste exhaustive des marqueurs de succès FedaPay
           const successMarkers = ['approved', 'successful', 'captured', 'complete', 'success', 'successfull'];
 
           if (successMarkers.includes(status)) {
@@ -82,6 +76,7 @@ const Checkout: React.FC = () => {
               customer_name: `${customer.firstName} ${customer.lastName}`,
               customer_email: customer.email,
               customer_phone: customer.phone,
+              customer_address: customer.address, // AJOUT DE L'ADRESSE ICI
               total: total,
               status: 'completed' as const,
               items: cart,
@@ -89,31 +84,24 @@ const Checkout: React.FC = () => {
             };
 
             try {
-              console.log("Saving order to Database...");
               await createOrder(orderData);
               setStep(2);
               clearCart();
             } catch (err) {
               console.error("Database Save Error:", err);
-              // On affiche le succès quand même car le paiement est fait
               setStep(2);
               clearCart();
             }
           } else if (status === 'canceled' || status === 'declined') {
-            console.warn("Transaction was not successful:", status);
             setIsProcessing(false);
           } else {
-            console.error("Unknown payment status received:", status);
-            alert(`Note: Le statut de votre paiement est "${status}". Si vous avez été débité, contactez le support avec votre email.`);
+            alert(`Statut: ${status}. Contactez-nous si vous avez été débité.`);
             setIsProcessing(false);
           }
-          
-          // Dans tous les cas, on arrête le loader
           setIsProcessing(false);
         }
       };
 
-      // Choix de la méthode d'ouverture du widget
       if (typeof fedapay.checkout === 'function') {
         fedapay.checkout(checkoutOptions);
       } else {
@@ -121,12 +109,11 @@ const Checkout: React.FC = () => {
       }
 
     } catch (error: any) {
-      console.error("FedaPay Call Error:", error);
-      alert("Erreur technique : " + (error.message || "Impossible d'ouvrir le module de paiement"));
+      console.error("FedaPay Error:", error);
+      alert("Erreur technique de paiement.");
       setIsProcessing(false);
     }
 
-    // Sécurité de déblocage si le modal est fermé sans callback
     setTimeout(() => setIsProcessing(false), 30000);
   };
 
@@ -206,7 +193,7 @@ const Checkout: React.FC = () => {
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-sand/40 uppercase tracking-widest ml-1">Adresse de Livraison</label>
+                  <label className="text-[10px] font-black text-sand/40 uppercase tracking-widest ml-1">Adresse de Livraison *</label>
                   <textarea 
                     value={customer.address} 
                     onChange={e => setCustomer({...customer, address: e.target.value})} 

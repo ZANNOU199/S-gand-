@@ -40,6 +40,7 @@ export interface Order {
   customer_name: string;
   customer_email: string;
   customer_phone: string;
+  customer_address: string;
   total: number;
   status: 'pending' | 'completed' | 'failed';
   items: any[];

@@ -5,7 +5,7 @@ import { useCMS } from '../App';
 import { 
   LayoutDashboard, Package, Plus, 
   Edit, Trash2, Layout, Lock, Star, Layers, Save, RefreshCw, Cloud, ArrowLeft,
-  TrendingUp, Users, ShoppingCart, DollarSign, Menu, X
+  TrendingUp, Users, ShoppingCart, DollarSign, Menu, X, MapPin, Eye, ExternalLink
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -23,6 +23,7 @@ const AdminDashboard: React.FC = () => {
   const [editingSector, setEditingSector] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const location = useLocation();
 
   const handleLogin = (e: React.FormEvent) => {
@@ -163,30 +164,36 @@ const AdminDashboard: React.FC = () => {
   const SalesManager = () => (
     <div className="space-y-10 md:space-y-12 animate-in fade-in duration-700">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 className="text-3xl md:text-4xl font-black uppercase text-white tracking-tighter">Ventes</h2>
+        <h2 className="text-3xl md:text-4xl font-black uppercase text-white tracking-tighter">Gestion des Ventes</h2>
         <div className="bg-charcoal px-4 md:px-6 py-2 md:py-3 rounded-xl border border-white/5 text-[10px] font-black uppercase text-sand/40 tracking-widest">
           Total: <span className="text-primary">{orders.length} commandes</span>
         </div>
       </div>
       
       <div className="bg-charcoal rounded-3xl border border-white/5 overflow-hidden shadow-2xl overflow-x-auto">
-        <div className="min-w-[800px]">
+        <div className="min-w-[1000px]">
           <table className="w-full text-left">
             <thead className="bg-white/5 text-[10px] font-black uppercase text-sand/40 tracking-widest">
               <tr>
-                <th className="p-6 md:p-8">Client</th>
+                <th className="p-6 md:p-8">Client & Livraison</th>
                 <th className="p-6 md:p-8">Contact</th>
                 <th className="p-6 md:p-8">Articles</th>
                 <th className="p-6 md:p-8">Montant</th>
-                <th className="p-6 md:p-8">Date</th>
-                <th className="p-6 md:p-8 text-right">Statut</th>
+                <th className="p-6 md:p-8">Transaction</th>
+                <th className="p-6 md:p-8 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 text-white">
               {orders.map(o => (
                 <tr key={o.id} className="hover:bg-white/5 transition-colors group text-xs">
-                  <td className="p-6 md:p-8">
-                    <span className="font-black uppercase text-white group-hover:text-primary transition-colors">{o.customer_name}</span>
+                  <td className="p-6 md:p-8 max-w-[250px]">
+                    <div className="space-y-2">
+                      <span className="font-black uppercase text-white group-hover:text-primary transition-colors block">{o.customer_name}</span>
+                      <div className="flex items-start gap-2 opacity-40">
+                        <MapPin size={12} className="shrink-0 mt-0.5" />
+                        <p className="text-[9px] leading-relaxed italic">{o.customer_address || "Adresse non fournie"}</p>
+                      </div>
+                    </div>
                   </td>
                   <td className="p-6 md:p-8">
                     <div className="space-y-1">
@@ -195,14 +202,28 @@ const AdminDashboard: React.FC = () => {
                     </div>
                   </td>
                   <td className="p-6 md:p-8">
-                    <span className="bg-white/5 px-3 py-1 rounded-lg text-[10px] font-black">{o.items.length} pcs</span>
+                    <div className="flex flex-col gap-1">
+                      <span className="bg-white/5 px-3 py-1 rounded-lg text-[10px] font-black w-fit">{o.items.length} pièces</span>
+                      <p className="text-[8px] opacity-30 truncate max-w-[120px]">
+                        {o.items.map((i: any) => i.name).join(', ')}
+                      </p>
+                    </div>
                   </td>
-                  <td className="p-6 md:p-8 font-black text-primary">{o.total.toLocaleString()} FCFA</td>
-                  <td className="p-6 md:p-8 text-[10px] font-bold text-sand/40 uppercase tracking-widest">
-                    {new Date(o.created_at).toLocaleDateString()}
+                  <td className="p-6 md:p-8">
+                    <p className="font-black text-primary">{o.total.toLocaleString()} FCFA</p>
+                    <p className="text-[8px] text-sand/20">{new Date(o.created_at).toLocaleDateString()}</p>
+                  </td>
+                  <td className="p-6 md:p-8">
+                    <p className="text-[9px] font-mono opacity-50 uppercase">{o.transaction_id || "N/A"}</p>
+                    <span className="text-[8px] font-black uppercase tracking-widest bg-mint/10 text-mint px-2 py-0.5 rounded-full mt-1 inline-block">Succès</span>
                   </td>
                   <td className="p-6 md:p-8 text-right">
-                    <span className="text-[9px] font-black uppercase tracking-widest bg-mint/10 text-mint px-4 py-1.5 rounded-full border border-mint/20">Payé</span>
+                    <button 
+                      onClick={() => setSelectedOrder(o)}
+                      className="p-3 bg-white/5 rounded-xl hover:bg-primary hover:text-black transition-all"
+                    >
+                      <Eye size={16} />
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -210,10 +231,104 @@ const AdminDashboard: React.FC = () => {
           </table>
         </div>
         {orders.length === 0 && (
-          <div className="p-20 md:p-32 text-center text-sand/10 uppercase font-black tracking-[0.5em]">Aucune vente</div>
+          <div className="p-20 md:p-32 text-center text-sand/10 uppercase font-black tracking-[0.5em]">Aucune vente enregistrée</div>
         )}
       </div>
+
+      {/* Modal Détails Commande */}
+      <AnimatePresence>
+        {selectedOrder && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 md:p-12">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setSelectedOrder(null)}
+              className="absolute inset-0 bg-black/90 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              className="relative bg-charcoal w-full max-w-2xl rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
+            >
+              <div className="p-8 md:p-10 border-b border-white/5 flex justify-between items-center bg-white/5">
+                <div>
+                  <h3 className="text-xl md:text-2xl font-black uppercase tracking-tighter">Détails Commande</h3>
+                  <p className="text-[10px] text-primary font-black uppercase tracking-widest mt-1">Ref: {selectedOrder.transaction_id || selectedOrder.id}</p>
+                </div>
+                <button onClick={() => setSelectedOrder(null)} className="p-4 bg-white/5 rounded-full hover:bg-red-500 transition-colors"><X size={20}/></button>
+              </div>
+              
+              <div className="p-8 md:p-10 overflow-y-auto custom-scrollbar space-y-10">
+                <section className="grid grid-cols-2 gap-8">
+                  <div className="space-y-2">
+                    <p className="text-[9px] font-black uppercase text-sand/40 tracking-widest">Client</p>
+                    <p className="font-black text-sm uppercase">{selectedOrder.customer_name}</p>
+                  </div>
+                  <div className="space-y-2 text-right">
+                    <p className="text-[9px] font-black uppercase text-sand/40 tracking-widest">Date</p>
+                    <p className="font-black text-sm uppercase">{new Date(selectedOrder.created_at).toLocaleString()}</p>
+                  </div>
+                  <div className="col-span-2 p-6 bg-white/5 rounded-2xl border border-white/5 space-y-3">
+                     <p className="text-[9px] font-black uppercase text-primary tracking-widest flex items-center gap-2">
+                       <MapPin size={12}/> Adresse de Livraison
+                     </p>
+                     <p className="text-xs italic leading-relaxed text-sand/80">{selectedOrder.customer_address || "Non spécifiée"}</p>
+                  </div>
+                </section>
+
+                <section className="space-y-6">
+                  <p className="text-[9px] font-black uppercase text-sand/40 tracking-widest border-b border-white/5 pb-2">Articles ({selectedOrder.items.length})</p>
+                  <div className="space-y-4">
+                    {selectedOrder.items.map((item: any, idx: number) => (
+                      <div key={idx} className="flex justify-between items-center bg-white/5 p-4 rounded-xl">
+                        <div className="flex items-center gap-4">
+                          <img src={item.image} className="size-10 object-cover rounded-lg" />
+                          <div>
+                            <p className="text-[10px] font-black uppercase">{item.name}</p>
+                            <p className="text-[9px] opacity-40 uppercase tracking-widest">{item.variantName} x{item.quantity}</p>
+                          </div>
+                        </div>
+                        <p className="text-xs font-black text-primary">{(item.price * item.quantity).toLocaleString()} FCFA</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <div className="pt-6 border-t border-white/10 flex justify-between items-center">
+                  <span className="text-xs font-black uppercase tracking-widest">Montant Total Payé</span>
+                  <span className="text-3xl font-black text-primary leading-none">{selectedOrder.total.toLocaleString()} <span className="text-xs">FCFA</span></span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
+  );
+
+  const DashboardRoutes = () => (
+    <Routes>
+      <Route index element={<DashboardOverview />} />
+      <Route path="sales" element={<SalesManager />} />
+      <Route path="sectors" element={<SectorsEditor />} />
+      <Route path="inventory" element={<InventoryManager />} />
+      <Route path="site-config" element={
+        <div className="max-w-4xl bg-charcoal p-8 md:p-10 rounded-3xl space-y-8 animate-in fade-in duration-700 shadow-2xl border border-white/5">
+          <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tighter">Configuration Vitrine</h2>
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-sand/40">Titre Hero Page d'Accueil</label>
+              <input value={siteConfig.heroTitle} onChange={e => updateSiteConfig({heroTitle: e.target.value})} className="admin-input" placeholder="SÈGANDÉ" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-sand/40">Image Hero (Full HD)</label>
+              <input value={siteConfig.heroImage} onChange={e => updateSiteConfig({heroImage: e.target.value})} className="admin-input" placeholder="HTTPS Image URL" />
+            </div>
+          </div>
+          <button onClick={() => alert('Vitrine mise à jour avec succès.')} className="w-full bg-primary text-black py-4 md:py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-white transition-all">
+            SAUVEGARDER LES MODIFICATIONS
+          </button>
+        </div>
+      } />
+    </Routes>
   );
 
   const SectorsEditor = () => {
@@ -398,30 +513,7 @@ const AdminDashboard: React.FC = () => {
       </aside>
 
       <main className="flex-1 p-6 pt-24 md:p-16 lg:pt-16 overflow-y-auto h-screen custom-scrollbar">
-        <Routes>
-          <Route index element={<DashboardOverview />} />
-          <Route path="sales" element={<SalesManager />} />
-          <Route path="sectors" element={<SectorsEditor />} />
-          <Route path="inventory" element={<InventoryManager />} />
-          <Route path="site-config" element={
-            <div className="max-w-4xl bg-charcoal p-8 md:p-10 rounded-3xl space-y-8 animate-in fade-in duration-700 shadow-2xl border border-white/5">
-              <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tighter">Configuration Vitrine</h2>
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-sand/40">Titre Hero Page d'Accueil</label>
-                  <input value={siteConfig.heroTitle} onChange={e => updateSiteConfig({heroTitle: e.target.value})} className="admin-input" placeholder="SÈGANDÉ" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-sand/40">Image Hero (Full HD)</label>
-                  <input value={siteConfig.heroImage} onChange={e => updateSiteConfig({heroImage: e.target.value})} className="admin-input" placeholder="HTTPS Image URL" />
-                </div>
-              </div>
-              <button onClick={() => alert('Vitrine mise à jour avec succès.')} className="w-full bg-primary text-black py-4 md:py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-white transition-all">
-                SAUVEGARDER LES MODIFICATIONS
-              </button>
-            </div>
-          } />
-        </Routes>
+        <DashboardRoutes />
       </main>
 
       <style>{`
