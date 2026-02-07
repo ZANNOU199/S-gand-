@@ -55,7 +55,7 @@ const Footer: React.FC = () => {
           </div>
 
           <div className="space-y-6">
-            <h4 className="text-white font-bold text-[10px] uppercase tracking-widest mb-6">Initié SÈGANDÉ</h4>
+            <h4 className="text-white font-bold text-[10px] uppercase tracking-widest mb-6">Newsletters SÈGANDÉ</h4>
             <p className="text-sand/40 text-[10px] uppercase font-black leading-relaxed">Accédez aux ventes privées et découvrez l'histoire de nos artisans.</p>
             <form className="flex flex-col gap-3" onSubmit={e => e.preventDefault()}>
               <input className="bg-white/5 border border-white/10 rounded-lg px-4 py-4 text-[11px] font-black uppercase tracking-widest focus:ring-primary focus:border-primary outline-none transition-all" placeholder="VOTRE E-MAIL" type="email" />
