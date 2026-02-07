@@ -10,10 +10,11 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   const { siteConfig, sectors, products } = useCMS();
 
-  // On utilise la colonne is_featured de la DB au lieu du tableau dans siteConfig
-  const sahelCollection = products
-    .filter(p => (p as any).is_featured === true)
-    .slice(0, 4);
+  // On récupère les produits mis en avant. Si aucun n'est mis en avant, on prend les 4 derniers.
+  const featured = products.filter(p => p.isFeatured === true);
+  const sahelCollection = featured.length > 0 
+    ? featured.slice(0, 4) 
+    : products.slice(0, 4);
 
   return (
     <div className="bg-background-dark text-white">
@@ -52,7 +53,7 @@ const Home: React.FC = () => {
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {sectors.map((sector) => (
+          {sectors.length > 0 ? sectors.map((sector) => (
             <motion.div 
               key={sector.slug}
               whileHover={{ scale: 0.98 }}
@@ -66,7 +67,11 @@ const Home: React.FC = () => {
                 <div className="w-10 h-0.5 bg-primary group-hover:w-full transition-all duration-500"></div>
               </div>
             </motion.div>
-          ))}
+          )) : (
+            <div className="col-span-full py-20 text-center text-sand/20 uppercase font-black tracking-widest border border-white/5 rounded-3xl">
+              Aucun univers configuré
+            </div>
+          )}
         </div>
       </section>
 
@@ -82,9 +87,13 @@ const Home: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
-            {sahelCollection.map(product => (
+            {sahelCollection.length > 0 ? sahelCollection.map(product => (
               <ProductCard key={product.id} product={product} />
-            ))}
+            )) : (
+              <div className="col-span-full py-20 text-center text-sand/20 uppercase font-black tracking-widest">
+                Aucun produit disponible
+              </div>
+            )}
           </div>
         </div>
       </section>

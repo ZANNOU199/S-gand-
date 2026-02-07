@@ -21,6 +21,7 @@ export interface Product {
   rating: number;
   reviewsCount: number;
   badges: string[];
+  isFeatured: boolean;
 }
 
 export interface CartItem {

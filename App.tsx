@@ -18,13 +18,13 @@ import StyleQuiz from './pages/StyleQuiz';
 import AdminDashboard from './pages/AdminDashboard';
 import LiveSupport from './components/LiveSupport';
 
-// Initialize Supabase client
 const supabase = createClient(
   'https://szcrmuhibgvkrwtkhxnt.supabase.co',
   'sb_publishable_u99W3zlTupZ0Ia0MP1wp9g_C_lcJVMO'
 );
 
 interface Sector {
+  id: string;
   name: string;
   slug: string;
   image: string;
@@ -37,9 +37,9 @@ interface CMSContextType {
   isAdminAuthenticated: boolean;
   isLoading: boolean;
   setAdminAuthenticated: (val: boolean) => void;
-  addSector: (sector: Sector) => Promise<void>;
-  updateSector: (oldSlug: string, sector: Sector) => Promise<void>;
-  deleteSector: (slug: string) => Promise<void>;
+  addSector: (sector: any) => Promise<void>;
+  updateSector: (id: string, sector: any) => Promise<void>;
+  deleteSector: (id: string) => Promise<void>;
   addProduct: (product: any) => Promise<void>;
   updateProduct: (product: any) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
@@ -55,7 +55,6 @@ export const useCMS = () => {
   return context;
 };
 
-// --- Cart Context ---
 interface CartContextType {
   cart: CartItem[];
   wishlist: string[];
@@ -89,82 +88,90 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return saved ? JSON.parse(saved) : [];
   });
 
-  // Normalisation des produits (SQL snake_case -> JS camelCase)
-  const mapProduct = (p: any): Product => ({
+  const mapProductFromDB = (p: any): Product => ({
     id: p.id,
-    name: p.name,
-    slug: p.slug,
-    description: p.description,
-    price: p.price,
-    images: p.images || [],
-    variants: p.variants || [],
+    name: p.name || '',
+    slug: p.slug || '',
+    description: p.description || '',
+    price: Number(p.price) || 0,
+    images: Array.isArray(p.images) ? p.images : [],
+    variants: Array.isArray(p.variants) ? p.variants : [],
     category: p.category || '',
     sector: p.sector || '',
     rating: p.rating || 5,
     reviewsCount: p.reviews_count || 0,
-    badges: p.badges || [],
-    is_featured: p.is_featured // On garde les deux pour compatibilité
-  } as any);
+    badges: Array.isArray(p.badges) ? p.badges : [],
+    isFeatured: p.is_featured === true
+  });
 
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const { data: sData, error: sError } = await supabase.from('sectors').select('*').order('name');
-      const { data: pData, error: pError } = await supabase.from('products').select('*');
-      const { data: cData, error: cError } = await supabase.from('site_config').select('*').eq('id', 'global').single();
-
-      if (sError) console.error("Sectors Error:", sError);
-      if (pError) console.error("Products Error:", pError);
-      if (cError) console.error("Config Error:", cError);
-
+      const { data: sData } = await supabase.from('sectors').select('*').order('name');
+      const { data: pData } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+      const { data: cData } = await supabase.from('site_config').select('*').eq('id', 'global');
+      
       if (sData) setSectors(sData);
-      if (pData) setProducts(pData.map(mapProduct));
-      if (cData) setSiteConfig(cData.data);
+      if (pData) setProducts(pData.map(mapProductFromDB));
+      if (cData && cData.length > 0) setSiteConfig(cData[0].data);
     } catch (e) {
-      console.error("Cloud Error:", e);
+      console.error("Fetch Error:", e);
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
-  const addSector = async (sector: Sector) => {
+  const addSector = async (sector: any) => {
     await supabase.from('sectors').insert([sector]);
     await fetchData();
   };
 
-  const updateSector = async (oldSlug: string, sector: Sector) => {
-    await supabase.from('sectors').update(sector).eq('slug', oldSlug);
+  const updateSector = async (id: string, sector: any) => {
+    const { error } = await supabase.from('sectors').update(sector).eq('id', id);
+    if (error) console.error("Update Sector Error:", error);
     await fetchData();
   };
 
-  const deleteSector = async (slug: string) => {
-    await supabase.from('sectors').delete().eq('slug', slug);
+  const deleteSector = async (id: string) => {
+    await supabase.from('sectors').delete().eq('id', id);
     await fetchData();
   };
 
   const addProduct = async (product: any) => {
-    await supabase.from('products').insert([product]);
+    const { id, isFeatured, reviewsCount, ...rest } = product;
+    const dbProduct = {
+      ...rest,
+      is_featured: isFeatured,
+      reviews_count: reviewsCount
+    };
+    await supabase.from('products').insert([dbProduct]);
     await fetchData();
   };
 
   const updateProduct = async (product: any) => {
-    await supabase.from('products').update(product).eq('id', product.id);
+    const { id, isFeatured, reviewsCount, ...rest } = product;
+    const dbProduct = {
+      ...rest,
+      is_featured: isFeatured,
+      reviews_count: reviewsCount
+    };
+    const { error } = await supabase.from('products').update(dbProduct).eq('id', id);
+    if (error) console.error("Update Product Error:", error);
     await fetchData();
   };
 
   const deleteProduct = async (id: string) => {
-    await supabase.from('products').delete().eq('id', id);
+    const { error } = await supabase.from('products').delete().eq('id', id);
+    if (error) console.error("Delete Product Error:", error);
     await fetchData();
   };
 
   const toggleFeaturedProduct = async (id: string) => {
     const p = products.find(prod => prod.id === id);
     if (!p) return;
-    await supabase.from('products').update({ is_featured: !(p as any).is_featured }).eq('id', id);
+    await supabase.from('products').update({ is_featured: !p.isFeatured }).eq('id', id);
     await fetchData();
   };
 
@@ -208,14 +215,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }, [cart, wishlist]);
 
   if (isLoading || !siteConfig) {
-    return (
-      <div className="min-h-screen bg-background-dark flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-primary font-black uppercase tracking-[0.5em] animate-pulse mb-4">SÈGANDÉ</h2>
-          <p className="text-sand/20 text-[10px] uppercase font-bold tracking-widest">Connexion sécurisée au Cloud...</p>
-        </div>
-      </div>
-    );
+    return <div className="min-h-screen bg-background-dark flex items-center justify-center text-primary uppercase font-black">Chargement...</div>;
   }
 
   return (
@@ -231,40 +231,31 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   );
 };
 
-const ScrollToTop = () => {
-  const { pathname } = useLocation();
-  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
-  return null;
-};
-
-const App: React.FC = () => {
-  return (
-    <AppProvider>
-      <HashRouter>
-        <ScrollToTop />
-        <div className="flex flex-col min-h-screen bg-background-dark selection:bg-primary selection:text-white">
-          <Header />
-          <main className="flex-grow">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/product/:slug" element={<ProductDetail />} />
-              <Route path="/category/:slug" element={<Category />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/journal" element={<Editorial />} />
-              <Route path="/profile" element={<UserDashboard />} />
-              <Route path="/wishlist" element={<Wishlist />} />
-              <Route path="/quiz" element={<StyleQuiz />} />
-              <Route path="/admin/*" element={<AdminDashboard />} />
-              <Route path="/contact" element={<Contact />} />
-            </Routes>
-          </main>
-          <Footer />
-          <LiveSupport />
-        </div>
-      </HashRouter>
-    </AppProvider>
-  );
-};
+const App: React.FC = () => (
+  <AppProvider>
+    <HashRouter>
+      <div className="flex flex-col min-h-screen bg-background-dark">
+        <Header />
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/product/:slug" element={<ProductDetail />} />
+            <Route path="/category/:slug" element={<Category />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/journal" element={<Editorial />} />
+            <Route path="/profile" element={<UserDashboard />} />
+            <Route path="/wishlist" element={<Wishlist />} />
+            <Route path="/quiz" element={<StyleQuiz />} />
+            <Route path="/admin/*" element={<AdminDashboard />} />
+            <Route path="/contact" element={<Contact />} />
+          </Routes>
+        </main>
+        <Footer />
+        <LiveSupport />
+      </div>
+    </HashRouter>
+  </AppProvider>
+);
 
 export default App;
