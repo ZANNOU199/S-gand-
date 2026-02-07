@@ -124,7 +124,7 @@ const Home: React.FC = () => {
         <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20">
           <div className="flex flex-col md:flex-row justify-between items-end mb-16 md:mb-24 gap-8">
             <div className="text-center md:text-left flex-1">
-              <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-6 leading-none text-white">Collection Sahel</h2>
+              <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-6 leading-none text-white">Sélection d’Exception</h2>
               <p className="text-sand/40 text-xs md:text-sm max-w-xl uppercase font-bold tracking-[0.2em] leading-relaxed">
                 Une sélection rigoureuse de pièces d'exception, alliant héritage africain et minimalisme contemporain.
               </p>
@@ -161,11 +161,10 @@ const Home: React.FC = () => {
           <div className="space-y-8 md:space-y-12 order-1 lg:order-2">
             <div className="space-y-4">
               <span className="text-primary uppercase tracking-[0.5em] text-[10px] font-black">L'ÂME DE LA MAISON</span>
-              <h2 className="text-5xl md:text-7xl lg:text-8xl font-black leading-[0.9] uppercase tracking-tighter text-white">Racines<br/>Ancestrales,<br/>Vision Luxe</h2>
+              <h2 className="text-5xl md:text-7xl lg:text-8xl font-black leading-[0.9] uppercase tracking-tighter text-white">Racines<br/>Ancestrales,<br/>Vision Moderne</h2>
             </div>
             <p className="text-sand/50 text-sm md:text-base leading-relaxed max-w-lg font-medium">
-              Nous réinterprétons les codes du luxe à travers le prisme de l'authenticité africaine. Chaque objet raconte une histoire de temps, de geste et de passion.
-            </p>
+              Nous réinterprétons les codes de l’artisanat africain avec un regard contemporain. Chaque création SÈGANDÉ raconte l’histoire d’un geste, d’une matière et d’une passion, pour offrir des pièces utiles, élégantes et intemporelles.    </p>
             <button onClick={() => navigate('/journal')} className="flex items-center gap-6 text-[10px] md:text-[11px] font-black uppercase tracking-[0.4em] text-white hover:text-primary transition-all group">
               NOTRE HISTOIRE <div className="size-10 rounded-full border border-white/20 flex items-center justify-center group-hover:border-primary group-hover:translate-x-3 transition-all"><ArrowRight size={18} /></div>
             </button>
