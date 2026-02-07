@@ -1,9 +1,8 @@
 
 import React, { useState } from 'react';
 import { useCart, useCMS } from '../App';
-import { ShieldCheck, CreditCard, Loader2, CheckCircle2, Lock, ArrowLeft } from 'lucide-react';
+import { ShieldCheck, CreditCard, Loader2, CheckCircle2, Lock, AlertCircle } from 'lucide-react';
 
-// On définit le type pour éviter les erreurs TS, mais on utilisera window.FedaPay
 declare global {
   interface Window {
     FedaPay: any;
@@ -25,46 +24,40 @@ const Checkout: React.FC = () => {
   });
 
   const handlePayment = () => {
-    // 1. Validation locale minimale
     if (!customer.email || !customer.firstName) {
-      alert("Veuillez remplir au moins votre Prénom et votre Email.");
+      alert("Veuillez remplir votre Prénom et votre Email.");
       return;
     }
 
-    // 2. Vérification de l'existence de FedaPay sur l'objet window
     const fedapay = window.FedaPay;
 
-    if (!fedapay) {
-      alert("Le module de paiement FedaPay n'est pas encore chargé. Veuillez patienter une seconde ou rafraîchir la page.");
+    if (!fedapay || typeof fedapay.init !== 'function') {
+      alert("Le service de paiement est encore en cours de chargement. Merci de réessayer dans 2 secondes.");
       return;
     }
 
     setIsProcessing(true);
 
     try {
-      // 3. Initialisation de la clé publique
-      fedapay.init({
-        public_key: 'pk_sandbox_MzMxVkj0kYgxGPfQe1UgWi4O'
-      });
-
-      // 4. Lancement du Checkout (Attention à la minuscule : 'checkout')
-      fedapay.checkout({
+      // Syntaxe universelle FedaPay : init() puis open()
+      // Certains SDK utilisent .checkout() d'autres .open()
+      const checkoutOptions = {
+        public_key: 'pk_sandbox_MzMxVkj0kYgxGPfQe1UgWi4O',
         transaction: {
-          amount: Math.ceil(total),
-          description: `Commande Maison SÈGANDÉ - ${cart.length} articles`,
+          amount: Math.round(total),
+          description: `Commande SÈGANDÉ - ${cart.length} articles`,
         },
         customer: {
           firstname: customer.firstName,
           lastname: customer.lastName || 'Client',
           email: customer.email,
-          // On passe le téléphone s'il existe, sinon FedaPay le demandera dans le widget
-          phone_number: customer.phone ? {
-            number: customer.phone.replace(/[^0-9]/g, ''),
+          phone_number: {
+            number: customer.phone.replace(/[^0-9]/g, '') || '00000000',
             country: 'bj'
-          } : undefined
+          }
         },
         onComplete: async (response: any) => {
-          // Callback de succès
+          console.log("FedaPay Response:", response);
           if (response.status === 'approved' || response.status === 'successful') {
             const orderData = {
               customer_name: `${customer.firstName} ${customer.lastName}`,
@@ -80,20 +73,30 @@ const Checkout: React.FC = () => {
             setStep(2);
             clearCart();
           } else {
-            alert("Paiement non complété. Statut : " + response.status);
+            alert("Paiement non validé. Statut: " + response.status);
           }
           setIsProcessing(false);
         }
-      });
+      };
 
-      // Si après 10 secondes rien ne se passe, on libère le bouton
-      setTimeout(() => setIsProcessing(false), 10000);
+      // Tentative d'appel via la méthode universelle .checkout() 
+      // Si .checkout n'existe pas, on tente .init().open()
+      if (typeof fedapay.checkout === 'function') {
+        fedapay.checkout(checkoutOptions);
+      } else if (typeof fedapay.init === 'function') {
+        fedapay.init(checkoutOptions).open();
+      } else {
+        throw new Error("Méthode de paiement non disponible sur l'objet FedaPay.");
+      }
 
     } catch (error: any) {
-      console.error("Erreur FedaPay:", error);
-      alert("Erreur lors du lancement : " + (error.message || "Problème de configuration"));
+      console.error("FedaPay Critical Error:", error);
+      alert("Erreur de communication avec FedaPay : " + (error.message || "Inconnu"));
       setIsProcessing(false);
     }
+
+    // Sécurité de déblocage du bouton
+    setTimeout(() => setIsProcessing(false), 15000);
   };
 
   if (cart.length === 0 && step !== 2) {
@@ -115,9 +118,9 @@ const Checkout: React.FC = () => {
               <header className="space-y-4">
                 <div className="flex items-center gap-3">
                   <span className="size-2 bg-primary rounded-full animate-pulse"></span>
-                  <span className="text-primary font-black uppercase tracking-[0.4em] text-[10px]">Paiement FedaPay</span>
+                  <span className="text-primary font-black uppercase tracking-[0.4em] text-[10px]">Caisse Sécurisée</span>
                 </div>
-                <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none">Caisse</h1>
+                <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none">Finaliser ma Commande</h1>
               </header>
 
               <div className="bg-charcoal/40 p-8 md:p-12 rounded-[2.5rem] border border-white/5 space-y-10 shadow-2xl">
@@ -125,7 +128,7 @@ const Checkout: React.FC = () => {
                   <div className="size-10 bg-primary/10 rounded-full flex items-center justify-center text-primary">
                     <ShieldCheck size={20} />
                   </div>
-                  <h2 className="text-sm font-black uppercase tracking-widest">Vos Coordonnées</h2>
+                  <h2 className="text-sm font-black uppercase tracking-widest">Informations Client</h2>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -161,7 +164,7 @@ const Checkout: React.FC = () => {
                 </div>
                 
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-sand/40 uppercase tracking-widest ml-1">Téléphone (Optionnel ici)</label>
+                  <label className="text-[10px] font-black text-sand/40 uppercase tracking-widest ml-1">Numéro Mobile (Bénin)</label>
                   <input 
                     type="tel" 
                     value={customer.phone} 
@@ -169,15 +172,14 @@ const Checkout: React.FC = () => {
                     placeholder="66000000" 
                     className="segande-input" 
                   />
-                  <p className="text-[9px] text-sand/30 italic uppercase">Si laissé vide, FedaPay vous le demandera lors du paiement.</p>
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-sand/40 uppercase tracking-widest ml-1">Adresse de livraison</label>
+                  <label className="text-[10px] font-black text-sand/40 uppercase tracking-widest ml-1">Adresse de Livraison</label>
                   <textarea 
                     value={customer.address} 
                     onChange={e => setCustomer({...customer, address: e.target.value})} 
-                    placeholder="Quartier, Maison, Ville..." 
+                    placeholder="Quartier, Villa, Ville..." 
                     className="segande-input h-28 resize-none py-5" 
                   />
                 </div>
@@ -185,7 +187,7 @@ const Checkout: React.FC = () => {
 
               <div className="flex flex-col md:flex-row items-center justify-between p-8 bg-primary/5 rounded-3xl border border-primary/20 gap-8">
                 <div className="flex items-center gap-4 text-primary font-black uppercase tracking-widest text-[10px]">
-                  <Lock size={16} /> Sécurisé par FedaPay
+                  <Lock size={16} /> Paiement chiffré FedaPay
                 </div>
                 <button 
                   onClick={handlePayment}
@@ -194,7 +196,7 @@ const Checkout: React.FC = () => {
                 >
                   {isProcessing ? (
                     <>
-                      <Loader2 className="animate-spin" size={18} /> CONNECTION...
+                      <Loader2 className="animate-spin" size={18} /> TRAITEMENT...
                     </>
                   ) : (
                     <>
@@ -207,11 +209,11 @@ const Checkout: React.FC = () => {
 
             <aside className="lg:h-fit lg:sticky lg:top-32">
               <div className="bg-charcoal p-10 rounded-[2.5rem] border border-white/5 shadow-2xl space-y-10">
-                <h3 className="font-black uppercase tracking-[0.4em] text-[10px] text-primary border-b border-primary/10 pb-6">Sommaire</h3>
+                <h3 className="font-black uppercase tracking-[0.4em] text-[10px] text-primary border-b border-primary/10 pb-6">Récapitulatif</h3>
                 <div className="space-y-6 max-h-[350px] overflow-y-auto custom-scrollbar pr-3">
                   {cart.map(item => (
                     <div key={item.id} className="flex gap-4 items-center group">
-                      <div className="size-14 rounded-xl overflow-hidden bg-white/5 shrink-0 border border-white/10 group-hover:border-primary/30 transition-colors">
+                      <div className="size-14 rounded-xl overflow-hidden bg-white/5 shrink-0 border border-white/10 transition-colors">
                         <img src={item.image} className="w-full h-full object-cover" alt={item.name} />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -224,7 +226,7 @@ const Checkout: React.FC = () => {
                 </div>
                 <div className="pt-8 border-t border-white/10">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs font-black uppercase tracking-widest">Total</span>
+                    <span className="text-xs font-black uppercase tracking-widest">Total à payer</span>
                     <span className="text-3xl font-black text-primary leading-none">{total.toLocaleString()} <span className="text-[10px]">FCFA</span></span>
                   </div>
                 </div>
@@ -233,18 +235,15 @@ const Checkout: React.FC = () => {
           </div>
         ) : (
           <div className="max-w-2xl mx-auto text-center py-24 space-y-12">
-            <div className="relative inline-block">
-              <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full scale-150"></div>
-              <div className="relative size-32 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto border-4 border-primary/20 shadow-2xl">
-                <CheckCircle2 size={64} className="animate-bounce" />
-              </div>
+            <div className="relative size-32 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto border-4 border-primary/20 shadow-2xl">
+              <CheckCircle2 size={64} className="animate-bounce" />
             </div>
             <div className="space-y-4">
-              <h2 className="text-5xl font-black uppercase tracking-tighter">Commande Réussie.</h2>
-              <p className="text-sand/50 uppercase font-bold tracking-[0.5em] text-[10px]">Maison SÈGANDÉ vous remercie.</p>
+              <h2 className="text-5xl font-black uppercase tracking-tighter">Merci pour votre confiance.</h2>
+              <p className="text-sand/50 uppercase font-bold tracking-[0.5em] text-[10px]">Maison SÈGANDÉ prépare votre colis.</p>
             </div>
-            <button onClick={() => window.location.hash = '#/'} className="bg-white text-black font-black px-16 py-6 rounded-full uppercase text-[10px] tracking-widest hover:bg-primary transition-all shadow-xl">
-              RETOUR À LA BOUTIQUE
+            <button onClick={() => window.location.hash = '#/'} className="bg-white text-black font-black px-16 py-6 rounded-full uppercase text-[10px] tracking-widest hover:bg-primary transition-all">
+              RETOUR À L'ACCUEIL
             </button>
           </div>
         )}
@@ -260,14 +259,14 @@ const Checkout: React.FC = () => {
           font-weight: 700;
           font-size: 14px;
           outline: none;
-          transition: all 0.4s;
+          transition: all 0.4s ease;
         }
         .segande-input:focus {
           border-color: #ec9213;
           background: rgba(255,255,255,0.04);
-          box-shadow: 0 0 40px rgba(236,146,19,0.1);
+          box-shadow: 0 0 30px rgba(236,146,19,0.1);
         }
-        .segande-input::placeholder { color: rgba(255,255,255,0.08); font-size: 12px; }
+        .segande-input::placeholder { color: rgba(255,255,255,0.1); font-size: 12px; }
       `}</style>
     </div>
   );
