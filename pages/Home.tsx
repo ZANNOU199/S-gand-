@@ -10,8 +10,9 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   const { siteConfig, sectors, products } = useCMS();
 
+  // On utilise la colonne is_featured de la DB au lieu du tableau dans siteConfig
   const sahelCollection = products
-    .filter(p => siteConfig.featuredProductIds.includes(p.id))
+    .filter(p => (p as any).is_featured === true)
     .slice(0, 4);
 
   return (
@@ -82,7 +83,7 @@ const Home: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
             {sahelCollection.map(product => (
-              <ProductCard key={product.id} product={product as any} />
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
         </div>

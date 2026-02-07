@@ -18,7 +18,7 @@ import StyleQuiz from './pages/StyleQuiz';
 import AdminDashboard from './pages/AdminDashboard';
 import LiveSupport from './components/LiveSupport';
 
-// Initialize Supabase client with provided credentials
+// Initialize Supabase client
 const supabase = createClient(
   'https://szcrmuhibgvkrwtkhxnt.supabase.co',
   'sb_publishable_u99W3zlTupZ0Ia0MP1wp9g_C_lcJVMO'
@@ -37,7 +37,6 @@ interface CMSContextType {
   isAdminAuthenticated: boolean;
   isLoading: boolean;
   setAdminAuthenticated: (val: boolean) => void;
-  // DB Actions
   addSector: (sector: Sector) => Promise<void>;
   updateSector: (oldSlug: string, sector: Sector) => Promise<void>;
   deleteSector: (slug: string) => Promise<void>;
@@ -90,18 +89,39 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return saved ? JSON.parse(saved) : [];
   });
 
+  // Normalisation des produits (SQL snake_case -> JS camelCase)
+  const mapProduct = (p: any): Product => ({
+    id: p.id,
+    name: p.name,
+    slug: p.slug,
+    description: p.description,
+    price: p.price,
+    images: p.images || [],
+    variants: p.variants || [],
+    category: p.category || '',
+    sector: p.sector || '',
+    rating: p.rating || 5,
+    reviewsCount: p.reviews_count || 0,
+    badges: p.badges || [],
+    is_featured: p.is_featured // On garde les deux pour compatibilité
+  } as any);
+
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const { data: sData } = await supabase.from('sectors').select('*').order('created_at', { ascending: true });
-      const { data: pData } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-      const { data: cData } = await supabase.from('site_config').select('*').eq('id', 'global').single();
+      const { data: sData, error: sError } = await supabase.from('sectors').select('*').order('name');
+      const { data: pData, error: pError } = await supabase.from('products').select('*');
+      const { data: cData, error: cError } = await supabase.from('site_config').select('*').eq('id', 'global').single();
+
+      if (sError) console.error("Sectors Error:", sError);
+      if (pError) console.error("Products Error:", pError);
+      if (cError) console.error("Config Error:", cError);
 
       if (sData) setSectors(sData);
-      if (pData) setProducts(pData);
+      if (pData) setProducts(pData.map(mapProduct));
       if (cData) setSiteConfig(cData.data);
     } catch (e) {
-      console.error("Erreur Cloud:", e);
+      console.error("Cloud Error:", e);
     } finally {
       setIsLoading(false);
     }
@@ -144,7 +164,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const toggleFeaturedProduct = async (id: string) => {
     const p = products.find(prod => prod.id === id);
     if (!p) return;
-    await supabase.from('products').update({ is_featured: !p.is_featured }).eq('id', id);
+    await supabase.from('products').update({ is_featured: !(p as any).is_featured }).eq('id', id);
     await fetchData();
   };
 
@@ -192,7 +212,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <div className="min-h-screen bg-background-dark flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-primary font-black uppercase tracking-[0.5em] animate-pulse mb-4">SÈGANDÉ</h2>
-          <p className="text-sand/20 text-[10px] uppercase font-bold tracking-widest">Initialisation Cloud...</p>
+          <p className="text-sand/20 text-[10px] uppercase font-bold tracking-widest">Connexion sécurisée au Cloud...</p>
         </div>
       </div>
     );
