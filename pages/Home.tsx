@@ -44,7 +44,7 @@ const Home: React.FC = () => {
               <div className="mb-6 md:mb-8">
                 <span className="inline-flex items-center gap-3 text-primary font-black tracking-[0.6em] text-[10px] md:text-xs uppercase bg-primary/10 px-6 py-2.5 rounded-full border border-primary/30 backdrop-blur-sm">
                   <span className="size-1.5 bg-primary rounded-full animate-pulse"></span>
-                  LE BIEN-ÊTRE AFRICAIN RÉINVENTÉ
+                  LE BIEN-ÊTRE RÉINVENTÉ
                 </span>
               </div>
 
