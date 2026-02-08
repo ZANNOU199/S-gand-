@@ -78,24 +78,24 @@ const Header: React.FC = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="absolute top-full left-0 w-full bg-charcoal border-b border-white/10 p-6 md:p-10 z-[60] shadow-2xl"
+            className="absolute top-full left-0 w-full bg-charcoal border-b border-white/10 p-4 md:p-10 z-[60] shadow-2xl"
           >
-            <form onSubmit={handleSearch} className="max-w-4xl mx-auto flex items-center gap-4">
-              <Search className="text-primary/40" />
+            <form onSubmit={handleSearch} className="max-w-4xl mx-auto flex items-center gap-3 md:gap-4">
+              <Search className="text-primary/40 shrink-0" size={18} />
               <input 
                 autoFocus
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="RECHERCHER DANS LA MAISON..."
-                className="flex-1 bg-transparent border-none text-xl md:text-3xl font-black uppercase tracking-tighter text-white focus:ring-0 placeholder:text-white/10"
+                placeholder="RECHERCHER..."
+                className="flex-1 bg-transparent border-none text-base sm:text-lg md:text-3xl font-black uppercase tracking-tighter text-white focus:ring-0 placeholder:text-white/10 p-0"
               />
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 md:gap-2 shrink-0">
                 <button type="submit" className="p-2 text-primary hover:text-white transition-colors">
-                  <ArrowRight size={28} />
+                  <ArrowRight size={24} className="md:w-7 md:h-7" />
                 </button>
                 <button onClick={() => setIsSearchOpen(false)} type="button" className="p-2 text-white/20 hover:text-white">
-                  <X size={24} />
+                  <X size={20} className="md:w-6 md:h-6" />
                 </button>
               </div>
             </form>
