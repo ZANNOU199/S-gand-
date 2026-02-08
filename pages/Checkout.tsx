@@ -85,10 +85,13 @@ const Checkout: React.FC = () => {
 
             try {
               await createOrder(orderData);
+              // Remontée automatique en haut de page après succès
+              window.scrollTo({ top: 0, behavior: 'smooth' });
               setStep(2);
               clearCart();
             } catch (err) {
               console.error("Database Save Error:", err);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
               setStep(2);
               clearCart();
             }

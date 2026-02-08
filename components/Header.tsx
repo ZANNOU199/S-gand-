@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart, useCMS } from '../App';
 import { LOGO_SVG } from '../constants';
-import { Menu, X, Search, ShoppingBag } from 'lucide-react';
+import { Menu, X, Search, ShoppingBag, ArrowRight } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const Header: React.FC = () => {
@@ -90,9 +90,14 @@ const Header: React.FC = () => {
                 placeholder="RECHERCHER DANS LA MAISON..."
                 className="flex-1 bg-transparent border-none text-xl md:text-3xl font-black uppercase tracking-tighter text-white focus:ring-0 placeholder:text-white/10"
               />
-              <button onClick={() => setIsSearchOpen(false)} type="button" className="p-2 text-white/20 hover:text-white">
-                <X size={24} />
-              </button>
+              <div className="flex items-center gap-2">
+                <button type="submit" className="p-2 text-primary hover:text-white transition-colors">
+                  <ArrowRight size={28} />
+                </button>
+                <button onClick={() => setIsSearchOpen(false)} type="button" className="p-2 text-white/20 hover:text-white">
+                  <X size={24} />
+                </button>
+              </div>
             </form>
           </motion.div>
         )}

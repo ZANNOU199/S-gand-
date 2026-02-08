@@ -22,6 +22,15 @@ const supabase = createClient(
   'sb_publishable_u99W3zlTupZ0Ia0MP1wp9g_C_lcJVMO'
 );
 
+// Composant pour remonter en haut de page lors du changement de route
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+};
+
 interface Sector {
   id: number;
   name: string;
@@ -300,6 +309,7 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-background-light dark:bg-background-dark text-charcoal dark:text-white">
+      <ScrollToTop />
       {!isAdminPath && <Header />}
       <main className="flex-grow">
         <Routes>
