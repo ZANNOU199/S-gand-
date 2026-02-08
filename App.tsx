@@ -278,7 +278,6 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <div className="min-h-screen bg-background-dark flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-primary font-black uppercase tracking-[0.5em] animate-pulse mb-2">SÈGANDÉ</h2>
-          <p className="text-sand/20 text-[9px] uppercase font-bold tracking-widest">Initialisation de la Maison...</p>
         </div>
       </div>
     );

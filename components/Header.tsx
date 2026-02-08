@@ -46,9 +46,6 @@ const Header: React.FC = () => {
           <button className="hidden sm:block text-white/40 hover:text-white transition-colors">
             <Search size={18} />
           </button>
-          <button onClick={() => navigate('/profile')} className="text-white/40 hover:text-white transition-colors">
-            <User size={19} />
-          </button>
           <Link to="/cart" className="relative flex items-center gap-1 text-white/40 hover:text-primary transition-colors">
             <ShoppingBag size={19} />
             {cartCount > 0 && (
