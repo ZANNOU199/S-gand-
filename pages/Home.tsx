@@ -1,16 +1,15 @@
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useCMS } from '../App';
 import ProductCard from '../components/ProductCard';
-import { ArrowRight, Search, Sparkles } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import SEO from '../components/SEO';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const { siteConfig, sectors, products } = useCMS();
-  const [searchQuery, setSearchQuery] = useState('');
 
   const sahelCollection = useMemo(() => {
     return products
@@ -19,15 +18,6 @@ const Home: React.FC = () => {
       .slice(0, 4);
   }, [products]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/category/all?search=${encodeURIComponent(searchQuery.trim())}`);
-    }
-  };
-
-  const trendingTopics = ["Art culinaire", "Tissage main", "Bien-être", "Sahel"];
-
   return (
     <div className="bg-background-dark text-white">
       <SEO 
@@ -35,8 +25,8 @@ const Home: React.FC = () => {
         description="Maison de luxe africaine dédiée au bien-être, à la mode et à l'artisanat contemporain. Découvrez nos collections d'exception."
       />
 
-      {/* Hero Section with Enhanced Search */}
-      <section className="relative h-[95vh] md:h-screen w-full overflow-hidden flex items-center justify-center lg:items-center lg:justify-start">
+      {/* Hero Section Simplified */}
+      <section className="relative h-[90vh] md:h-screen w-full overflow-hidden flex items-center justify-center lg:items-center lg:justify-start">
         <div className="absolute inset-0 z-0">
           <img 
             src={siteConfig.heroImage || "https://images.unsplash.com/photo-1549490349-8643362247b5"} 
@@ -61,63 +51,21 @@ const Home: React.FC = () => {
                 </span>
               </div>
 
-              <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl font-black mb-6 leading-[1.05] md:leading-[0.9] uppercase tracking-tighter text-white drop-shadow-2xl">
+              <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl font-black mb-8 leading-[1.05] md:leading-[0.9] uppercase tracking-tighter text-white drop-shadow-2xl">
                 {siteConfig.heroTitle}
               </h1>
               
               <p className="text-sand/80 text-xs md:text-sm lg:text-base max-w-xl mb-12 font-medium tracking-wide uppercase leading-relaxed mx-auto lg:mx-0">
                 {siteConfig.heroSubtitle}
               </p>
-
-              {/* Luxury Search Input */}
-              <div className="max-w-xl mx-auto lg:mx-0 mb-10 group">
-                <form onSubmit={handleSearch} className="relative flex items-center">
-                  <div className="absolute left-6 text-primary pointer-events-none group-focus-within:scale-110 transition-transform">
-                    <Search size={20} />
-                  </div>
-                  <input 
-                    type="text" 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="RECHERCHER UNE PIÈCE, UN UNIVERS..." 
-                    className="w-full bg-white/5 backdrop-blur-2xl border border-white/10 rounded-2xl py-6 pl-16 pr-32 text-[10px] font-black uppercase tracking-[0.2em] text-white placeholder:text-white/20 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all shadow-2xl"
-                  />
-                  <button 
-                    type="submit"
-                    className="absolute right-2 px-8 py-4 bg-primary text-background-dark rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-white transition-all shadow-lg active:scale-95"
-                  >
-                    Parcourir
-                  </button>
-                </form>
-                
-                {/* Suggestions Tags */}
-                <div className="flex flex-wrap items-center gap-4 mt-4 px-2 opacity-40 group-focus-within:opacity-100 transition-opacity">
-                  <span className="text-[8px] font-black uppercase tracking-widest text-sand/60">Tendances :</span>
-                  {trendingTopics.map(topic => (
-                    <button 
-                      key={topic} 
-                      onClick={() => { setSearchQuery(topic); navigate(`/category/all?search=${encodeURIComponent(topic)}`); }}
-                      className="text-[8px] font-black uppercase tracking-[0.2em] text-white hover:text-primary transition-colors"
-                    >
-                      {topic}
-                    </button>
-                  ))}
-                </div>
-              </div>
               
               <div className="flex flex-col sm:flex-row gap-5 justify-center lg:justify-start">
                 <button 
                   onClick={() => navigate('/category/all')} 
-                  className="group relative overflow-hidden bg-primary text-background-dark px-12 py-5 rounded-lg font-black text-[11px] tracking-[0.2em] uppercase transition-all shadow-[0_20px_40px_-15px_rgba(236,146,19,0.4)] hover:shadow-primary/40 hover:-translate-y-1"
+                  className="group relative overflow-hidden bg-primary text-background-dark px-16 py-6 rounded-lg font-black text-[12px] tracking-[0.3em] uppercase transition-all shadow-[0_20px_40px_-15px_rgba(236,146,19,0.4)] hover:shadow-primary/40 hover:-translate-y-1"
                 >
                   <span className="relative z-10">NOS COLLECTIONS</span>
                   <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                </button>
-                <button 
-                  onClick={() => navigate('/quiz')}
-                  className="px-12 py-5 border border-primary/30 rounded-lg font-black text-[11px] tracking-[0.2em] uppercase text-primary hover:bg-primary/10 transition-all backdrop-blur-sm flex items-center justify-center gap-3"
-                >
-                  <Sparkles size={16} /> TROUVER MON STYLE
                 </button>
               </div>
             </motion.div>

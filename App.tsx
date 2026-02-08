@@ -14,7 +14,6 @@ import Checkout from './pages/Checkout';
 import Editorial from './pages/Editorial';
 import UserDashboard from './pages/UserDashboard';
 import Wishlist from './pages/Wishlist';
-import StyleQuiz from './pages/StyleQuiz';
 import AdminDashboard from './pages/AdminDashboard';
 import LiveSupport from './components/LiveSupport';
 
@@ -312,7 +311,6 @@ const AppContent: React.FC = () => {
           <Route path="/journal" element={<Editorial />} />
           <Route path="/profile" element={<UserDashboard />} />
           <Route path="/wishlist" element={<Wishlist />} />
-          <Route path="/quiz" element={<StyleQuiz />} />
           <Route path="/admin/*" element={<AdminDashboard />} />
           <Route path="/contact" element={<Contact />} />
         </Routes>
