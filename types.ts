@@ -47,3 +47,12 @@ export interface Order {
   created_at: string;
   transaction_id?: string;
 }
+
+// Campaign interface for storing newsletter history in the CMS
+export interface Campaign {
+  id: number;
+  subject: string;
+  content: string;
+  recipient_count: number;
+  sent_at: string;
+}

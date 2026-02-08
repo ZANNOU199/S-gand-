@@ -2,7 +2,7 @@
 import React, { useState, createContext, useContext, useEffect } from 'react';
 import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
-import { CartItem, Product, Order } from './types';
+import { CartItem, Product, Order, Campaign } from './types';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -42,6 +42,7 @@ interface CMSContextType {
   products: Product[];
   orders: Order[];
   subscribers: Subscriber[];
+  campaigns: Campaign[];
   isAdminAuthenticated: boolean;
   isLoading: boolean;
   setAdminAuthenticated: (val: boolean) => void;
@@ -55,6 +56,7 @@ interface CMSContextType {
   updateSiteConfig: (config: any) => Promise<void>;
   createOrder: (order: Partial<Order>) => Promise<any>;
   subscribeNewsletter: (email: string) => Promise<{ success: boolean; message: string }>;
+  saveCampaign: (campaign: any) => Promise<void>;
   refreshData: () => Promise<void>;
 }
 
@@ -99,6 +101,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [siteConfig, setSiteConfig] = useState<any>(DEFAULT_CONFIG);
 
   const [cart, setCart] = useState<CartItem[]>(() => {
@@ -143,12 +146,14 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       const { data: cData } = await supabase.from('site_config').select('*').eq('id', 'global');
       const { data: oData } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
       const { data: subData } = await supabase.from('newsletter_subscribers').select('*').order('created_at', { ascending: false });
+      const { data: campData } = await supabase.from('newsletter_campaigns').select('*').order('sent_at', { ascending: false });
 
       if (sData) setSectors(sData);
       if (pData) setProducts(pData.map(mapProductFromDB));
       if (cData && cData.length > 0) setSiteConfig(cData[0].data);
       if (oData) setOrders(oData);
       if (subData) setSubscribers(subData);
+      if (campData) setCampaigns(campData);
       
     } catch (e) {
       console.error("Erreur fetchData:", e);
@@ -167,6 +172,12 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     }
     fetchData(); // Refresh subscribers for admin
     return { success: true, message: "Bienvenue dans la Maison SÈGANDÉ." };
+  };
+
+  // Function to save newsletter campaigns to database
+  const saveCampaign = async (campaign: any) => {
+    await supabase.from('newsletter_campaigns').insert([campaign]);
+    await fetchData();
   };
 
   const addSector = async (sector: any) => {
@@ -275,9 +286,9 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <CMSContext.Provider value={{ 
-      siteConfig, sectors, products, orders, subscribers, isAdminAuthenticated, isLoading, setAdminAuthenticated,
+      siteConfig, sectors, products, orders, subscribers, campaigns, isAdminAuthenticated, isLoading, setAdminAuthenticated,
       addSector, updateSector, deleteSector, addProduct, updateProduct, deleteProduct, toggleFeaturedProduct, updateSiteConfig,
-      createOrder, subscribeNewsletter, refreshData: fetchData
+      createOrder, subscribeNewsletter, saveCampaign, refreshData: fetchData
     }}>
       <CartContext.Provider value={{ cart, wishlist, addToCart, removeFromCart, updateQuantity, clearCart, toggleWishlist, total }}>
         {children}

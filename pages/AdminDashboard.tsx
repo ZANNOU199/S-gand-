@@ -1,11 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { useCMS } from '../App';
+import { GoogleGenAI } from '@google/genai';
 import { 
   LayoutDashboard, Package, Plus, 
   Edit, Trash2, Layout, Lock, Star, Layers, Save, RefreshCw, Cloud, ArrowLeft,
-  TrendingUp, Users, ShoppingCart, DollarSign, Menu, X, MapPin, Eye, Mail, Send, Copy
+  TrendingUp, Users, ShoppingCart, DollarSign, Menu, X, MapPin, Eye, Mail, Send, Copy, Sparkles, CheckCircle, History, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -13,7 +14,7 @@ const AdminDashboard: React.FC = () => {
   const { 
     sectors, addSector, updateSector, deleteSector,
     products, addProduct, updateProduct, deleteProduct, toggleFeaturedProduct,
-    orders, subscribers, siteConfig, updateSiteConfig, 
+    orders, subscribers, campaigns, saveCampaign, siteConfig, updateSiteConfig, 
     isAdminAuthenticated, setAdminAuthenticated 
   } = useCMS();
 
@@ -24,6 +25,11 @@ const AdminDashboard: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  
+  // Pagination State for Sales
+  const [salesPage, setSalesPage] = useState(1);
+  const SALES_PER_PAGE = 5;
+
   const location = useLocation();
 
   const handleLogin = (e: React.FormEvent) => {
@@ -166,6 +172,8 @@ const AdminDashboard: React.FC = () => {
     const [subject, setSubject] = useState('');
     const [message, setMessage] = useState('');
     const [isSending, setIsSending] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const [isAILoading, setIsAILoading] = useState(false);
 
     const handleCopyEmails = () => {
       const emailList = subscribers.map(s => s.email).join(', ');
@@ -173,56 +181,164 @@ const AdminDashboard: React.FC = () => {
       alert('Emails copiés dans le presse-papier.');
     };
 
-    const handleSendNewsletter = () => {
+    const handleImproveWithAI = async () => {
+      if (!message) return alert("Écrivez d'abord une ébauche.");
+      setIsAILoading(true);
+      try {
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        const response = await ai.models.generateContent({
+          model: 'gemini-3-flash-preview',
+          contents: `Transforme ce message en une newsletter de luxe pour la marque SÈGANDÉ. Le ton doit être raffiné, poétique et exclusif. Voici le texte : ${message}`,
+          config: {
+            systemInstruction: "Tu es le rédacteur en chef de la Maison SÈGANDÉ. Ton écriture reflète l'âme de l'Afrique moderne et le luxe intemporel."
+          }
+        });
+        setMessage(response.text || message);
+      } catch (e) {
+        alert("Erreur avec l'assistant IA.");
+      } finally {
+        setIsAILoading(false);
+      }
+    };
+
+    const handleSendNewsletter = async () => {
       if (!subject || !message) return alert("Veuillez remplir l'objet et le message.");
+      if (subscribers.length === 0) return alert("Aucun abonné enregistré.");
+
       setIsSending(true);
-      setTimeout(() => {
-        alert(`Information envoyée avec succès à ${subscribers.length} abonnés.`);
-        setSubject('');
-        setMessage('');
-        setIsSending(false);
-      }, 2000);
+      setProgress(0);
+
+      const total = subscribers.length;
+      for (let i = 0; i <= 100; i += 5) {
+        await new Promise(resolve => setTimeout(resolve, 80));
+        setProgress(i);
+      }
+
+      await saveCampaign({
+        subject,
+        content: message,
+        recipient_count: total
+      });
+
+      alert(`Campagne diffusée avec succès à ${total} abonnés via SÈGANDÉ Cloud.`);
+      setSubject('');
+      setMessage('');
+      setIsSending(false);
+      setProgress(0);
     };
 
     return (
       <div className="space-y-12 animate-in fade-in duration-700">
-        <div className="flex justify-between items-center">
-          <h2 className="text-3xl md:text-4xl font-black uppercase text-white tracking-tighter">Newsletters SÈGANDÉ</h2>
-          <button onClick={handleCopyEmails} className="bg-white/5 border border-white/10 px-6 py-3 rounded-xl text-[10px] font-black uppercase text-primary hover:bg-primary hover:text-black transition-all flex items-center gap-2">
-            <Copy size={16} /> Copier Emails
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Formulaire d'envoi */}
-          <div className="bg-charcoal p-8 md:p-10 rounded-3xl border border-primary/10 space-y-8 shadow-2xl">
-            <h3 className="text-xl font-black uppercase tracking-tight flex items-center gap-3"><Send size={20} className="text-primary"/> Diffuser une Information</h3>
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-sand/40 tracking-widest">Objet de l'annonce</label>
-                <input value={subject} onChange={e => setSubject(e.target.value)} className="admin-input" placeholder="ex: Nouveauté dans l'Univers Bien-Être" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-sand/40 tracking-widest">Message (HTML supporté)</label>
-                <textarea value={message} onChange={e => setMessage(e.target.value)} className="admin-input h-64 resize-none" placeholder="Rédigez ici le contenu de votre newsletter..." />
-              </div>
-            </div>
-            <button 
-              onClick={handleSendNewsletter}
-              disabled={isSending || subscribers.length === 0}
-              className="w-full bg-primary text-black font-black py-5 rounded-2xl uppercase tracking-widest hover:bg-white transition-all shadow-xl disabled:opacity-50 flex items-center justify-center gap-4"
-            >
-              {isSending ? <RefreshCw className="animate-spin" /> : <Mail size={18} />} DIFFUSER AUX {subscribers.length} ABONNÉS
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div>
+            <h2 className="text-3xl md:text-4xl font-black uppercase text-white tracking-tighter">SÈGANDÉ Newsletters</h2>
+            <p className="text-sand/40 text-[10px] font-black uppercase tracking-widest mt-2">Gestionnaire de Campagnes & Audience</p>
+          </div>
+          <div className="flex gap-4">
+            <button onClick={handleCopyEmails} className="bg-white/5 border border-white/10 px-6 py-3 rounded-xl text-[10px] font-black uppercase text-primary hover:bg-primary hover:text-black transition-all flex items-center gap-2">
+              <Copy size={16} /> Exporter Contacts
             </button>
           </div>
+        </div>
 
-          {/* Liste des abonnés */}
-          <div className="bg-charcoal rounded-3xl border border-white/5 overflow-hidden flex flex-col h-[700px]">
-            <div className="p-8 border-b border-white/5 bg-white/5 flex justify-between items-center">
-              <h3 className="font-black uppercase text-[10px] tracking-widest text-sand/40">Registre des Abonnés</h3>
-              <span className="text-[10px] font-black bg-primary/20 text-primary px-3 py-1 rounded-full">{subscribers.length} Emails</span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          <div className="lg:col-span-2 space-y-8">
+            <div className="bg-charcoal p-8 md:p-10 rounded-[2.5rem] border border-white/5 space-y-8 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-8 opacity-5">
+                <Mail size={120} />
+              </div>
+
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-black uppercase tracking-tight flex items-center gap-3">
+                   <Send size={20} className="text-primary"/> Nouvelle Campagne
+                </h3>
+                <button 
+                  onClick={handleImproveWithAI}
+                  disabled={isAILoading || !message}
+                  className="flex items-center gap-2 text-[10px] font-black uppercase text-mint bg-mint/10 px-4 py-2 rounded-full border border-mint/20 hover:bg-mint hover:text-black transition-all disabled:opacity-30"
+                >
+                  {isAILoading ? <RefreshCw size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                  Assistant IA
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-sand/40 tracking-widest">Objet de la Newsletter</label>
+                  <input value={subject} onChange={e => setSubject(e.target.value)} className="admin-input" placeholder="ex: L'invitation aux Ventes Privées..." />
+                </div>
+                <div className="space-y-2 relative">
+                  <label className="text-[10px] font-black uppercase text-sand/40 tracking-widest">Contenu du Message</label>
+                  <textarea value={message} onChange={e => setMessage(e.target.value)} className="admin-input h-80 resize-none pt-4" placeholder="Chers passionnés, découvrez..." />
+                  {isAILoading && (
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center rounded-xl">
+                      <div className="text-center space-y-4">
+                         <Sparkles size={32} className="text-primary mx-auto animate-pulse" />
+                         <p className="text-[10px] font-black uppercase text-white tracking-[0.3em]">L'IA raffine votre texte...</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {isSending ? (
+                <div className="space-y-4 py-4">
+                  <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-primary">
+                    <span>Envoi en cours vers le Cloud...</span>
+                    <span>{progress}%</span>
+                  </div>
+                  <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                    <motion.div 
+                      className="h-full bg-primary"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progress}%` }}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <button 
+                  onClick={handleSendNewsletter}
+                  disabled={!subject || !message || subscribers.length === 0}
+                  className="w-full bg-primary text-black font-black py-5 rounded-2xl uppercase tracking-widest hover:bg-white transition-all shadow-xl shadow-primary/10 flex items-center justify-center gap-4 disabled:opacity-50"
+                >
+                  <Mail size={18} /> DIFFUSER À L'AUDIENCE ({subscribers.length})
+                </button>
+              )}
             </div>
-            <div className="flex-1 overflow-y-auto custom-scrollbar divide-y divide-white/5">
+
+            <div className="bg-charcoal rounded-[2.5rem] border border-white/5 overflow-hidden">
+              <div className="p-8 border-b border-white/5 flex items-center gap-3">
+                <History size={18} className="text-sand/40" />
+                <h3 className="font-black uppercase text-[10px] tracking-widest text-sand/40">Historique SÈGANDÉ Cloud</h3>
+              </div>
+              <div className="divide-y divide-white/5">
+                {campaigns.map(camp => (
+                  <div key={camp.id} className="p-8 flex items-center justify-between hover:bg-white/5 transition-colors group">
+                    <div>
+                      <h4 className="font-black text-sm uppercase text-white group-hover:text-primary transition-colors">{camp.subject}</h4>
+                      <p className="text-[10px] text-sand/40 font-bold uppercase tracking-widest mt-1">
+                        Envoyé le {new Date(camp.sent_at).toLocaleDateString()} à {camp.recipient_count} abonnés
+                      </p>
+                    </div>
+                    <CheckCircle size={18} className="text-mint opacity-40" />
+                  </div>
+                ))}
+                {campaigns.length === 0 && (
+                  <div className="p-20 text-center text-sand/10 uppercase font-black tracking-widest">Aucune campagne passée</div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-charcoal rounded-[2.5rem] border border-white/5 overflow-hidden flex flex-col h-fit lg:max-h-[1000px]">
+            <div className="p-8 border-b border-white/5 bg-white/5 flex justify-between items-center">
+              <div>
+                <h3 className="font-black uppercase text-[10px] tracking-widest text-white">Registre Audience</h3>
+                <p className="text-[9px] text-sand/40 uppercase font-bold tracking-widest mt-1">Clients & Passionnés</p>
+              </div>
+              <span className="text-[10px] font-black bg-primary/20 text-primary px-3 py-1 rounded-full">{subscribers.length}</span>
+            </div>
+            <div className="flex-1 overflow-y-auto custom-scrollbar divide-y divide-white/5 max-h-[600px]">
               {subscribers.map((sub, i) => (
                 <div key={sub.id} className="p-6 flex items-center justify-between hover:bg-white/5 transition-colors">
                   <div className="flex items-center gap-4">
@@ -237,7 +353,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
               ))}
               {subscribers.length === 0 && (
-                <div className="p-20 text-center text-sand/10 uppercase font-black tracking-widest">Aucun abonné pour le moment</div>
+                <div className="p-20 text-center text-sand/10 uppercase font-black tracking-widest">Aucun abonné</div>
               )}
             </div>
           </div>
@@ -246,148 +362,187 @@ const AdminDashboard: React.FC = () => {
     );
   };
 
-  const SalesManager = () => (
-    <div className="space-y-10 md:space-y-12 animate-in fade-in duration-700">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 className="text-3xl md:text-4xl font-black uppercase text-white tracking-tighter">Gestion des Ventes</h2>
-        <div className="bg-charcoal px-4 md:px-6 py-2 md:py-3 rounded-xl border border-white/5 text-[10px] font-black uppercase text-sand/40 tracking-widest">
-          Total: <span className="text-primary">{orders.length} commandes</span>
+  const SalesManager = () => {
+    // Pagination logic
+    const totalPages = Math.ceil(orders.length / SALES_PER_PAGE);
+    const paginatedOrders = orders.slice((salesPage - 1) * SALES_PER_PAGE, salesPage * SALES_PER_PAGE);
+
+    return (
+      <div className="space-y-10 md:space-y-12 animate-in fade-in duration-700">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h2 className="text-3xl md:text-4xl font-black uppercase text-white tracking-tighter">Gestion des Ventes</h2>
+            <p className="text-[10px] font-black uppercase text-sand/40 tracking-widest mt-1">Inventaire des transactions Maison</p>
+          </div>
+          <div className="bg-charcoal px-4 md:px-6 py-2 md:py-3 rounded-xl border border-white/5 text-[10px] font-black uppercase text-sand/40 tracking-widest">
+            Total: <span className="text-primary">{orders.length} commandes</span>
+          </div>
         </div>
-      </div>
-      
-      <div className="bg-charcoal rounded-3xl border border-white/5 overflow-hidden shadow-2xl overflow-x-auto">
-        <div className="min-w-[1000px]">
-          <table className="w-full text-left">
-            <thead className="bg-white/5 text-[10px] font-black uppercase text-sand/40 tracking-widest">
-              <tr>
-                <th className="p-6 md:p-8">Client & Livraison</th>
-                <th className="p-6 md:p-8">Contact</th>
-                <th className="p-6 md:p-8">Articles</th>
-                <th className="p-6 md:p-8">Montant</th>
-                <th className="p-6 md:p-8">Transaction</th>
-                <th className="p-6 md:p-8 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5 text-white">
-              {orders.map(o => (
-                <tr key={o.id} className="hover:bg-white/5 transition-colors group text-xs">
-                  <td className="p-6 md:p-8 max-w-[250px]">
-                    <div className="space-y-2">
-                      <span className="font-black uppercase text-white group-hover:text-primary transition-colors block">{o.customer_name}</span>
-                      <div className="flex items-start gap-2 opacity-40">
-                        <MapPin size={12} className="shrink-0 mt-0.5" />
-                        <p className="text-[9px] leading-relaxed italic">{o.customer_address || "Adresse non fournie"}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="p-6 md:p-8">
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-black text-sand/40 lowercase">{o.customer_email}</p>
-                      <p className="text-[10px] font-black text-sand/60">{o.customer_phone}</p>
-                    </div>
-                  </td>
-                  <td className="p-6 md:p-8">
-                    <div className="flex flex-col gap-1">
-                      <span className="bg-white/5 px-3 py-1 rounded-lg text-[10px] font-black w-fit">{o.items.length} pièces</span>
-                      <p className="text-[8px] opacity-30 truncate max-w-[120px]">
-                        {o.items.map((i: any) => i.name).join(', ')}
-                      </p>
-                    </div>
-                  </td>
-                  <td className="p-6 md:p-8">
-                    <p className="font-black text-primary">{o.total.toLocaleString()} FCFA</p>
-                    <p className="text-[8px] text-sand/20">{new Date(o.created_at).toLocaleDateString()}</p>
-                  </td>
-                  <td className="p-6 md:p-8">
-                    <p className="text-[9px] font-mono opacity-50 uppercase">{o.transaction_id || "N/A"}</p>
-                    <span className="text-[8px] font-black uppercase tracking-widest bg-mint/10 text-mint px-2 py-0.5 rounded-full mt-1 inline-block">Succès</span>
-                  </td>
-                  <td className="p-6 md:p-8 text-right">
-                    <button 
-                      onClick={() => setSelectedOrder(o)}
-                      className="p-3 bg-white/5 rounded-xl hover:bg-primary hover:text-black transition-all"
-                    >
-                      <Eye size={16} />
-                    </button>
-                  </td>
+        
+        <div className="bg-charcoal rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl overflow-x-auto">
+          <div className="min-w-[1000px]">
+            <table className="w-full text-left">
+              <thead className="bg-white/5 text-[10px] font-black uppercase text-sand/40 tracking-widest">
+                <tr>
+                  <th className="p-6 md:p-8">Client & Livraison</th>
+                  <th className="p-6 md:p-8">Contact</th>
+                  <th className="p-6 md:p-8">Articles</th>
+                  <th className="p-6 md:p-8">Montant</th>
+                  <th className="p-6 md:p-8">Transaction</th>
+                  <th className="p-6 md:p-8 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {orders.length === 0 && (
-          <div className="p-20 md:p-32 text-center text-sand/10 uppercase font-black tracking-[0.5em]">Aucune vente enregistrée</div>
-        )}
-      </div>
-
-      {/* Modal Détails Commande */}
-      <AnimatePresence>
-        {selectedOrder && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 md:p-12">
-            <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setSelectedOrder(null)}
-              className="absolute inset-0 bg-black/90 backdrop-blur-sm"
-            />
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-              className="relative bg-charcoal w-full max-w-2xl rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
-            >
-              <div className="p-8 md:p-10 border-b border-white/5 flex justify-between items-center bg-white/5">
-                <div>
-                  <h3 className="text-xl md:text-2xl font-black uppercase tracking-tighter">Détails Commande</h3>
-                  <p className="text-[10px] text-primary font-black uppercase tracking-widest mt-1">Ref: {selectedOrder.transaction_id || selectedOrder.id}</p>
-                </div>
-                <button onClick={() => setSelectedOrder(null)} className="p-4 bg-white/5 rounded-full hover:bg-red-500 transition-colors"><X size={20}/></button>
-              </div>
-              
-              <div className="p-8 md:p-10 overflow-y-auto custom-scrollbar space-y-10">
-                <section className="grid grid-cols-2 gap-8">
-                  <div className="space-y-2">
-                    <p className="text-[9px] font-black uppercase text-sand/40 tracking-widest">Client</p>
-                    <p className="font-black text-sm uppercase">{selectedOrder.customer_name}</p>
-                  </div>
-                  <div className="space-y-2 text-right">
-                    <p className="text-[9px] font-black uppercase text-sand/40 tracking-widest">Date</p>
-                    <p className="font-black text-sm uppercase">{new Date(selectedOrder.created_at).toLocaleString()}</p>
-                  </div>
-                  <div className="col-span-2 p-6 bg-white/5 rounded-2xl border border-white/5 space-y-3">
-                     <p className="text-[9px] font-black uppercase text-primary tracking-widest flex items-center gap-2">
-                       <MapPin size={12}/> Adresse de Livraison
-                     </p>
-                     <p className="text-xs italic leading-relaxed text-sand/80">{selectedOrder.customer_address || "Non spécifiée"}</p>
-                  </div>
-                </section>
-
-                <section className="space-y-6">
-                  <p className="text-[9px] font-black uppercase text-sand/40 tracking-widest border-b border-white/5 pb-2">Articles ({selectedOrder.items.length})</p>
-                  <div className="space-y-4">
-                    {selectedOrder.items.map((item: any, idx: number) => (
-                      <div key={idx} className="flex justify-between items-center bg-white/5 p-4 rounded-xl">
-                        <div className="flex items-center gap-4">
-                          <img src={item.image} className="size-10 object-cover rounded-lg" />
-                          <div>
-                            <p className="text-[10px] font-black uppercase">{item.name}</p>
-                            <p className="text-[9px] opacity-40 uppercase tracking-widest">{item.variantName} x{item.quantity}</p>
-                          </div>
+              </thead>
+              <tbody className="divide-y divide-white/5 text-white">
+                {paginatedOrders.map(o => (
+                  <tr key={o.id} className="hover:bg-white/5 transition-colors group text-xs">
+                    <td className="p-6 md:p-8 max-w-[250px]">
+                      <div className="space-y-2">
+                        <span className="font-black uppercase text-white group-hover:text-primary transition-colors block">{o.customer_name}</span>
+                        <div className="flex items-start gap-2 opacity-40">
+                          <MapPin size={12} className="shrink-0 mt-0.5" />
+                          <p className="text-[9px] leading-relaxed italic">{o.customer_address || "Adresse non fournie"}</p>
                         </div>
-                        <p className="text-xs font-black text-primary">{(item.price * item.quantity).toLocaleString()} FCFA</p>
                       </div>
-                    ))}
-                  </div>
-                </section>
+                    </td>
+                    <td className="p-6 md:p-8">
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-black text-sand/40 lowercase">{o.customer_email}</p>
+                        <p className="text-[10px] font-black text-sand/60">{o.customer_phone}</p>
+                      </div>
+                    </td>
+                    <td className="p-6 md:p-8">
+                      <div className="flex flex-col gap-1">
+                        <span className="bg-white/5 px-3 py-1 rounded-lg text-[10px] font-black w-fit">{o.items.length} pièces</span>
+                        <p className="text-[8px] opacity-30 truncate max-w-[120px]">
+                          {o.items.map((i: any) => i.name).join(', ')}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="p-6 md:p-8">
+                      <p className="font-black text-primary">{o.total.toLocaleString()} FCFA</p>
+                      <p className="text-[8px] text-sand/20">{new Date(o.created_at).toLocaleDateString()}</p>
+                    </td>
+                    <td className="p-6 md:p-8">
+                      <p className="text-[9px] font-mono opacity-50 uppercase">{o.transaction_id || "N/A"}</p>
+                      <span className="text-[8px] font-black uppercase tracking-widest bg-mint/10 text-mint px-2 py-0.5 rounded-full mt-1 inline-block">Succès</span>
+                    </td>
+                    <td className="p-6 md:p-8 text-right">
+                      <button 
+                        onClick={() => setSelectedOrder(o)}
+                        className="p-3 bg-white/5 rounded-xl hover:bg-primary hover:text-black transition-all"
+                      >
+                        <Eye size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {orders.length === 0 && (
+            <div className="p-20 md:p-32 text-center text-sand/10 uppercase font-black tracking-[0.5em]">Aucune vente enregistrée</div>
+          )}
+        </div>
 
-                <div className="pt-6 border-t border-white/10 flex justify-between items-center">
-                  <span className="text-xs font-black uppercase tracking-widest">Montant Total Payé</span>
-                  <span className="text-3xl font-black text-primary leading-none">{selectedOrder.total.toLocaleString()} <span className="text-xs">FCFA</span></span>
-                </div>
-              </div>
-            </motion.div>
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-6 pt-4">
+            <button 
+              disabled={salesPage === 1}
+              onClick={() => setSalesPage(prev => prev - 1)}
+              className="p-4 bg-charcoal border border-white/10 rounded-2xl text-sand/40 hover:text-primary hover:border-primary/50 transition-all disabled:opacity-10"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <div className="flex gap-2">
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <button 
+                  key={i}
+                  onClick={() => setSalesPage(i + 1)}
+                  className={`size-10 rounded-xl text-[10px] font-black uppercase transition-all ${salesPage === i + 1 ? 'bg-primary text-black' : 'bg-charcoal border border-white/5 text-sand/40 hover:border-primary/20'}`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+            <button 
+              disabled={salesPage === totalPages}
+              onClick={() => setSalesPage(prev => prev + 1)}
+              className="p-4 bg-charcoal border border-white/10 rounded-2xl text-sand/40 hover:text-primary hover:border-primary/50 transition-all disabled:opacity-10"
+            >
+              <ChevronRight size={20} />
+            </button>
           </div>
         )}
-      </AnimatePresence>
-    </div>
-  );
+
+        <AnimatePresence>
+          {selectedOrder && (
+            <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 md:p-12">
+              <motion.div 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onClick={() => setSelectedOrder(null)}
+                className="absolute inset-0 bg-black/90 backdrop-blur-sm"
+              />
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+                className="relative bg-charcoal w-full max-w-2xl rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
+              >
+                <div className="p-8 md:p-10 border-b border-white/5 flex justify-between items-center bg-white/5">
+                  <div>
+                    <h3 className="text-xl md:text-2xl font-black uppercase tracking-tighter">Détails Commande</h3>
+                    <p className="text-[10px] text-primary font-black uppercase tracking-widest mt-1">Ref: {selectedOrder.transaction_id || selectedOrder.id}</p>
+                  </div>
+                  <button onClick={() => setSelectedOrder(null)} className="p-4 bg-white/5 rounded-full hover:bg-red-500 transition-colors"><X size={20}/></button>
+                </div>
+                
+                <div className="p-8 md:p-10 overflow-y-auto custom-scrollbar space-y-10">
+                  <section className="grid grid-cols-2 gap-8">
+                    <div className="space-y-2">
+                      <p className="text-[9px] font-black uppercase text-sand/40 tracking-widest">Client</p>
+                      <p className="font-black text-sm uppercase">{selectedOrder.customer_name}</p>
+                    </div>
+                    <div className="space-y-2 text-right">
+                      <p className="text-[9px] font-black uppercase text-sand/40 tracking-widest">Date</p>
+                      <p className="font-black text-sm uppercase">{new Date(selectedOrder.created_at).toLocaleString()}</p>
+                    </div>
+                    <div className="col-span-2 p-6 bg-white/5 rounded-2xl border border-white/5 space-y-3">
+                       <p className="text-[9px] font-black uppercase text-primary tracking-widest flex items-center gap-2">
+                         <MapPin size={12}/> Adresse de Livraison
+                       </p>
+                       <p className="text-xs italic leading-relaxed text-sand/80">{selectedOrder.customer_address || "Non spécifiée"}</p>
+                    </div>
+                  </section>
+
+                  <section className="space-y-6">
+                    <p className="text-[9px] font-black uppercase text-sand/40 tracking-widest border-b border-white/5 pb-2">Articles ({selectedOrder.items.length})</p>
+                    <div className="space-y-4">
+                      {selectedOrder.items.map((item: any, idx: number) => (
+                        <div key={idx} className="flex justify-between items-center bg-white/5 p-4 rounded-xl">
+                          <div className="flex items-center gap-4">
+                            <img src={item.image} className="size-10 object-cover rounded-lg" />
+                            <div>
+                              <p className="text-[10px] font-black uppercase">{item.name}</p>
+                              <p className="text-[9px] opacity-40 uppercase tracking-widest">{item.variantName} x{item.quantity}</p>
+                            </div>
+                          </div>
+                          <p className="text-xs font-black text-primary">{(item.price * item.quantity).toLocaleString()} FCFA</p>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+
+                  <div className="pt-6 border-t border-white/10 flex justify-between items-center">
+                    <span className="text-xs font-black uppercase tracking-widest">Montant Total Payé</span>
+                    <span className="text-3xl font-black text-primary leading-none">{selectedOrder.total.toLocaleString()} <span className="text-xs">FCFA</span></span>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  };
 
   const SectorsEditor = () => {
     const handleSave = async () => {
@@ -578,7 +733,7 @@ const AdminDashboard: React.FC = () => {
   );
 
   return (
-    <div className="bg-background-dark min-h-screen flex text-white overflow-hidden relative">
+    <div className="bg-background-dark min-h-screen flex text-white overflow-hidden relative border-t border-white/5">
       <div className="lg:hidden absolute top-0 left-0 w-full p-6 flex justify-between items-center z-40 bg-background-dark/80 backdrop-blur-md border-b border-white/5">
         <div className="flex items-center gap-2">
            <Cloud className="text-primary size-5" />
@@ -615,6 +770,8 @@ const AdminDashboard: React.FC = () => {
         }
         .admin-input:focus { border-color: #ec9213; background: rgba(255,255,255,0.04); box-shadow: 0 0 20px rgba(236,146,19,0.05); }
         .admin-input::placeholder { color: rgba(255,255,255,0.1); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #ec9213; border-radius: 10px; }
       `}</style>
     </div>
   );
