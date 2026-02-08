@@ -1,6 +1,6 @@
 {
-  "name": "SÈGANDÉ Luxury E-commerce",
-  "description": "A high-end, pixel-perfect e-commerce platform showcasing contemporary African luxury through artisanal craftsmanship and modern design.",
+  "name": "SÈGANDÉ SHOP",
+  "description": "Plateforme e-commerce haut de gamme dédiée au bien-être et à l’art de vivre africain contemporain. SÈGANDÉ propose des créations artisanales de bien-être, de mode et d’art culinaire, alliant savoir-faire ancestral et design moderne.",
   "requestFramePermissions": [
     "camera",
     "microphone"
