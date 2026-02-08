@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useCMS } from '../App';
@@ -10,29 +10,40 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   const { siteConfig, sectors, products } = useCMS();
 
-  // Filtrage intelligent : priorités aux produits mis en avant, sinon les plus récents
-  const featured = products.filter(p => p.isFeatured === true);
-  const sahelCollection = featured.length > 0 
-    ? featured.slice(0, 4) 
-    : products.slice(0, 4);
+  // Filtrage intelligent : Exactement 4 articles, triés du plus ancien au plus récent (ID asc)
+  const sahelCollection = useMemo(() => {
+    // 1. On récupère les articles étoilés (featured) triés par ID croissant (plus ancien d'abord)
+    const featured = products
+      .filter(p => p.isFeatured)
+      .sort((a, b) => Number(a.id) - Number(b.id));
+
+    // 2. Si on a déjà 4 ou plus, on prend les 4 plus anciens
+    if (featured.length >= 4) {
+      return featured.slice(0, 4);
+    }
+
+    // 3. Sinon, on complète avec les articles non-étoilés les plus anciens pour atteindre 4
+    const nonFeatured = products
+      .filter(p => !p.isFeatured)
+      .sort((a, b) => Number(a.id) - Number(b.id));
+
+    return [...featured, ...nonFeatured].slice(0, 4);
+  }, [products]);
 
   return (
     <div className="bg-background-dark text-white">
-      {/* Hero Section - Perfectly Calibrated for Desktop & Mobile */}
+      {/* Hero Section */}
       <section className="relative h-[85vh] md:h-screen w-full overflow-hidden flex items-center justify-center lg:items-center lg:justify-start">
-        {/* Background Image - Forced to TOP on Desktop to see faces */}
         <div className="absolute inset-0 z-0">
           <img 
             src={siteConfig.heroImage || "https://images.unsplash.com/photo-1549490349-8643362247b5"} 
             alt="SÈGANDÉ Hero"
             className="w-full h-full object-cover object-center lg:object-top transition-transform duration-[3000ms] scale-105"
           />
-          {/* Dual Gradient for maximum readability and visual depth */}
           <div className="absolute inset-0 bg-black/40 lg:bg-transparent"></div>
           <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/20 to-transparent lg:bg-gradient-to-r lg:from-background-dark/90 lg:via-background-dark/10 lg:to-transparent"></div>
         </div>
 
-        {/* Content Container - Centered vertically on desktop for total visibility */}
         <div className="relative z-10 w-full max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20">
           <div className="max-w-4xl text-center lg:text-left">
             <motion.div
@@ -40,7 +51,6 @@ const Home: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, ease: "easeOut" }}
             >
-              {/* Brand Tag - Now guaranteed visible */}
               <div className="mb-6 md:mb-8">
                 <span className="inline-flex items-center gap-3 text-primary font-black tracking-[0.6em] text-[10px] md:text-xs uppercase bg-primary/10 px-6 py-2.5 rounded-full border border-primary/30 backdrop-blur-sm">
                   <span className="size-1.5 bg-primary rounded-full animate-pulse"></span>
@@ -75,7 +85,6 @@ const Home: React.FC = () => {
           </div>
         </div>
 
-        {/* Subtle Scroll Indicator for Desktop */}
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center gap-3 opacity-30">
           <div className="w-px h-12 bg-gradient-to-b from-primary to-transparent"></div>
         </div>
@@ -119,14 +128,15 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Collection Sahel (Featured Products) */}
+      {/* Sélection d’Exception (Strictly 4 Items, Oldest Featured First) */}
       <section className="bg-charcoal/30 py-20 md:py-32 border-t border-white/5">
         <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20">
           <div className="flex flex-col md:flex-row justify-between items-end mb-16 md:mb-24 gap-8">
             <div className="text-center md:text-left flex-1">
+              <span className="text-primary uppercase tracking-[0.5em] text-[10px] font-black mb-3 block">CURATION ÉLITE</span>
               <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-6 leading-none text-white">Sélection d’Exception</h2>
               <p className="text-sand/40 text-xs md:text-sm max-w-xl uppercase font-bold tracking-[0.2em] leading-relaxed">
-                Une sélection rigoureuse de pièces d'exception, alliant héritage africain et minimalisme contemporain.
+                Une sélection rigoureuse de 4 pièces iconiques, triées selon leur héritage et leur rareté au sein de notre Maison.
               </p>
             </div>
             <button 

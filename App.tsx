@@ -189,6 +189,14 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const toggleFeaturedProduct = async (id: string) => {
     const p = products.find(prod => prod.id === id);
     if (!p) return;
+    
+    // Contrainte : On ne peut choisir que 4 produits mis en avant au maximum
+    const currentlyFeatured = products.filter(x => x.isFeatured);
+    if (!p.isFeatured && currentlyFeatured.length >= 4) {
+      alert("La Sélection d'Exception est limitée à 4 articles. Veuillez retirer l'étoile d'une autre pièce avant d'en ajouter une nouvelle.");
+      return;
+    }
+
     await supabase.from('products').update({ is_featured: !p.isFeatured }).eq('id', Number(id));
     await fetchData();
   };
