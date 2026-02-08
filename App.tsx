@@ -176,7 +176,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     } catch (e) {
       console.error("Erreur fetchData:", e);
     } finally {
-      setIsLoading(false);
+      // Simulate minimum load time for brand impact
+      setTimeout(() => setIsLoading(false), 1200);
     }
   };
 
@@ -287,6 +288,28 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     localStorage.setItem('segande_cart', JSON.stringify(cart));
     localStorage.setItem('wishlist', JSON.stringify(wishlist));
   }, [cart, wishlist]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background-dark flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-primary font-black uppercase tracking-[1.2em] animate-pulse text-2xl md:text-4xl">SÈGANDÉ</h2>
+          <div className="h-0.5 w-12 bg-primary/20 mx-auto mt-6 rounded-full overflow-hidden">
+            <div className="h-full bg-primary animate-loading-bar"></div>
+          </div>
+        </div>
+        <style>{`
+          @keyframes loading-bar {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+          }
+          .animate-loading-bar {
+            animation: loading-bar 1.5s infinite ease-in-out;
+          }
+        `}</style>
+      </div>
+    );
+  }
 
   return (
     <CMSContext.Provider value={{ 
