@@ -3,17 +3,28 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart, useCMS } from '../App';
 import { LOGO_SVG } from '../constants';
-import { Menu, X, Search, User, ShoppingBag } from 'lucide-react';
+import { Menu, X, Search, ShoppingBag } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const { cart } = useCart();
   const { sectors } = useCMS();
   const navigate = useNavigate();
   const cartCount = cart.reduce((acc, i) => acc + i.quantity, 0);
 
   const closeMenu = () => setIsMenuOpen(false);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/category/all?search=${encodeURIComponent(searchQuery.trim())}`);
+      setIsSearchOpen(false);
+      setSearchQuery('');
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-background-dark/95 backdrop-blur-md">
@@ -22,7 +33,7 @@ const Header: React.FC = () => {
         {/* Left: Dynamic Menu */}
         <nav className="hidden lg:flex items-center gap-6">
           <Link to="/category/all" className="text-[9px] font-black tracking-[0.25em] uppercase transition-all text-white/40 hover:text-primary">Univers</Link>
-          {sectors.map(sector => (
+          {sectors.slice(0, 3).map(sector => (
             <Link key={sector.slug} to={`/category/${sector.slug}`} className="text-[9px] font-black tracking-[0.25em] uppercase transition-all text-white/40 hover:text-primary">{sector.name}</Link>
           ))}
         </nav>
@@ -32,7 +43,7 @@ const Header: React.FC = () => {
           {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
 
-        {/* Center: Reimagined Logo "SÈ [Clock] DÉ" in pure green */}
+        {/* Center: Reimagined Logo */}
         <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 md:gap-4 group">
           <span className="text-lg md:text-2xl font-black brand-font tracking-tighter text-mint">SÈ</span>
           <div className="w-8 h-8 md:w-10 md:h-10 text-mint drop-shadow-[0_0_8px_rgba(0,223,129,0.3)] transition-transform duration-500 group-hover:scale-110">
@@ -43,7 +54,10 @@ const Header: React.FC = () => {
 
         {/* Right: Utilities */}
         <div className="flex items-center gap-4 md:gap-6">
-          <button className="hidden sm:block text-white/40 hover:text-white transition-colors">
+          <button 
+            onClick={() => setIsSearchOpen(!isSearchOpen)}
+            className={`text-white/40 hover:text-white transition-colors ${isSearchOpen ? 'text-primary' : ''}`}
+          >
             <Search size={18} />
           </button>
           <Link to="/cart" className="relative flex items-center gap-1 text-white/40 hover:text-primary transition-colors">
@@ -56,6 +70,33 @@ const Header: React.FC = () => {
           </Link>
         </div>
       </div>
+
+      {/* Full Width Search Overlay */}
+      <AnimatePresence>
+        {isSearchOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="absolute top-full left-0 w-full bg-charcoal border-b border-white/10 p-6 md:p-10 z-[60] shadow-2xl"
+          >
+            <form onSubmit={handleSearch} className="max-w-4xl mx-auto flex items-center gap-4">
+              <Search className="text-primary/40" />
+              <input 
+                autoFocus
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="RECHERCHER DANS LA MAISON..."
+                className="flex-1 bg-transparent border-none text-xl md:text-3xl font-black uppercase tracking-tighter text-white focus:ring-0 placeholder:text-white/10"
+              />
+              <button onClick={() => setIsSearchOpen(false)} type="button" className="p-2 text-white/20 hover:text-white">
+                <X size={24} />
+              </button>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Mobile Drawer */}
       <AnimatePresence>

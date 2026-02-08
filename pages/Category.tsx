@@ -1,9 +1,9 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { useCMS } from '../App';
 import ProductCard from '../components/ProductCard';
-import { ChevronRight, LayoutGrid } from 'lucide-react';
+import { ChevronRight, LayoutGrid, Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ITEMS_PER_PAGE = 6;
@@ -11,27 +11,32 @@ const ITEMS_PER_PAGE = 6;
 const Category: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { products: allProducts, sectors } = useCMS();
+  const location = useLocation();
   
-  // Si on est sur "all", on filtre par Univers (Secteur)
+  // Parse search from URL params
+  const searchParams = new URLSearchParams(location.search);
+  const initialSearch = searchParams.get('search') || '';
+
   const [activeSectorFilter, setActiveSectorFilter] = useState('All');
   const [priceLimit, setPriceLimit] = useState(1000000); 
   const [currentPage, setCurrentPage] = useState(1);
+  const [localSearch, setLocalSearch] = useState(initialSearch);
   const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setActiveSectorFilter('All');
     setCurrentPage(1);
-  }, [slug]);
+    setLocalSearch(new URLSearchParams(location.search).get('search') || '');
+  }, [slug, location.search]);
 
   const isAll = slug === 'all';
   const currentSector = sectors.find(s => s.slug === slug);
   
-  const title = isAll ? "Tout SÈGANDÉ" : currentSector?.name || slug;
+  const title = isAll ? (localSearch ? `Résultats pour "${localSearch}"` : "Tout SÈGANDÉ") : currentSector?.name || slug;
   const description = isAll ? "Explorez l'intégralité de notre collection artisanale." : `Plongez dans l'univers ${currentSector?.name || slug}.`;
 
-  // Liste des filtres pour le menu latéral
   const sideFilters = useMemo(() => {
-    if (!isAll) return []; // Pas de filtres de secteurs si on est déjà dans un secteur
+    if (!isAll) return [];
     return [
       { name: 'Tout Voir', slug: 'All' },
       ...sectors.map(s => ({ name: s.name, slug: s.slug }))
@@ -41,13 +46,21 @@ const Category: React.FC = () => {
   const finalProducts = useMemo(() => {
     let filtered = isAll ? allProducts : allProducts.filter(p => p.sector === slug);
     
-    // Filtre par Univers sélectionné si on est sur la page "Tout"
     if (isAll && activeSectorFilter !== 'All') {
       filtered = filtered.filter(p => p.sector === activeSectorFilter);
     }
+
+    if (localSearch) {
+      const q = localSearch.toLowerCase();
+      filtered = filtered.filter(p => 
+        p.name.toLowerCase().includes(q) || 
+        p.description.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q)
+      );
+    }
     
     return filtered.filter(p => p.price <= priceLimit);
-  }, [slug, allProducts, isAll, activeSectorFilter, priceLimit]);
+  }, [slug, allProducts, isAll, activeSectorFilter, priceLimit, localSearch]);
 
   const totalPages = Math.ceil(finalProducts.length / ITEMS_PER_PAGE);
   const paginatedProducts = finalProducts.slice(
@@ -74,7 +87,7 @@ const Category: React.FC = () => {
             <ChevronRight size={10} className="text-white/20" />
             <span className="text-white">{title}</span>
           </nav>
-          <h1 className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-white mb-6 leading-none">{title}</h1>
+          <h1 className="text-3xl md:text-6xl font-black uppercase tracking-tighter text-white mb-6 leading-none truncate max-w-full px-4">{title}</h1>
           <p className="text-sand/50 text-xs md:text-sm font-bold uppercase tracking-[0.2em] max-w-2xl mx-auto leading-relaxed">
             {description}
           </p>
@@ -84,9 +97,31 @@ const Category: React.FC = () => {
       <div className="max-w-[1440px] mx-auto px-6 md:px-8 py-12 md:py-20">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-20">
           <aside className="w-full lg:w-64 shrink-0 space-y-12">
+            
+            {/* Direct Search Filter */}
+            <div className="space-y-6">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary border-b border-white/10 pb-4">Rechercher une pièce</h3>
+              <div className="relative">
+                <input 
+                  type="text" 
+                  value={localSearch}
+                  onChange={(e) => { setLocalSearch(e.target.value); setCurrentPage(1); }}
+                  placeholder="EX: NID DU BIEN-ÊTRE"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl py-4 pl-4 pr-10 text-[10px] font-black uppercase tracking-widest text-white outline-none focus:border-primary transition-all"
+                />
+                {localSearch ? (
+                  <button onClick={() => setLocalSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white">
+                    <X size={14} />
+                  </button>
+                ) : (
+                  <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/20" />
+                )}
+              </div>
+            </div>
+
             {isAll && (
               <div>
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-6 border-b border-white/10 pb-4">Filtrer par Univers</h3>
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-sand/40 mb-6 border-b border-white/10 pb-4">Filtrer par Univers</h3>
                 <div className="flex flex-row lg:flex-col gap-2 overflow-x-auto pb-4 lg:pb-0 scrollbar-hide">
                   {sideFilters.map(filter => (
                     <button 
@@ -121,10 +156,16 @@ const Category: React.FC = () => {
 
             <AnimatePresence mode="wait">
               <motion.div 
-                key={`${slug}-${currentPage}-${activeSectorFilter}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                key={`${slug}-${currentPage}-${activeSectorFilter}-${localSearch}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                 className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-16"
               >
                 {paginatedProducts.map(p => <ProductCard key={p.id} product={p as any} />)}
+                {paginatedProducts.length === 0 && (
+                   <div className="col-span-full py-20 text-center space-y-6 opacity-30">
+                      <Search size={48} className="mx-auto mb-4" />
+                      <p className="text-[11px] font-black uppercase tracking-widest">Aucune pièce ne correspond à votre recherche</p>
+                   </div>
+                )}
               </motion.div>
             </AnimatePresence>
 

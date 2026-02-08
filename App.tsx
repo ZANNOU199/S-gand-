@@ -1,6 +1,6 @@
 
 import React, { useState, createContext, useContext, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
 import { CartItem, Product, Order, Campaign } from './types';
 import Header from './components/Header';
@@ -325,9 +325,9 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => (
   <AppProvider>
-    <BrowserRouter>
+    <HashRouter>
       <AppContent />
-    </BrowserRouter>
+    </HashRouter>
   </AppProvider>
 );
 
