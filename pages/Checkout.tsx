@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useCart, useCMS } from '../App';
-import { ShieldCheck, CreditCard, Loader2, CheckCircle2, Lock, AlertCircle } from 'lucide-react';
+import { ShieldCheck, CreditCard, Loader2, CheckCircle2, Lock } from 'lucide-react';
 
 declare global {
   interface Window {
@@ -55,8 +55,6 @@ const Checkout: React.FC = () => {
           }
         },
         onComplete: async (response: any) => {
-          console.log("FedaPay Response Received:", response);
-
           const rawStatus = 
             response?.status || 
             response?.transaction?.status || 
@@ -76,7 +74,7 @@ const Checkout: React.FC = () => {
               customer_name: `${customer.firstName} ${customer.lastName}`,
               customer_email: customer.email,
               customer_phone: customer.phone,
-              customer_address: customer.address, // AJOUT DE L'ADRESSE ICI
+              customer_address: customer.address,
               total: total,
               status: 'completed' as const,
               items: cart,
@@ -85,10 +83,12 @@ const Checkout: React.FC = () => {
 
             try {
               await createOrder(orderData);
+              window.scrollTo({ top: 0, behavior: 'smooth' }); // Remonter en haut
               setStep(2);
               clearCart();
             } catch (err) {
               console.error("Database Save Error:", err);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
               setStep(2);
               clearCart();
             }
@@ -152,54 +152,27 @@ const Checkout: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-3">
                     <label className="text-[10px] font-black text-sand/40 uppercase tracking-widest ml-1">Prénom *</label>
-                    <input 
-                      value={customer.firstName} 
-                      onChange={e => setCustomer({...customer, firstName: e.target.value})} 
-                      placeholder="Amara" 
-                      className="segande-input" 
-                    />
+                    <input value={customer.firstName} onChange={e => setCustomer({...customer, firstName: e.target.value})} placeholder="Amara" className="segande-input" />
                   </div>
                   <div className="space-y-3">
                     <label className="text-[10px] font-black text-sand/40 uppercase tracking-widest ml-1">Nom</label>
-                    <input 
-                      value={customer.lastName} 
-                      onChange={e => setCustomer({...customer, lastName: e.target.value})} 
-                      placeholder="Diop" 
-                      className="segande-input" 
-                    />
+                    <input value={customer.lastName} onChange={e => setCustomer({...customer, lastName: e.target.value})} placeholder="Diop" className="segande-input" />
                   </div>
                 </div>
                 
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-sand/40 uppercase tracking-widest ml-1">Email *</label>
-                  <input 
-                    type="email" 
-                    value={customer.email} 
-                    onChange={e => setCustomer({...customer, email: e.target.value})} 
-                    placeholder="votre@email.com" 
-                    className="segande-input" 
-                  />
+                  <input type="email" value={customer.email} onChange={e => setCustomer({...customer, email: e.target.value})} placeholder="votre@email.com" className="segande-input" />
                 </div>
                 
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-sand/40 uppercase tracking-widest ml-1">Numéro Mobile (Bénin)</label>
-                  <input 
-                    type="tel" 
-                    value={customer.phone} 
-                    onChange={e => setCustomer({...customer, phone: e.target.value})} 
-                    placeholder="66000000" 
-                    className="segande-input" 
-                  />
+                  <input type="tel" value={customer.phone} onChange={e => setCustomer({...customer, phone: e.target.value})} placeholder="66000000" className="segande-input" />
                 </div>
 
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-sand/40 uppercase tracking-widest ml-1">Adresse de Livraison *</label>
-                  <textarea 
-                    value={customer.address} 
-                    onChange={e => setCustomer({...customer, address: e.target.value})} 
-                    placeholder="Quartier, Villa, Ville..." 
-                    className="segande-input h-28 resize-none py-5" 
-                  />
+                  <textarea value={customer.address} onChange={e => setCustomer({...customer, address: e.target.value})} placeholder="Quartier, Villa, Ville..." className="segande-input h-28 resize-none py-5" />
                 </div>
               </div>
 
@@ -212,15 +185,7 @@ const Checkout: React.FC = () => {
                   disabled={isProcessing}
                   className="w-full md:w-auto bg-primary text-black font-black px-20 py-6 rounded-2xl uppercase tracking-[0.2em] text-[11px] hover:bg-white transition-all shadow-2xl flex items-center justify-center gap-4 disabled:opacity-50"
                 >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="animate-spin" size={18} /> TRAITEMENT...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard size={18} /> PAYER {total.toLocaleString()} FCFA
-                    </>
-                  )}
+                  {isProcessing ? <><Loader2 className="animate-spin" size={18} /> TRAITEMENT...</> : <><CreditCard size={18} /> PAYER {total.toLocaleString()} FCFA</>}
                 </button>
               </div>
             </div>
@@ -267,23 +232,8 @@ const Checkout: React.FC = () => {
         )}
       </div>
       <style>{`
-        .segande-input {
-          width: 100%;
-          background: rgba(255,255,255,0.02);
-          border: 1px solid rgba(255,255,255,0.06);
-          border-radius: 20px;
-          padding: 22px 28px;
-          color: white;
-          font-weight: 700;
-          font-size: 14px;
-          outline: none;
-          transition: all 0.4s ease;
-        }
-        .segande-input:focus {
-          border-color: #ec9213;
-          background: rgba(255,255,255,0.04);
-          box-shadow: 0 0 30px rgba(236,146,19,0.1);
-        }
+        .segande-input { width: 100%; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 22px 28px; color: white; font-weight: 700; font-size: 14px; outline: none; transition: all 0.4s ease; }
+        .segande-input:focus { border-color: #ec9213; background: rgba(255,255,255,0.04); box-shadow: 0 0 30px rgba(236,146,19,0.1); }
         .segande-input::placeholder { color: rgba(255,255,255,0.1); font-size: 12px; }
       `}</style>
     </div>
