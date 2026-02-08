@@ -1,6 +1,6 @@
 
 import React, { useState, createContext, useContext, useEffect } from 'react';
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
 import { CartItem, Product, Order } from './types';
 import Header from './components/Header';
@@ -190,7 +190,6 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const p = products.find(prod => prod.id === id);
     if (!p) return;
     
-    // Contrainte : On ne peut choisir que 4 produits mis en avant au maximum
     const currentlyFeatured = products.filter(x => x.isFeatured);
     if (!p.isFeatured && currentlyFeatured.length >= 4) {
       alert("La Sélection d'Exception est limitée à 4 articles. Veuillez retirer l'étoile d'une autre pièce avant d'en ajouter une nouvelle.");
@@ -266,29 +265,38 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   );
 };
 
+const AppContent: React.FC = () => {
+  const location = useLocation();
+  const isAdminPath = location.pathname.startsWith('/admin');
+
+  return (
+    <div className="flex flex-col min-h-screen bg-background-dark text-white">
+      {!isAdminPath && <Header />}
+      <main className="flex-grow">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/product/:slug" element={<ProductDetail />} />
+          <Route path="/category/:slug" element={<Category />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/journal" element={<Editorial />} />
+          <Route path="/profile" element={<UserDashboard />} />
+          <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/quiz" element={<StyleQuiz />} />
+          <Route path="/admin/*" element={<AdminDashboard />} />
+          <Route path="/contact" element={<Contact />} />
+        </Routes>
+      </main>
+      {!isAdminPath && <Footer />}
+      {!isAdminPath && <LiveSupport />}
+    </div>
+  );
+}
+
 const App: React.FC = () => (
   <AppProvider>
     <HashRouter>
-      <div className="flex flex-col min-h-screen bg-background-dark text-white">
-        <Header />
-        <main className="flex-grow">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/product/:slug" element={<ProductDetail />} />
-            <Route path="/category/:slug" element={<Category />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/journal" element={<Editorial />} />
-            <Route path="/profile" element={<UserDashboard />} />
-            <Route path="/wishlist" element={<Wishlist />} />
-            <Route path="/quiz" element={<StyleQuiz />} />
-            <Route path="/admin/*" element={<AdminDashboard />} />
-            <Route path="/contact" element={<Contact />} />
-          </Routes>
-        </main>
-        <Footer />
-        <LiveSupport />
-      </div>
+      <AppContent />
     </HashRouter>
   </AppProvider>
 );
