@@ -4,6 +4,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useCMS, useCart } from '../App';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Star, Minus, Plus, ChevronDown, CheckCircle } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const ProductDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -11,12 +12,12 @@ const ProductDetail: React.FC = () => {
   const product = products.find(p => p.slug === slug);
   const { addToCart } = useCart();
   const navigate = useNavigate();
-  const [selectedVariant, setSelectedVariant] = useState(product?.variants[0].id || '');
+  const [selectedVariant, setSelectedVariant] = useState(product?.variants[0]?.id || '');
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
   const [showToast, setShowToast] = useState(false);
 
-  if (!product) return <div className="p-20 text-center text-white">Product not found.</div>;
+  if (!product) return <div className="p-20 text-center text-white">Produit introuvable.</div>;
 
   const handleAddToCart = () => {
     addToCart(product as any, selectedVariant, quantity);
@@ -24,8 +25,41 @@ const ProductDetail: React.FC = () => {
     setTimeout(() => setShowToast(false), 3000);
   };
 
+  // Structured Data for Google
+  const productJsonLd = {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": product.name,
+    "image": product.images,
+    "description": product.description,
+    "sku": product.id,
+    "brand": {
+      "@type": "Brand",
+      "name": "SÈGANDÉ"
+    },
+    "offers": {
+      "@type": "Offer",
+      "url": window.location.href,
+      "priceCurrency": "XOF",
+      "price": product.price,
+      "availability": "https://schema.org/InStock"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": product.rating,
+      "reviewCount": product.reviewsCount
+    }
+  };
+
   return (
     <div className="bg-background-dark min-h-screen pt-6 md:pt-12 pb-24">
+      <SEO 
+        title={product.name} 
+        description={product.description} 
+        image={product.images[0]}
+        jsonLd={productJsonLd}
+      />
+      
       <AnimatePresence>
         {showToast && (
           <motion.div 
@@ -61,7 +95,7 @@ const ProductDetail: React.FC = () => {
                   onClick={() => setActiveImage(idx)}
                   className={`w-16 md:w-20 aspect-[3/4] rounded-lg overflow-hidden border-2 transition-all shrink-0 ${activeImage === idx ? 'border-primary' : 'border-transparent opacity-50'}`}
                 >
-                  <img src={img} alt={`${product.name} view ${idx}`} className="w-full h-full object-cover" />
+                  <img src={img} alt={`${product.name} - Vue ${idx + 1}`} className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
@@ -80,7 +114,7 @@ const ProductDetail: React.FC = () => {
           <div className="w-full lg:w-[450px] space-y-6 md:space-y-8">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="px-2 py-0.5 bg-primary/20 text-primary text-[9px] md:text-[10px] font-bold uppercase tracking-widest rounded">Artisanal Edition</span>
+                <span className="px-2 py-0.5 bg-primary/20 text-primary text-[9px] md:text-[10px] font-bold uppercase tracking-widest rounded">Édition Artisanale</span>
                 <div className="flex items-center gap-1 text-primary">
                   <Star size={14} fill="currentColor" />
                   <span className="text-sm font-bold text-white">{product.rating}</span>
@@ -140,9 +174,9 @@ const ProductDetail: React.FC = () => {
                     {item}
                     <ChevronDown size={14} className="transition-transform group-open:rotate-180" />
                   </summary>
-                  <p className="mt-4 text-xs text-sand/60 leading-relaxed">
+                  <div className="mt-4 text-xs text-sand/60 leading-relaxed">
                     Les détails sur l'{item.toLowerCase()} sont méticuleusement vérifiés par nos conservateurs pour garantir une qualité absolue.
-                  </p>
+                  </div>
                 </details>
               ))}
             </div>

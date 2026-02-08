@@ -5,29 +5,32 @@ import { useNavigate } from 'react-router-dom';
 import { useCMS } from '../App';
 import ProductCard from '../components/ProductCard';
 import { ArrowRight } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const { siteConfig, sectors, products } = useCMS();
 
-  // Filtrage strict : 4 articles maximum, ordre du plus ancien au plus récent
   const sahelCollection = useMemo(() => {
-    // On récupère uniquement les produits cochés "isFeatured"
-    // On trie par ID croissant car l'ID est généré séquentiellement (le plus petit est le plus ancien)
     return products
       .filter(p => p.isFeatured)
       .sort((a, b) => Number(a.id) - Number(b.id))
-      .slice(0, 4); // Limite finale de sécurité à 4
+      .slice(0, 4);
   }, [products]);
 
   return (
     <div className="bg-background-dark text-white">
+      <SEO 
+        title="L'Âme Moderne de l'Afrique" 
+        description="Maison de luxe africaine dédiée au bien-être, à la mode et à l'artisanat contemporain. Découvrez nos collections d'exception."
+      />
+
       {/* Hero Section */}
       <section className="relative h-[85vh] md:h-screen w-full overflow-hidden flex items-center justify-center lg:items-center lg:justify-start">
         <div className="absolute inset-0 z-0">
           <img 
             src={siteConfig.heroImage || "https://images.unsplash.com/photo-1549490349-8643362247b5"} 
-            alt="SÈGANDÉ Hero"
+            alt="SÈGANDÉ - Art de vivre africain"
             className="w-full h-full object-cover object-center lg:object-top transition-transform duration-[3000ms] scale-105"
           />
           <div className="absolute inset-0 bg-black/40 lg:bg-transparent"></div>
@@ -74,10 +77,6 @@ const Home: React.FC = () => {
             </motion.div>
           </div>
         </div>
-
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center gap-3 opacity-30">
-          <div className="w-px h-12 bg-gradient-to-b from-primary to-transparent"></div>
-        </div>
       </section>
 
       {/* Univers (Sectors) */}
@@ -88,20 +87,17 @@ const Home: React.FC = () => {
             <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none">Nos Univers</h2>
           </div>
           <div className="h-px flex-1 bg-white/5 mx-10 hidden lg:block"></div>
-          <p className="text-sand/40 text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-right hidden md:block">
-            Exploration Artisanale
-          </p>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 lg:gap-10">
-          {sectors.length > 0 ? sectors.map((sector) => (
+          {sectors.map((sector) => (
             <motion.div 
               key={sector.slug}
               whileHover={{ y: -10 }}
               onClick={() => navigate(`/category/${sector.slug}`)}
               className="group relative aspect-[4/5] overflow-hidden rounded-[2rem] cursor-pointer bg-charcoal border border-white/5 shadow-2xl"
             >
-              <div className="absolute inset-0 bg-cover bg-center transition-transform duration-[1.5s] group-hover:scale-110 opacity-60 group-hover:opacity-100" style={{ backgroundImage: `url('${sector.image || "https://via.placeholder.com/800x1200"}')` }}></div>
+              <div className="absolute inset-0 bg-cover bg-center transition-transform duration-[1.5s] group-hover:scale-110 opacity-60 group-hover:opacity-100" style={{ backgroundImage: `url('${sector.image}')` }}></div>
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80 group-hover:opacity-40 transition-opacity"></div>
               <div className="absolute bottom-0 left-0 p-8 w-full transform translate-y-4 group-hover:translate-y-0 transition-transform">
                 <h3 className="text-2xl md:text-3xl font-black text-white mb-3 uppercase tracking-tighter">{sector.name}</h3>
@@ -110,64 +106,24 @@ const Home: React.FC = () => {
                 </div>
               </div>
             </motion.div>
-          )) : (
-            <div className="col-span-full py-24 text-center text-sand/10 uppercase font-black tracking-widest border-2 border-dashed border-white/5 rounded-3xl">
-              Configuration de la Maison en cours...
-            </div>
-          )}
+          ))}
         </div>
       </section>
 
-      {/* Sélection d’Exception (Strictly 4 Items, Oldest Featured First) */}
+      {/* Sélection d’Exception */}
       <section className="bg-charcoal/30 py-20 md:py-32 border-t border-white/5">
         <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20">
           <div className="flex flex-col md:flex-row justify-between items-end mb-16 md:mb-24 gap-8">
             <div className="text-center md:text-left flex-1">
               <span className="text-primary uppercase tracking-[0.5em] text-[10px] font-black mb-3 block">CURATION ÉLITE</span>
               <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-6 leading-none text-white">Sélection d’Exception</h2>
-              <p className="text-sand/40 text-xs md:text-sm max-w-xl uppercase font-bold tracking-[0.2em] leading-relaxed">
-                Une sélection exclusive limitée à nos 4 pièces les plus emblématiques, triées par leur antériorité au sein de notre catalogue.
-              </p>
             </div>
-            <button 
-              onClick={() => navigate('/category/all')}
-              className="px-8 py-4 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:border-primary hover:text-primary transition-all shrink-0"
-            >
-              VOIR TOUT L'INVENTAIRE
-            </button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 md:gap-12">
-            {sahelCollection.length > 0 ? sahelCollection.map(product => (
+            {sahelCollection.map(product => (
               <ProductCard key={product.id} product={product} />
-            )) : (
-              <div className="col-span-full py-32 text-center text-sand/10 uppercase font-black tracking-widest border border-dashed border-white/5 rounded-3xl">
-                Sélection en cours de raffinement...
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Ethos / Story Section */}
-      <section className="relative overflow-hidden bg-background-dark py-24 md:py-40">
-        <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20 grid grid-cols-1 lg:grid-cols-2 gap-20 md:gap-32 items-center">
-          <div className="relative order-2 lg:order-1">
-            <div className="relative aspect-square sm:aspect-video rounded-[2.5rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border border-white/10 bg-charcoal">
-              <img className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfJlmBSowEjlbIFfda3GxFvnQdRa6cYM_Ll4IaA7gSE6BAKNsx657dPZqJK-20U4b-JfvY0q9NN1krfY8oPbxxxCtRpkgE7MgoPtnM9ml-q6wVZQk1TvKe8Vz3cPWosvtHk_wrz6fZz-saNYECI86SaTKxLvWjm6ONSqHaYzv4MAIOm-lqyJ8-c0nJAWx5JPVN6a8upMqKrNSPtB8OqHnd2Eaxl1dFbEuanBMMRzmBaeg1RGOBh-m3e5dCI4RRH-brbb2ZekHqLnCT" alt="Artisan SÈGANDÉ" />
-            </div>
-            <div className="absolute -bottom-10 -right-10 size-40 bg-primary/20 rounded-full blur-[100px] -z-10"></div>
-          </div>
-          <div className="space-y-8 md:space-y-12 order-1 lg:order-2">
-            <div className="space-y-4">
-              <span className="text-primary uppercase tracking-[0.5em] text-[10px] font-black">L'ÂME DE LA MAISON</span>
-              <h2 className="text-5xl md:text-7xl lg:text-8xl font-black leading-[0.9] uppercase tracking-tighter text-white">Racines<br/>Ancestrales,<br/>Vision Moderne</h2>
-            </div>
-            <p className="text-sand/50 text-sm md:text-base leading-relaxed max-w-lg font-medium">
-              Nous réinterprétons les codes de l’artisanat africain avec un regard contemporain. Chaque création SÈGANDÉ raconte l’histoire d’un geste, d’une matière et d’une passion, pour offrir des pièces utiles, élégantes et intemporelles.    </p>
-            <button onClick={() => navigate('/journal')} className="flex items-center gap-6 text-[10px] md:text-[11px] font-black uppercase tracking-[0.4em] text-white hover:text-primary transition-all group">
-              NOTRE HISTOIRE <div className="size-10 rounded-full border border-white/20 flex items-center justify-center group-hover:border-primary group-hover:translate-x-3 transition-all"><ArrowRight size={18} /></div>
-            </button>
+            ))}
           </div>
         </div>
       </section>

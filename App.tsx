@@ -1,6 +1,6 @@
 
 import React, { useState, createContext, useContext, useEffect } from 'react';
-import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
 import { CartItem, Product, Order, Campaign } from './types';
 import Header from './components/Header';
@@ -170,11 +170,10 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       if (error.code === '23505') return { success: false, message: "Cet email est déjà inscrit." };
       return { success: false, message: "Une erreur est survenue." };
     }
-    fetchData(); // Refresh subscribers for admin
+    fetchData();
     return { success: true, message: "Bienvenue dans la Maison SÈGANDÉ." };
   };
 
-  // Function to save newsletter campaigns to database
   const saveCampaign = async (campaign: any) => {
     await supabase.from('newsletter_campaigns').insert([campaign]);
     await fetchData();
@@ -301,7 +300,7 @@ const AppContent: React.FC = () => {
   const isAdminPath = location.pathname.startsWith('/admin');
 
   return (
-    <div className="flex flex-col min-h-screen bg-background-dark text-white">
+    <div className="flex flex-col min-h-screen bg-background-light dark:bg-background-dark text-charcoal dark:text-white">
       {!isAdminPath && <Header />}
       <main className="flex-grow">
         <Routes>
@@ -326,9 +325,9 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => (
   <AppProvider>
-    <HashRouter>
+    <BrowserRouter>
       <AppContent />
-    </HashRouter>
+    </BrowserRouter>
   </AppProvider>
 );
 

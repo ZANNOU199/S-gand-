@@ -4,11 +4,24 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SÈGANDÉ | LE BIEN-ÊTRE RÉINVENTÉ</title>
+    <title>SÈGANDÉ | Maison de Bien-Être & Artisanat Africain</title>
+    <meta name="description" content="Découvrez SÈGANDÉ, l'âme moderne de l'Afrique. Art de vivre, bien-être et créations artisanales haut de gamme." />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://segande.com/" />
+    <meta property="og:title" content="SÈGANDÉ | Le Bien-Être Réinventé" />
+    <meta property="og:description" content="Artisanat d'exception et rituels de bien-être issus du savoir-faire africain contemporain." />
+    <meta property="og:image" content="https://images.unsplash.com/photo-1549490349-8643362247b5" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:title" content="SÈGANDÉ | Le Bien-Être Réinventé" />
+    <meta property="twitter:description" content="Artisanat d' d'exception et rituels de bien-être." />
+
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link href="https://fonts.cdnfonts.com/css/clash-display" rel="stylesheet" />
-    <!-- SDK FedaPay Stable -->
     <script src="https://cdn.fedapay.com/checkout.js"></script>
     <script>
       tailwind.config = {
@@ -29,51 +42,15 @@
               sans: ['Inter', 'sans-serif'],
               display: ['Clash Display', 'sans-serif'],
             },
-            spacing: {
-              'xs': '4px',
-              'sm': '8px',
-              'md': '16px',
-              'lg': '24px',
-              'xl': '32px',
-            },
-            borderRadius: {
-              'DEFAULT': '4px',
-              'md': '8px',
-              'lg': '16px',
-            }
           }
         }
       }
     </script>
     <style>
-      body {
-        font-family: 'Inter', sans-serif;
-        -webkit-font-smoothing: antialiased;
-      }
-      h1, h2, h3, .brand-font {
-        font-family: 'Clash Display', sans-serif;
-      }
-      .luxury-gradient {
-        background: linear-gradient(180deg, rgba(18, 18, 18, 0) 0%, rgba(18, 18, 18, 0.8) 100%);
-      }
-      .custom-scrollbar::-webkit-scrollbar {
-        width: 4px;
-      }
-      .custom-scrollbar::-webkit-scrollbar-track {
-        background: transparent;
-      }
-      .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #ec9213;
-        border-radius: 10px;
-      }
-      @keyframes clock-spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-      }
-      .animate-clock-hand {
-        transform-origin: center;
-        animation: clock-spin 10s linear infinite;
-      }
+      body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+      h1, h2, h3, .brand-font { font-family: 'Clash Display', sans-serif; }
+      .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #ec9213; border-radius: 10px; }
     </style>
     <script type="importmap">
 {
@@ -84,10 +61,10 @@
     "react-router-dom": "https://esm.sh/react-router-dom@7.1.0?deps=react@19.0.0,react-dom@19.0.0",
     "framer-motion": "https://esm.sh/framer-motion@11.15.0?deps=react@19.0.0,react-dom@19.0.0",
     "lucide-react": "https://esm.sh/lucide-react@0.468.0?deps=react@19.0.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-    "react/": "https://esm.sh/react@^19.2.4/",
     "@google/genai": "https://esm.sh/@google/genai@^1.39.0",
-    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.39.7"
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.39.7",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/"
   }
 }
 </script>
