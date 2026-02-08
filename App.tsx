@@ -22,15 +22,6 @@ const supabase = createClient(
   'sb_publishable_u99W3zlTupZ0Ia0MP1wp9g_C_lcJVMO'
 );
 
-// Helper component to scroll to top on route change
-const ScrollToTop = () => {
-  const { pathname } = useLocation();
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
-  return null;
-};
-
 interface Sector {
   id: number;
   name: string;
@@ -44,16 +35,6 @@ interface Subscriber {
   created_at: string;
 }
 
-interface ContactMessage {
-  id: number;
-  first_name: string;
-  last_name: string;
-  email: string;
-  message: string;
-  status: 'unread' | 'read' | 'archived';
-  created_at: string;
-}
-
 interface CMSContextType {
   siteConfig: any;
   sectors: Sector[];
@@ -61,7 +42,6 @@ interface CMSContextType {
   orders: Order[];
   subscribers: Subscriber[];
   campaigns: Campaign[];
-  contactMessages: ContactMessage[];
   isAdminAuthenticated: boolean;
   isLoading: boolean;
   setAdminAuthenticated: (val: boolean) => void;
@@ -76,8 +56,6 @@ interface CMSContextType {
   createOrder: (order: Partial<Order>) => Promise<any>;
   subscribeNewsletter: (email: string) => Promise<{ success: boolean; message: string }>;
   saveCampaign: (campaign: any) => Promise<void>;
-  sendContactMessage: (msg: Partial<ContactMessage>) => Promise<void>;
-  deleteContactMessage: (id: number) => Promise<void>;
   refreshData: () => Promise<void>;
 }
 
@@ -110,15 +88,9 @@ const DEFAULT_CONFIG = {
   heroTitle: "SÈGANDÉ",
   heroSubtitle: "L'Âme Moderne de l'Afrique",
   heroImage: "https://images.unsplash.com/photo-1549490349-8643362247b5",
-  contact: { 
-    title: "Contact", 
-    subtitle: "Notre équipe spécialisée est disponible pour vous accompagner.", 
-    email: "contact@segande.com", 
-    phone1: "+229 01 96 11 37 38", 
-    phone2: "+229 01 64 01 70 66", 
-    address: "Porto-Novo" 
-  },
-  footer: { aboutText: "SÈGANDÉ : Des créations artisanales pour le bien-être, la mode et la cuisine, pensées pour la vie moderne." }
+  contact: { title: "Contact", subtitle: "Nous sommes à votre écoute", email: "contact@segande.com", phone1: "+229 00000000", phone2: "", address: "Cotonou, Bénin" },
+  footer: { aboutText: "Maison de luxe africaine." },
+  editorial: { heroTitle: "Artisanat", heroImage: "", sections: [] }
 };
 
 const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -129,7 +101,6 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [contactMessages, setContactMessages] = useState<ContactMessage[]>([]);
   const [siteConfig, setSiteConfig] = useState<any>(DEFAULT_CONFIG);
 
   const [cart, setCart] = useState<CartItem[]>(() => {
@@ -141,6 +112,32 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return saved ? JSON.parse(saved) : [];
   });
 
+  const parseSafe = (data: any) => {
+    if (typeof data === 'string') {
+      try { return JSON.parse(data); } catch (e) { return []; }
+    }
+    return Array.isArray(data) ? data : [];
+  };
+
+  const mapProductFromDB = (p: any): Product => {
+    const images = parseSafe(p.images);
+    return {
+      id: String(p.id),
+      name: p.name || 'Sans nom',
+      slug: p.slug || `piece-${p.id}`,
+      description: p.description || '',
+      price: Number(p.price) || 0,
+      images: images.length > 0 ? images : ["https://via.placeholder.com/600x800?text=SÈGANDÉ"],
+      variants: parseSafe(p.variants),
+      category: p.category || 'Non classé',
+      sector: p.sector || '',
+      rating: p.rating || 5,
+      reviewsCount: p.reviews_count || 0,
+      badges: parseSafe(p.badges),
+      isFeatured: !!p.is_featured
+    };
+  };
+
   const fetchData = async () => {
     try {
       const { data: sData } = await supabase.from('sectors').select('*').order('id');
@@ -149,53 +146,29 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       const { data: oData } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
       const { data: subData } = await supabase.from('newsletter_subscribers').select('*').order('created_at', { ascending: false });
       const { data: campData } = await supabase.from('newsletter_campaigns').select('*').order('sent_at', { ascending: false });
-      const { data: mData } = await supabase.from('contact_messages').select('*').order('created_at', { ascending: false });
 
       if (sData) setSectors(sData);
-      if (pData) setProducts(pData.map(p => ({
-        id: String(p.id),
-        name: p.name,
-        slug: p.slug,
-        price: Number(p.price),
-        description: p.description,
-        sector: p.sector,
-        images: typeof p.images === 'string' ? JSON.parse(p.images) : p.images,
-        isFeatured: p.is_featured,
-        category: p.category || '',
-        variants: typeof p.variants === 'string' ? JSON.parse(p.variants) : p.variants,
-        badges: typeof p.badges === 'string' ? JSON.parse(p.badges) : p.badges,
-        rating: p.rating || 5,
-        reviewsCount: p.reviews_count || 0
-      })));
+      if (pData) setProducts(pData.map(mapProductFromDB));
       if (cData && cData.length > 0) setSiteConfig(cData[0].data);
       if (oData) setOrders(oData);
       if (subData) setSubscribers(subData);
       if (campData) setCampaigns(campData);
-      if (mData) setContactMessages(mData);
       
     } catch (e) {
       console.error("Erreur fetchData:", e);
     } finally {
-      // Simulate minimum load time for brand impact
-      setTimeout(() => setIsLoading(false), 1200);
+      setIsLoading(false);
     }
   };
 
   useEffect(() => { fetchData(); }, []);
 
-  const sendContactMessage = async (msg: Partial<ContactMessage>) => {
-    await supabase.from('contact_messages').insert([msg]);
-    await fetchData();
-  };
-
-  const deleteContactMessage = async (id: number) => {
-    await supabase.from('contact_messages').delete().eq('id', id);
-    await fetchData();
-  };
-
   const subscribeNewsletter = async (email: string) => {
     const { error } = await supabase.from('newsletter_subscribers').insert([{ email }]);
-    if (error) return { success: false, message: "Cet email est déjà inscrit." };
+    if (error) {
+      if (error.code === '23505') return { success: false, message: "Cet email est déjà inscrit." };
+      return { success: false, message: "Une erreur est survenue." };
+    }
     fetchData();
     return { success: true, message: "Bienvenue dans la Maison SÈGANDÉ." };
   };
@@ -223,7 +196,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const addProduct = async (p: any) => {
     await supabase.from('products').insert([{
       name: p.name, slug: p.slug, price: p.price, description: p.description, 
-      sector: p.sector, images: JSON.stringify(p.images), is_featured: p.isFeatured
+      sector: p.sector, images: p.images, is_featured: p.isFeatured,
+      category: p.category, variants: p.variants, badges: p.badges
     }]);
     await fetchData();
   };
@@ -231,7 +205,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const updateProduct = async (p: any) => {
     await supabase.from('products').update({
       name: p.name, slug: p.slug, price: p.price, description: p.description, 
-      sector: p.sector, images: JSON.stringify(p.images), is_featured: p.isFeatured
+      sector: p.sector, images: p.images, is_featured: p.isFeatured,
+      category: p.category, variants: p.variants, badges: p.badges
     }).eq('id', Number(p.id));
     await fetchData();
   };
@@ -244,6 +219,13 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const toggleFeaturedProduct = async (id: string) => {
     const p = products.find(prod => prod.id === id);
     if (!p) return;
+    
+    const currentlyFeatured = products.filter(x => x.isFeatured);
+    if (!p.isFeatured && currentlyFeatured.length >= 4) {
+      alert("LA SÉLECTION D'EXCEPTION EST LIMITÉE À 4 ARTICLES. VEUILLEZ DÉCOCHER UNE AUTRE PIÈCE D'ABORD.");
+      return;
+    }
+
     await supabase.from('products').update({ is_featured: !p.isFeatured }).eq('id', Number(id));
     await fetchData();
   };
@@ -293,29 +275,17 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return (
       <div className="min-h-screen bg-background-dark flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-primary font-black uppercase tracking-[1.2em] animate-pulse text-2xl md:text-4xl">SÈGANDÉ</h2>
-          <div className="h-0.5 w-12 bg-primary/20 mx-auto mt-6 rounded-full overflow-hidden">
-            <div className="h-full bg-primary animate-loading-bar"></div>
-          </div>
+          <h2 className="text-primary font-black uppercase tracking-[0.5em] animate-pulse mb-2">SÈGANDÉ</h2>
         </div>
-        <style>{`
-          @keyframes loading-bar {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-          }
-          .animate-loading-bar {
-            animation: loading-bar 1.5s infinite ease-in-out;
-          }
-        `}</style>
       </div>
     );
   }
 
   return (
     <CMSContext.Provider value={{ 
-      siteConfig, sectors, products, orders, subscribers, campaigns, contactMessages, isAdminAuthenticated, isLoading, setAdminAuthenticated,
+      siteConfig, sectors, products, orders, subscribers, campaigns, isAdminAuthenticated, isLoading, setAdminAuthenticated,
       addSector, updateSector, deleteSector, addProduct, updateProduct, deleteProduct, toggleFeaturedProduct, updateSiteConfig,
-      createOrder, subscribeNewsletter, saveCampaign, sendContactMessage, deleteContactMessage, refreshData: fetchData
+      createOrder, subscribeNewsletter, saveCampaign, refreshData: fetchData
     }}>
       <CartContext.Provider value={{ cart, wishlist, addToCart, removeFromCart, updateQuantity, clearCart, toggleWishlist, total }}>
         {children}
@@ -330,7 +300,6 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-background-light dark:bg-background-dark text-charcoal dark:text-white">
-      <ScrollToTop />
       {!isAdminPath && <Header />}
       <main className="flex-grow">
         <Routes>

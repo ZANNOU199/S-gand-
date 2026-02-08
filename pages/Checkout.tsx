@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useCart, useCMS } from '../App';
-import { ShieldCheck, CreditCard, Loader2, CheckCircle2, Lock } from 'lucide-react';
+import { ShieldCheck, CreditCard, Loader2, CheckCircle2, Lock, AlertCircle } from 'lucide-react';
 
 declare global {
   interface Window {
@@ -76,7 +76,7 @@ const Checkout: React.FC = () => {
               customer_name: `${customer.firstName} ${customer.lastName}`,
               customer_email: customer.email,
               customer_phone: customer.phone,
-              customer_address: customer.address,
+              customer_address: customer.address, // AJOUT DE L'ADRESSE ICI
               total: total,
               status: 'completed' as const,
               items: cart,
@@ -85,13 +85,10 @@ const Checkout: React.FC = () => {
 
             try {
               await createOrder(orderData);
-              // SCROLL TO TOP AFTER SUCCESS
-              window.scrollTo({ top: 0, behavior: 'smooth' });
               setStep(2);
               clearCart();
             } catch (err) {
               console.error("Database Save Error:", err);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
               setStep(2);
               clearCart();
             }
