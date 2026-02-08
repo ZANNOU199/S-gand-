@@ -190,9 +190,10 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const p = products.find(prod => prod.id === id);
     if (!p) return;
     
+    // RÈGLE : Maximum 4 étoiles autorisées
     const currentlyFeatured = products.filter(x => x.isFeatured);
     if (!p.isFeatured && currentlyFeatured.length >= 4) {
-      alert("La Sélection d'Exception est limitée à 4 articles. Veuillez retirer l'étoile d'une autre pièce avant d'en ajouter une nouvelle.");
+      alert("LA SÉLECTION D'EXCEPTION EST LIMITÉE À 4 ARTICLES. VEUILLEZ DÉCOCHER UNE AUTRE PIÈCE D'ABORD.");
       return;
     }
 

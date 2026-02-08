@@ -10,24 +10,14 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   const { siteConfig, sectors, products } = useCMS();
 
-  // Filtrage intelligent : Exactement 4 articles, triés du plus ancien au plus récent (ID asc)
+  // Filtrage strict : 4 articles maximum, ordre du plus ancien au plus récent
   const sahelCollection = useMemo(() => {
-    // 1. On récupère les articles étoilés (featured) triés par ID croissant (plus ancien d'abord)
-    const featured = products
+    // On récupère uniquement les produits cochés "isFeatured"
+    // On trie par ID croissant car l'ID est généré séquentiellement (le plus petit est le plus ancien)
+    return products
       .filter(p => p.isFeatured)
-      .sort((a, b) => Number(a.id) - Number(b.id));
-
-    // 2. Si on a déjà 4 ou plus, on prend les 4 plus anciens
-    if (featured.length >= 4) {
-      return featured.slice(0, 4);
-    }
-
-    // 3. Sinon, on complète avec les articles non-étoilés les plus anciens pour atteindre 4
-    const nonFeatured = products
-      .filter(p => !p.isFeatured)
-      .sort((a, b) => Number(a.id) - Number(b.id));
-
-    return [...featured, ...nonFeatured].slice(0, 4);
+      .sort((a, b) => Number(a.id) - Number(b.id))
+      .slice(0, 4); // Limite finale de sécurité à 4
   }, [products]);
 
   return (
@@ -136,7 +126,7 @@ const Home: React.FC = () => {
               <span className="text-primary uppercase tracking-[0.5em] text-[10px] font-black mb-3 block">CURATION ÉLITE</span>
               <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-6 leading-none text-white">Sélection d’Exception</h2>
               <p className="text-sand/40 text-xs md:text-sm max-w-xl uppercase font-bold tracking-[0.2em] leading-relaxed">
-                Une sélection rigoureuse de 4 pièces iconiques, triées selon leur héritage et leur rareté au sein de notre Maison.
+                Une sélection exclusive limitée à nos 4 pièces les plus emblématiques, triées par leur antériorité au sein de notre catalogue.
               </p>
             </div>
             <button 
@@ -152,7 +142,7 @@ const Home: React.FC = () => {
               <ProductCard key={product.id} product={product} />
             )) : (
               <div className="col-span-full py-32 text-center text-sand/10 uppercase font-black tracking-widest border border-dashed border-white/5 rounded-3xl">
-                À la découverte de nouvelles pépites...
+                Sélection en cours de raffinement...
               </div>
             )}
           </div>
