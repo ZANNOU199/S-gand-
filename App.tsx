@@ -30,11 +30,18 @@ interface Sector {
   image: string;
 }
 
+interface Subscriber {
+  id: number;
+  email: string;
+  created_at: string;
+}
+
 interface CMSContextType {
   siteConfig: any;
   sectors: Sector[];
   products: Product[];
   orders: Order[];
+  subscribers: Subscriber[];
   isAdminAuthenticated: boolean;
   isLoading: boolean;
   setAdminAuthenticated: (val: boolean) => void;
@@ -47,6 +54,7 @@ interface CMSContextType {
   toggleFeaturedProduct: (productId: string) => Promise<void>;
   updateSiteConfig: (config: any) => Promise<void>;
   createOrder: (order: Partial<Order>) => Promise<any>;
+  subscribeNewsletter: (email: string) => Promise<{ success: boolean; message: string }>;
   refreshData: () => Promise<void>;
 }
 
@@ -90,6 +98,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [sectors, setSectors] = useState<Sector[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [siteConfig, setSiteConfig] = useState<any>(DEFAULT_CONFIG);
 
   const [cart, setCart] = useState<CartItem[]>(() => {
@@ -133,11 +142,13 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       const { data: pData } = await supabase.from('products').select('*').order('id');
       const { data: cData } = await supabase.from('site_config').select('*').eq('id', 'global');
       const { data: oData } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+      const { data: subData } = await supabase.from('newsletter_subscribers').select('*').order('created_at', { ascending: false });
 
       if (sData) setSectors(sData);
       if (pData) setProducts(pData.map(mapProductFromDB));
       if (cData && cData.length > 0) setSiteConfig(cData[0].data);
       if (oData) setOrders(oData);
+      if (subData) setSubscribers(subData);
       
     } catch (e) {
       console.error("Erreur fetchData:", e);
@@ -147,6 +158,16 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   useEffect(() => { fetchData(); }, []);
+
+  const subscribeNewsletter = async (email: string) => {
+    const { error } = await supabase.from('newsletter_subscribers').insert([{ email }]);
+    if (error) {
+      if (error.code === '23505') return { success: false, message: "Cet email est déjà inscrit." };
+      return { success: false, message: "Une erreur est survenue." };
+    }
+    fetchData(); // Refresh subscribers for admin
+    return { success: true, message: "Bienvenue dans la Maison SÈGANDÉ." };
+  };
 
   const addSector = async (sector: any) => {
     await supabase.from('sectors').insert([{ name: sector.name, slug: sector.slug, image: sector.image }]);
@@ -190,7 +211,6 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const p = products.find(prod => prod.id === id);
     if (!p) return;
     
-    // RÈGLE : Maximum 4 étoiles autorisées
     const currentlyFeatured = products.filter(x => x.isFeatured);
     if (!p.isFeatured && currentlyFeatured.length >= 4) {
       alert("LA SÉLECTION D'EXCEPTION EST LIMITÉE À 4 ARTICLES. VEUILLEZ DÉCOCHER UNE AUTRE PIÈCE D'ABORD.");
@@ -255,9 +275,9 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <CMSContext.Provider value={{ 
-      siteConfig, sectors, products, orders, isAdminAuthenticated, isLoading, setAdminAuthenticated,
+      siteConfig, sectors, products, orders, subscribers, isAdminAuthenticated, isLoading, setAdminAuthenticated,
       addSector, updateSector, deleteSector, addProduct, updateProduct, deleteProduct, toggleFeaturedProduct, updateSiteConfig,
-      createOrder, refreshData: fetchData
+      createOrder, subscribeNewsletter, refreshData: fetchData
     }}>
       <CartContext.Provider value={{ cart, wishlist, addToCart, removeFromCart, updateQuantity, clearCart, toggleWishlist, total }}>
         {children}

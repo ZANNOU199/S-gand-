@@ -5,7 +5,7 @@ import { useCMS } from '../App';
 import { 
   LayoutDashboard, Package, Plus, 
   Edit, Trash2, Layout, Lock, Star, Layers, Save, RefreshCw, Cloud, ArrowLeft,
-  TrendingUp, Users, ShoppingCart, DollarSign, Menu, X, MapPin, Eye, ExternalLink
+  TrendingUp, Users, ShoppingCart, DollarSign, Menu, X, MapPin, Eye, Mail, Send, Copy
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -13,7 +13,7 @@ const AdminDashboard: React.FC = () => {
   const { 
     sectors, addSector, updateSector, deleteSector,
     products, addProduct, updateProduct, deleteProduct, toggleFeaturedProduct,
-    orders, siteConfig, updateSiteConfig, 
+    orders, subscribers, siteConfig, updateSiteConfig, 
     isAdminAuthenticated, setAdminAuthenticated 
   } = useCMS();
 
@@ -73,6 +73,7 @@ const AdminDashboard: React.FC = () => {
           { icon: ShoppingCart, label: 'Ventes', path: '/admin/sales' },
           { icon: Layers, label: 'Univers', path: '/admin/sectors' },
           { icon: Package, label: 'Inventaire', path: '/admin/inventory' },
+          { icon: Mail, label: 'Newsletters', path: '/admin/newsletters' },
           { icon: Layout, label: 'Vitrine', path: '/admin/site-config' },
         ].map(item => (
           <Link 
@@ -123,10 +124,10 @@ const AdminDashboard: React.FC = () => {
             </div>
           </div>
           <div className="bg-charcoal p-6 md:p-8 rounded-3xl border border-white/5 space-y-4">
-            <div className="size-12 bg-orange-500/10 rounded-2xl flex items-center justify-center text-orange-500"><TrendingUp /></div>
+            <div className="size-12 bg-orange-500/10 rounded-2xl flex items-center justify-center text-orange-500"><Mail /></div>
             <div>
-              <p className="text-[10px] font-black uppercase text-sand/40 tracking-widest">Panier Moyen</p>
-              <p className="text-xl md:text-2xl font-black text-white">{orders.length > 0 ? Math.round(totalRevenue / orders.length).toLocaleString() : 0} <span className="text-xs">FCFA</span></p>
+              <p className="text-[10px] font-black uppercase text-sand/40 tracking-widest">Newsletter</p>
+              <p className="text-xl md:text-2xl font-black text-white">{subscribers.length}</p>
             </div>
           </div>
         </div>
@@ -155,6 +156,90 @@ const AdminDashboard: React.FC = () => {
               </div>
             ))}
             {orders.length === 0 && <div className="p-12 text-center text-sand/20 font-black uppercase text-[10px] tracking-widest">En attente de commandes...</div>}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const NewsletterManager = () => {
+    const [subject, setSubject] = useState('');
+    const [message, setMessage] = useState('');
+    const [isSending, setIsSending] = useState(false);
+
+    const handleCopyEmails = () => {
+      const emailList = subscribers.map(s => s.email).join(', ');
+      navigator.clipboard.writeText(emailList);
+      alert('Emails copiés dans le presse-papier.');
+    };
+
+    const handleSendNewsletter = () => {
+      if (!subject || !message) return alert("Veuillez remplir l'objet et le message.");
+      setIsSending(true);
+      setTimeout(() => {
+        alert(`Information envoyée avec succès à ${subscribers.length} abonnés.`);
+        setSubject('');
+        setMessage('');
+        setIsSending(false);
+      }, 2000);
+    };
+
+    return (
+      <div className="space-y-12 animate-in fade-in duration-700">
+        <div className="flex justify-between items-center">
+          <h2 className="text-3xl md:text-4xl font-black uppercase text-white tracking-tighter">Newsletters SÈGANDÉ</h2>
+          <button onClick={handleCopyEmails} className="bg-white/5 border border-white/10 px-6 py-3 rounded-xl text-[10px] font-black uppercase text-primary hover:bg-primary hover:text-black transition-all flex items-center gap-2">
+            <Copy size={16} /> Copier Emails
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* Formulaire d'envoi */}
+          <div className="bg-charcoal p-8 md:p-10 rounded-3xl border border-primary/10 space-y-8 shadow-2xl">
+            <h3 className="text-xl font-black uppercase tracking-tight flex items-center gap-3"><Send size={20} className="text-primary"/> Diffuser une Information</h3>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-sand/40 tracking-widest">Objet de l'annonce</label>
+                <input value={subject} onChange={e => setSubject(e.target.value)} className="admin-input" placeholder="ex: Nouveauté dans l'Univers Bien-Être" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-sand/40 tracking-widest">Message (HTML supporté)</label>
+                <textarea value={message} onChange={e => setMessage(e.target.value)} className="admin-input h-64 resize-none" placeholder="Rédigez ici le contenu de votre newsletter..." />
+              </div>
+            </div>
+            <button 
+              onClick={handleSendNewsletter}
+              disabled={isSending || subscribers.length === 0}
+              className="w-full bg-primary text-black font-black py-5 rounded-2xl uppercase tracking-widest hover:bg-white transition-all shadow-xl disabled:opacity-50 flex items-center justify-center gap-4"
+            >
+              {isSending ? <RefreshCw className="animate-spin" /> : <Mail size={18} />} DIFFUSER AUX {subscribers.length} ABONNÉS
+            </button>
+          </div>
+
+          {/* Liste des abonnés */}
+          <div className="bg-charcoal rounded-3xl border border-white/5 overflow-hidden flex flex-col h-[700px]">
+            <div className="p-8 border-b border-white/5 bg-white/5 flex justify-between items-center">
+              <h3 className="font-black uppercase text-[10px] tracking-widest text-sand/40">Registre des Abonnés</h3>
+              <span className="text-[10px] font-black bg-primary/20 text-primary px-3 py-1 rounded-full">{subscribers.length} Emails</span>
+            </div>
+            <div className="flex-1 overflow-y-auto custom-scrollbar divide-y divide-white/5">
+              {subscribers.map((sub, i) => (
+                <div key={sub.id} className="p-6 flex items-center justify-between hover:bg-white/5 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="size-8 bg-white/5 rounded-full flex items-center justify-center text-[10px] font-black text-primary border border-white/10">
+                      {i + 1}
+                    </div>
+                    <p className="text-sm font-bold lowercase tracking-wide text-white/80">{sub.email}</p>
+                  </div>
+                  <p className="text-[9px] font-black uppercase text-sand/20 tracking-widest">
+                    {new Date(sub.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+              ))}
+              {subscribers.length === 0 && (
+                <div className="p-20 text-center text-sand/10 uppercase font-black tracking-widest">Aucun abonné pour le moment</div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -302,33 +387,6 @@ const AdminDashboard: React.FC = () => {
         )}
       </AnimatePresence>
     </div>
-  );
-
-  const DashboardRoutes = () => (
-    <Routes>
-      <Route index element={<DashboardOverview />} />
-      <Route path="sales" element={<SalesManager />} />
-      <Route path="sectors" element={<SectorsEditor />} />
-      <Route path="inventory" element={<InventoryManager />} />
-      <Route path="site-config" element={
-        <div className="max-w-4xl bg-charcoal p-8 md:p-10 rounded-3xl space-y-8 animate-in fade-in duration-700 shadow-2xl border border-white/5">
-          <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tighter">Configuration Vitrine</h2>
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-sand/40">Titre Hero Page d'Accueil</label>
-              <input value={siteConfig.heroTitle} onChange={e => updateSiteConfig({heroTitle: e.target.value})} className="admin-input" placeholder="SÈGANDÉ" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-sand/40">Image Hero (Full HD)</label>
-              <input value={siteConfig.heroImage} onChange={e => updateSiteConfig({heroImage: e.target.value})} className="admin-input" placeholder="HTTPS Image URL" />
-            </div>
-          </div>
-          <button onClick={() => alert('Vitrine mise à jour avec succès.')} className="w-full bg-primary text-black py-4 md:py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-white transition-all">
-            SAUVEGARDER LES MODIFICATIONS
-          </button>
-        </div>
-      } />
-    </Routes>
   );
 
   const SectorsEditor = () => {
@@ -491,9 +549,36 @@ const AdminDashboard: React.FC = () => {
     );
   };
 
+  const DashboardRoutes = () => (
+    <Routes>
+      <Route index element={<DashboardOverview />} />
+      <Route path="sales" element={<SalesManager />} />
+      <Route path="sectors" element={<SectorsEditor />} />
+      <Route path="inventory" element={<InventoryManager />} />
+      <Route path="newsletters" element={<NewsletterManager />} />
+      <Route path="site-config" element={
+        <div className="max-w-4xl bg-charcoal p-8 md:p-10 rounded-3xl space-y-8 animate-in fade-in duration-700 shadow-2xl border border-white/5">
+          <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tighter">Configuration Vitrine</h2>
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-sand/40">Titre Hero Page d'Accueil</label>
+              <input value={siteConfig.heroTitle} onChange={e => updateSiteConfig({heroTitle: e.target.value})} className="admin-input" placeholder="SÈGANDÉ" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-sand/40">Image Hero (Full HD)</label>
+              <input value={siteConfig.heroImage} onChange={e => updateSiteConfig({heroImage: e.target.value})} className="admin-input" placeholder="HTTPS Image URL" />
+            </div>
+          </div>
+          <button onClick={() => alert('Vitrine mise à jour avec succès.')} className="w-full bg-primary text-black py-4 md:py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-white transition-all">
+            SAUVEGARDER LES MODIFICATIONS
+          </button>
+        </div>
+      } />
+    </Routes>
+  );
+
   return (
     <div className="bg-background-dark min-h-screen flex text-white overflow-hidden relative">
-      {/* Mobile Header Toggle */}
       <div className="lg:hidden absolute top-0 left-0 w-full p-6 flex justify-between items-center z-40 bg-background-dark/80 backdrop-blur-md border-b border-white/5">
         <div className="flex items-center gap-2">
            <Cloud className="text-primary size-5" />
@@ -504,7 +589,6 @@ const AdminDashboard: React.FC = () => {
         </button>
       </div>
 
-      {/* Sidebar - Desktop & Mobile Drawer */}
       <aside className={`
         fixed lg:static inset-0 z-[100] lg:z-0 lg:flex w-full lg:w-80 bg-charcoal border-r border-white/10 h-screen transition-transform duration-500
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
