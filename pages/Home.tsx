@@ -1,15 +1,72 @@
 
 import React, { useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useCMS } from '../App';
 import ProductCard from '../components/ProductCard';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import SEO from '../components/SEO';
+
+const AnimatedBackground: React.FC = () => {
+  return (
+    <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+      {/* Aura Spheres */}
+      <motion.div 
+        animate={{ 
+          scale: [1, 1.2, 1],
+          x: [0, 100, 0],
+          y: [0, -50, 0],
+          rotate: [0, 90, 0]
+        }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+        className="absolute top-[-10%] left-[-10%] w-[60vw] h-[60vw] bg-primary/10 rounded-full blur-[120px]"
+      />
+      <motion.div 
+        animate={{ 
+          scale: [1, 1.5, 1],
+          x: [0, -150, 0],
+          y: [0, 100, 0],
+        }}
+        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+        className="absolute bottom-[-20%] right-[-10%] w-[70vw] h-[70vw] bg-mint/5 rounded-full blur-[150px]"
+      />
+      
+      {/* Floating 3D Elements (Abstract) */}
+      <div className="absolute inset-0 opacity-20">
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0 }}
+            animate={{ 
+              opacity: [0.2, 0.5, 0.2],
+              y: [0, -100, 0],
+              rotate: [0, 360],
+            }}
+            transition={{ 
+              duration: 10 + i * 5, 
+              repeat: Infinity, 
+              ease: "easeInOut",
+              delay: i * 2 
+            }}
+            style={{
+              left: `${i * 20}%`,
+              top: `${(i * 15) % 100}%`,
+            }}
+            className="absolute size-24 md:size-48 border border-white/10 rounded-full backdrop-blur-[2px]"
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const { siteConfig, sectors, products } = useCMS();
+  const { scrollY } = useScroll();
+  
+  const y1 = useTransform(scrollY, [0, 500], [0, 200]);
+  const opacity = useTransform(scrollY, [0, 400], [1, 0]);
 
   const sahelCollection = useMemo(() => {
     return products
@@ -19,39 +76,44 @@ const Home: React.FC = () => {
   }, [products]);
 
   return (
-    <div className="bg-background-dark text-white">
+    <div className="bg-background-dark text-white relative">
       <SEO 
         title="L'Âme Moderne de l'Afrique" 
         description="Maison de luxe africaine dédiée au bien-être, à la mode et à l'artisanat contemporain. Découvrez nos collections d'exception."
       />
 
-      {/* Hero Section Simplified */}
+      {/* Hero Section with Parallax and Animated BG */}
       <section className="relative h-[90vh] md:h-screen w-full overflow-hidden flex items-center justify-center lg:items-center lg:justify-start">
-        <div className="absolute inset-0 z-0">
+        <AnimatedBackground />
+        
+        <motion.div style={{ y: y1 }} className="absolute inset-0 z-0">
           <img 
             src={siteConfig.heroImage || "https://images.unsplash.com/photo-1549490349-8643362247b5"} 
             alt="SÈGANDÉ - Art de vivre africain"
             className="w-full h-full object-cover object-center lg:object-top transition-transform duration-[3000ms] scale-105"
           />
-          <div className="absolute inset-0 bg-black/50 lg:bg-transparent"></div>
+          <div className="absolute inset-0 bg-black/40 lg:bg-transparent"></div>
           <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/20 to-transparent lg:bg-gradient-to-r lg:from-background-dark/90 lg:via-background-dark/10 lg:to-transparent"></div>
-        </div>
+        </motion.div>
 
         <div className="relative z-10 w-full max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20">
           <div className="max-w-4xl text-center lg:text-left">
             <motion.div
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, ease: "easeOut" }}
+              transition={{ duration: 1.2, ease: "easeOut" }}
             >
-              <div className="mb-6 md:mb-8">
+              <motion.div 
+                style={{ opacity }}
+                className="mb-6 md:mb-8"
+              >
                 <span className="inline-flex items-center gap-3 text-primary font-black tracking-[0.6em] text-[10px] md:text-xs uppercase bg-primary/10 px-6 py-2.5 rounded-full border border-primary/30 backdrop-blur-sm">
-                  <span className="size-1.5 bg-primary rounded-full animate-pulse"></span>
+                  <Sparkles size={14} className="text-primary animate-pulse" />
                   LE BIEN-ÊTRE RÉINVENTÉ
                 </span>
-              </div>
+              </motion.div>
 
-              <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl font-black mb-8 leading-[1.05] md:leading-[0.9] uppercase tracking-tighter text-white drop-shadow-2xl">
+              <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl font-black mb-8 leading-[1.05] md:leading-[0.9] uppercase tracking-tighter text-white drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                 {siteConfig.heroTitle}
               </h1>
               
@@ -74,7 +136,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Univers (Sectors) */}
-      <section className="py-20 md:py-32 px-6 md:px-12 lg:px-20 max-w-[1440px] mx-auto">
+      <section className="relative py-20 md:py-32 px-6 md:px-12 lg:px-20 max-w-[1440px] mx-auto z-10">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-16">
           <div className="max-w-2xl">
             <span className="text-primary uppercase tracking-[0.4em] text-[10px] font-black mb-3 block">LES CURATIONS</span>
@@ -105,7 +167,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Sélection d’Exception */}
-      <section className="bg-charcoal/30 py-20 md:py-32 border-t border-white/5">
+      <section className="relative bg-charcoal/30 py-20 md:py-32 border-t border-white/5 z-10">
         <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20">
           <div className="flex flex-col md:flex-row justify-between items-end mb-16 md:mb-24 gap-8">
             <div className="text-center md:text-left flex-1">
